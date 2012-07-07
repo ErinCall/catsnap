@@ -10,6 +10,7 @@ setup(name="catsnap",
       packages=['catsnap'],
       install_requires=[
           "boto==2.5.2",
+          "requests==0.13.2",
 
           "mock==1.0.0a2",
           "nose==1.1.2",
