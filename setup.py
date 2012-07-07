@@ -7,7 +7,11 @@ setup(name="catsnap",
       description="catalog and store funny pictures",
       author="Andrew Lorente",
       author_email="andrew.lorente@gmail.com",
+      packages=['catsnap'],
       install_requires=[
           "boto==2.5.2",
+
+          "mock==1.0.0a2",
+          "nose==1.1.2",
           ],
       )
