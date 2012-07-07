@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
+import boto
 import tempfile
-from mock import patch, call
+from mock import patch, call, Mock
 from nose.tools import eq_
 
+from catsnap import settings
 from catsnap import botoconf
 
 class TestBotoConf():
@@ -37,3 +39,29 @@ class TestBotoConf():
         eq_(creds, """[Credentials]
 aws_access_key_id = access key id
 aws_secret_access_key = secret access key""")
+
+class TestConnect():
+    @patch('catsnap.botoconf.boto')
+    def test_does_not_create_already_existing_bucket(self, mock_boto):
+        mock_bucket = Mock()
+        mock_bucket.name = settings.BUCKET
+        s3 = Mock()
+        s3.get_all_buckets.return_value = [ mock_bucket ]
+        s3.get_bucket.return_value = mock_bucket
+        mock_boto.connect_s3.return_value = s3
+
+        bucket = botoconf.connect()
+        eq_(s3.create_bucket.call_count, 0, "shouldn't've created a bucket")
+        eq_(bucket, mock_bucket)
+
+    @patch('catsnap.botoconf.boto')
+    def test_creates_bucket_if_necessary(self, mock_boto):
+        s3 = Mock()
+        mock_bucket = Mock()
+        s3.create_bucket.return_value = mock_bucket
+        s3.get_all_buckets.return_value = []
+        mock_boto.connect_s3.return_value = s3
+
+        bucket = botoconf.connect()
+        s3.create_bucket.assert_called_with(settings.BUCKET)
+        eq_(bucket, mock_bucket)

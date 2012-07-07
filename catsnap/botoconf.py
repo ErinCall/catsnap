@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 import os
 import sys
 import getpass
+import boto
+
+from catsnap import settings
 
 CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
 
@@ -21,3 +24,12 @@ def get_aws_credentials():
     return """[Credentials]
 aws_access_key_id = %(key_id)s
 aws_secret_access_key = %(key)s""" % {'key_id': key_id, 'key': key}
+
+def connect():
+    s3 = boto.connect_s3()
+    all_buckets = [x.name for x in s3.get_all_buckets()]
+    if settings.BUCKET not in all_buckets:
+        bucket = s3.create_bucket(settings.BUCKET)
+    else:
+        bucket = s3.get_bucket(settings.BUCKET)
+    return bucket
