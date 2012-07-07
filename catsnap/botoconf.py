@@ -14,6 +14,8 @@ def ensure_aws_credentials_exist():
 
 def get_aws_credentials():
     sys.stdout.write("Looks like this is your first run.\n")
+    sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
+                     "gp/aws/securityCredentials\n")
     key_id = getpass.getpass('Enter your access key id: ')
     key = getpass.getpass('Enter your secret access key: ')
     return """[Credentials]

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import tempfile
-from mock import patch
+from mock import patch, call
 from nose.tools import eq_
 
 from catsnap import botoconf
@@ -30,7 +30,10 @@ class TestBotoConf():
     def test_get_credentials(self, sys, getpass):
         getpass.getpass.side_effect = ['access key id', 'secret access key']
         creds = botoconf.get_aws_credentials()
-        sys.stdout.write.assert_called_with("Looks like this is your first run.\n")
+        sys.stdout.write.assert_has_calls([
+            call("Looks like this is your first run.\n"),
+            call("Find your credentials at https://portal.aws.amazon.com/gp/"
+                 "aws/securityCredentials\n"),])
         eq_(creds, """[Credentials]
 aws_access_key_id = access key id
 aws_secret_access_key = secret access key""")
