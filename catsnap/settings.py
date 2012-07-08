@@ -1,1 +1,1 @@
-BUCKET = 'catsnap'
+BUCKET_BASE = 'catsnap'
