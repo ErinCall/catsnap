@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import requests
 import hashlib
 
+from catsnap.tag import Tag
+
 class Image():
     def __init__(self, contents, content_type, tags=[]):
         self.contents = contents
@@ -30,8 +32,7 @@ class Image():
 
         filename = self.calculate_filename()
         for tag in self._tags:
-            item = table.new_item(hash_key=tag, attrs={filename:filename})
-            item.put()
+            Tag(tag).save(table, filename)
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()

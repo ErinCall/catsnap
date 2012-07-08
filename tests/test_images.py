@@ -23,22 +23,19 @@ class TestImages():
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_with()
 
+    @patch('catsnap.image.Tag')
     @patch('catsnap.image.Image.calculate_filename')
-    def test_save__sends_tags_to_dynamo(self, calculate_filename):
+    def test_save__sends_tags_to_dynamo(self, calculate_filename, Tag):
         calculate_filename.return_value = 'sewingcat'
-        table = Mock()
         cat_tag = Mock()
         sewing_tag = Mock()
-        table.new_item.side_effect = [ cat_tag, sewing_tag ]
-        image = Image('sewing-cat.gif', 'image/gif')
-        image.tags('cat', 'sewing')
-        image.save(Mock(), table)
-        table.new_item.assert_has_calls([
-            call(hash_key='cat', attrs={'sewingcat': 'sewingcat'}),
-            call(hash_key='sewing', attrs={'sewingcat': 'sewingcat'})])
+        table = Mock()
+        Tag.side_effect = [ cat_tag, sewing_tag ]
+        image = Image('sewing-cat.gif', 'image/gif', ['cat', 'sewing'])
 
-        cat_tag.put.assert_called_with()
-        sewing_tag.put.assert_called_with()
+        image.save(Mock(), table)
+        cat_tag.save.assert_called_with(table, 'sewingcat')
+        sewing_tag.save.assert_called_with(table, 'sewingcat')
 
     @patch('catsnap.image.hashlib')
     def test_calculate_filename(self, hashlib):
