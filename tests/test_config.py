@@ -170,7 +170,7 @@ class TestGetTable():
         mock_table = Mock()
         mock_table.name = 'rooibos'
         dynamo = Mock()
-        dynamo.list_tables.return_value = [ mock_table ]
+        dynamo.list_tables.return_value = [ 'rooibos' ]
         dynamo.get_table.return_value = mock_table
         mock_boto.connect_dynamodb.return_value = dynamo
 
