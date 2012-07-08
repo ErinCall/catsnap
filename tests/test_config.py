@@ -51,14 +51,14 @@ class TestConfig():
     def test_ensure_catsnap_config_exists(self, get_config, get_creds, sys):
         get_creds.side_effect = AssertionError("shouldn't've been called")
         get_config.return_value = 'the config'
-        (_, creds) = tempfile.mkstemp()
+        (_, conf) = tempfile.mkstemp()
 
         with patch('catsnap.config.os.path') as path:
             path.exists.side_effect = [ False, True, False, True ]
-            with patch('catsnap.config.CONFIG_FILE', creds) as _:
+            with patch('catsnap.config.CONFIG_FILE', conf) as _:
                 config.ensure_config_files_exist()
-        with open(creds, 'r') as creds_file:
-            eq_(creds_file.read(), 'the config')
+        with open(conf, 'r') as config_file:
+            eq_(config_file.read(), 'the config')
         sys.stdout.write.assert_called_with(
                 "Looks like this is your first run.\n")
 
