@@ -18,6 +18,10 @@ class Image():
         return cls(response.content, response.headers['content-type'],
                 tags=tags)
 
+    @classmethod
+    def url_for_filename(cls, filename, bucket):
+        return cls._url(filename, bucket.name)
+
     def tags(self, *args):
         if args:
             self._tags.extend(args)
@@ -38,5 +42,9 @@ class Image():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, bucket):
+        return self._url(self.calculate_filename(), bucket.name)
+
+    @classmethod
+    def _url(cls, filename, bucket_name):
         return 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
-                'bucket': bucket.name, 'filename': self.calculate_filename()}
+                'bucket': bucket_name, 'filename': filename}

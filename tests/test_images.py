@@ -79,3 +79,9 @@ class TestImages():
         image = Image('greensleeves', None)
         eq_(image.url(bucket),
                 'https://s3.amazonaws.com/tune-carrier/greensleeves')
+
+    def test_url_for_filename(self):
+        bucket = Mock()
+        bucket.name = 'greeble'
+        eq_(Image.url_for_filename('CAFEBABE', bucket),
+                'https://s3.amazonaws.com/greeble/CAFEBABE')
