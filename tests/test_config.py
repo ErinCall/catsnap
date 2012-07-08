@@ -147,12 +147,20 @@ class TestGetTable():
         _table_name.return_value = 'myemmatable'
         dynamo = Mock()
         mock_table = Mock()
+        schema = Mock()
         dynamo.create_table.return_value = mock_table
         dynamo.list_tables.return_value = []
+        dynamo.create_schema.return_value = schema
         mock_boto.connect_dynamodb.return_value = dynamo
 
         table = Config().table()
-        dynamo.create_table.assert_called_with('myemmatable')
+        dynamo.create_schema.assert_called_with(
+                hash_key_name='tag',
+                hash_key_proto_value='S')
+        dynamo.create_table.assert_called_with(name='myemmatable',
+                schema=schema,
+                read_units=3,
+                write_units=4)
         eq_(table, mock_table)
 
     @patch('catsnap.Config._table_name')

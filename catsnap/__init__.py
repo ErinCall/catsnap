@@ -66,7 +66,12 @@ table = %s""" % (bucket_name, table_name)
         dynamo = boto.connect_dynamodb()
         all_tables = [x.name for x in dynamo.list_tables()]
         if table_name not in all_tables:
-            table = dynamo.create_table(table_name)
+            schema = dynamo.create_schema(hash_key_name='tag',
+                    hash_key_proto_value='S')
+            table = dynamo.create_table(name=table_name,
+                    schema=schema,
+                    read_units=3,
+                    write_units=4)
         else:
             table = dynamo.get_table(table_name)
         return table
