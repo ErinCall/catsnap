@@ -36,12 +36,18 @@ aws_secret_access_key = %(key)s""" % {'key_id': key_id, 'key': key}
 
 def get_catsnap_config():
     bucket_name = '%s-%s' % (settings.BUCKET_BASE, os.environ['USER'])
-    actual_bucket_name = _input("Please name your bucket (leave blank to use "
-            "'%s'): " % bucket_name)
+    actual_bucket_name = _input("Please name your bucket (leave blank to "
+            "use '%s'): " % bucket_name)
     bucket_name = actual_bucket_name or bucket_name
     _BUCKET_NAME = bucket_name
+
+    table_name = bucket_name
+    actual_table_name = _input("Please name your table (leave blank to "
+            "use '%s'): " % table_name)
+    table_name = actual_table_name or table_name
     return """[catsnap]
-bucket = %s""" % bucket_name
+bucket = %s
+table = %s""" % (bucket_name, table_name)
 
 
 def bucket():

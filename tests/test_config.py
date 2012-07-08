@@ -83,20 +83,32 @@ aws_secret_access_key = secret access key""")
         _input.return_value = ''
 
         conf = config.get_catsnap_config()
-        _input.assert_called_with("Please name your bucket (leave blank to use "
-                                  "'catsnap-mcgee'): "),
+        _input.assert_has_calls([
+            call("Please name your bucket (leave blank to use "
+                "'catsnap-mcgee'): "),
+            call("Please name your table (leave blank to use "
+                "'catsnap-mcgee'): "),
+        ])
         eq_(conf, """[catsnap]
-bucket = catsnap-mcgee""")
+bucket = catsnap-mcgee
+table = catsnap-mcgee""")
 
     @patch('catsnap.config.os')
     @patch('catsnap.config._input')
-    def test_get_catsnap_config__custom_bucket_name(self, _input, os):
+    def test_get_catsnap_config__custom_names(self, _input, os):
         os.environ.__getitem__.return_value = 'mcgee'
-        _input.return_value = 'booya'
+        _input.side_effect = ['booya', '']
 
         conf = config.get_catsnap_config()
         eq_(conf, """[catsnap]
-bucket = booya""")
+bucket = booya
+table = booya""")
+
+        _input.side_effect = ['rutabaga', 'wootabaga']
+        conf = config.get_catsnap_config()
+        eq_(conf, """[catsnap]
+bucket = rutabaga
+table = wootabaga""")
 
 class TestGetBucket():
     @patch('catsnap.config._bucket_name')
