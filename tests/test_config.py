@@ -140,13 +140,18 @@ class TestGetBucket():
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
-    def test_determine_bucket_name(self):
+class TestBuildParser():
+    def test_build_parser(self):
         (_, conf) = tempfile.mkstemp()
         with open(conf, 'w') as config_file:
             config_file.write("""[catsnap]
 bucket = boogles
-table = boogles""")
+table = bugglez""")
 
+        config = Config()
         with patch('catsnap.Config.CONFIG_FILE', conf) as _:
-            bucket_name = Config()._bucket_name()
-        eq_(bucket_name, 'boogles')
+            parser = config._parser()
+        eq_(parser.get('catsnap', 'bucket'), 'boogles')
+        eq_(parser.get('catsnap', 'table'), 'bugglez')
+        eq_(config._bucket_name(), 'boogles')
+        eq_(config._table_name(), 'bugglez')
