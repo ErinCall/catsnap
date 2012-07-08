@@ -7,7 +7,9 @@ from catsnap.image import Image
 from catsnap.tag import Tag
 
 USAGE = """
-usage statement TBD
+Usage:
+    catsnap add [image_url] tag1 tag2 ...
+    catsnap find tag1 tag2 ...
 """
 
 def main():
