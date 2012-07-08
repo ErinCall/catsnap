@@ -9,6 +9,7 @@ from catsnap import settings
 
 CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
 CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
+_BUCKET_NAME = None
 
 def ensure_config_files_exist():
     if not all(map(os.path.exists, [ CONFIG_FILE, CREDENTIALS_FILE ])):
@@ -38,6 +39,7 @@ def get_catsnap_config():
     actual_bucket_name = _input("Please name your bucket (leave blank to use "
             "'%s'): " % bucket_name)
     bucket_name = actual_bucket_name or bucket_name
+    _BUCKET_NAME = bucket_name
     return """[catsnap]
 bucket = %s""" % bucket_name
 
@@ -53,6 +55,8 @@ def connect():
     return bucket
 
 def _bucket_name():
+    if _BUCKET_NAME is not None:
+        return _BUCKET_NAME
     parser = ConfigParser.ConfigParser()
     parser.read(CONFIG_FILE)
     bucket_name = parser.get('catsnap', 'bucket')
