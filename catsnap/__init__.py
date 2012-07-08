@@ -71,7 +71,7 @@ table = %s""" % (bucket_name, table_name)
             table = dynamo.create_table(name=table_name,
                     schema=schema,
                     read_units=3,
-                    write_units=4)
+                    write_units=5)
         else:
             table = dynamo.get_table(table_name)
         return table

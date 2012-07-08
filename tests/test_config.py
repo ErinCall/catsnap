@@ -160,7 +160,7 @@ class TestGetTable():
         dynamo.create_table.assert_called_with(name='myemmatable',
                 schema=schema,
                 read_units=3,
-                write_units=4)
+                write_units=5)
         eq_(table, mock_table)
 
     @patch('catsnap.Config._table_name')
