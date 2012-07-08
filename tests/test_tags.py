@@ -30,3 +30,21 @@ class TestTags():
         eq_(table.new_item.call_count, 0, "shouldn't've made a new entry")
         item.put.assert_called_with()
         item.__setitem__.assert_called_with('Other_cat.gif', 'Other_cat.gif')
+
+    def test_get_images(self):
+        tag = Tag('cat')
+        item = MagicMock()
+        item.keys.return_value = ['tag', 'BADCAFE', 'DEADBEEF']
+        table = Mock()
+        table.get_item.return_value = item
+
+        images = tag.get_images(table)
+        eq_(images, ['BADCAFE', 'DEADBEEF'])
+        table.get_item.assert_called_with('cat')
+
+    def test_get_images__returns_empty_list_if_tag_is_not_found(self):
+        tag = Tag('cat')
+        table = Mock()
+        table.get_item.side_effect = DynamoDBKeyNotFoundError('no such tag')
+
+        eq_(tag.get_images(table), [])

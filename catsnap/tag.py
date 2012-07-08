@@ -14,3 +14,10 @@ class Tag():
             item = table.new_item(hash_key=self.name,
                     attrs={filename: filename})
         item.put()
+
+    def get_images(self, table):
+        try:
+            item = table.get_item(self.name)
+        except DynamoDBKeyNotFoundError:
+            return []
+        return filter(lambda x: x != 'tag', item.keys())
