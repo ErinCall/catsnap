@@ -61,6 +61,16 @@ table = %s""" % (bucket_name, table_name)
             bucket = s3.get_bucket(bucket_name)
         return bucket
 
+    def table(self):
+        table_name = self._table_name()
+        dynamo = boto.connect_dynamodb()
+        all_tables = [x.name for x in dynamo.list_tables()]
+        if table_name not in all_tables:
+            table = dynamo.create_table(table_name)
+        else:
+            table = dynamo.get_table(table_name)
+        return table
+
     def _bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
 

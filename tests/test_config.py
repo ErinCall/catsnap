@@ -140,6 +140,36 @@ class TestGetBucket():
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
+class TestGetTable():
+    @patch('catsnap.Config._table_name')
+    @patch('catsnap.boto')
+    def test_creates_table_if_necessary(self, mock_boto, _table_name):
+        _table_name.return_value = 'myemmatable'
+        dynamo = Mock()
+        mock_table = Mock()
+        dynamo.create_table.return_value = mock_table
+        dynamo.list_tables.return_value = []
+        mock_boto.connect_dynamodb.return_value = dynamo
+
+        table = Config().table()
+        dynamo.create_table.assert_called_with('myemmatable')
+        eq_(table, mock_table)
+
+    @patch('catsnap.Config._table_name')
+    @patch('catsnap.boto')
+    def test_does_not_re_create_tables(self, mock_boto, _table_name):
+        _table_name.return_value = 'rooibos'
+        mock_table = Mock()
+        mock_table.name = 'rooibos'
+        dynamo = Mock()
+        dynamo.list_tables.return_value = [ mock_table ]
+        dynamo.get_table.return_value = mock_table
+        mock_boto.connect_dynamodb.return_value = dynamo
+
+        table = Config().table()
+        eq_(dynamo.create_table.call_count, 0, "shouldn't've created a table")
+        eq_(table, mock_table)
+
 class TestBuildParser():
     def test_build_parser(self):
         (_, conf) = tempfile.mkstemp()
