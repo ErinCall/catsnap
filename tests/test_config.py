@@ -88,6 +88,16 @@ aws_secret_access_key = secret access key""")
         eq_(conf, """[catsnap]
 bucket = catsnap-mcgee""")
 
+    @patch('catsnap.config.os')
+    @patch('catsnap.config._input')
+    def test_get_catsnap_config__custom_bucket_name(self, _input, os):
+        os.environ.__getitem__.return_value = 'mcgee'
+        _input.return_value = 'booya'
+
+        conf = config.get_catsnap_config()
+        eq_(conf, """[catsnap]
+bucket = booya""")
+
 class TestGetBucket():
     @patch('catsnap.config._bucket_name')
     @patch('catsnap.config.boto')
