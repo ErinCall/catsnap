@@ -21,7 +21,7 @@ class TestImages():
         key.set_contents_from_string.assert_called_with(
                 'Are you the gatekeeper?')
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
-        key.make_public.assert_called()
+        key.make_public.assert_called_with()
 
     @patch('catsnap.image.hashlib')
     def test_calculate_filename(self, hashlib):
