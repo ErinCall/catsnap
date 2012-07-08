@@ -22,3 +22,7 @@ class Image():
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
+
+    def url(self, bucket):
+        return 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
+                'bucket': bucket.name, 'filename': self.calculate_filename()}

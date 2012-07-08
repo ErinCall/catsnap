@@ -6,7 +6,7 @@ from nose.tools import eq_, raises
 
 from catsnap.image import Image
 
-class TestSaving():
+class TestImages():
     @patch('catsnap.image.Image.calculate_filename')
     def test_save(self, calculate_filename):
         bucket = Mock()
@@ -32,7 +32,6 @@ class TestSaving():
         eq_(image.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
 
-class TestLoading():
     @patch('catsnap.image.requests')
     def test_new_from_url(self, requests):
         response = Mock()
@@ -51,3 +50,13 @@ class TestLoading():
         requests.get.return_value = response
 
         Image.new_from_url('http://some.url')
+
+    @patch('catsnap.image.Image.calculate_filename')
+    def test_url(self, calculate_filename):
+        calculate_filename.return_value = 'greensleeves'
+        bucket = Mock()
+        bucket.name = 'tune-carrier'
+
+        image = Image('greensleeves', None)
+        eq_(image.url(bucket),
+                'https://s3.amazonaws.com/tune-carrier/greensleeves')
