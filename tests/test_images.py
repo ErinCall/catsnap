@@ -1,27 +1,44 @@
 from __future__ import unicode_literals
 
 from requests.exceptions import HTTPError
-from mock import patch, Mock
+from mock import patch, Mock, call
 from nose.tools import eq_, raises
 
 from catsnap.image import Image
 
 class TestImages():
     @patch('catsnap.image.Image.calculate_filename')
-    def test_save(self, calculate_filename):
+    def test_save__uploads_image(self, calculate_filename):
         bucket = Mock()
         key = Mock()
         bucket.new_key.return_value = key
         calculate_filename.return_value = 'I am the keymaster'
 
         image = Image('Are you the gatekeeper?', 'image/gif')
-        image.save(bucket)
+        image.save(bucket, Mock())
 
         bucket.new_key.assert_called_with('I am the keymaster')
         key.set_contents_from_string.assert_called_with(
                 'Are you the gatekeeper?')
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_with()
+
+    @patch('catsnap.image.Image.calculate_filename')
+    def test_save__sends_tags_to_dynamo(self, calculate_filename):
+        calculate_filename.return_value = 'sewingcat'
+        dynamo = Mock()
+        cat_tag = Mock()
+        sewing_tag = Mock()
+        dynamo.new_item.side_effect = [ cat_tag, sewing_tag ]
+        image = Image('sewing-cat.gif', 'image/gif')
+        image.tags('cat', 'sewing')
+        image.save(Mock(), dynamo)
+        dynamo.new_item.assert_has_calls([
+            call(hash_key='cat', attrs={'sewingcat': 'sewingcat'}),
+            call(hash_key='sewing', attrs={'sewingcat': 'sewingcat'})])
+
+        cat_tag.put.assert_called_with()
+        sewing_tag.put.assert_called_with()
 
     @patch('catsnap.image.hashlib')
     def test_calculate_filename(self, hashlib):
