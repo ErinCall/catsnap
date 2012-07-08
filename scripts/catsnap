@@ -4,6 +4,7 @@ import sys
 import catsnap
 from catsnap import Config
 from catsnap.image import Image
+from catsnap.tag import Tag
 
 USAGE = """
 usage statement TBD
@@ -17,6 +18,10 @@ def main():
         if len(sys.argv) < 4:
             show_help()
         add(sys.argv[2], sys.argv[3:])
+    elif command == 'find':
+        if len(sys.argv) < 3:
+            show_help()
+        find(sys.argv[2:])
     else:
         show_help()
 
@@ -28,6 +33,16 @@ def add(url, tags):
     image = Image.new_from_url(url, tags=tags)
     image.save(bucket, table)
     print image.url(bucket)
+
+def find(tags):
+    config = catsnap.Config()
+    config.ensure_config_files_exist()
+    bucket = config.bucket()
+    table = config.table()
+    for tag_name in tags:
+        tag = Tag(tag_name)
+        for filename in tag.get_images(table):
+            print Image.url_for_filename(filename, bucket)
 
 def show_help():
     sys.stderr.write(USAGE)
