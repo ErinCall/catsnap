@@ -11,14 +11,16 @@ from catsnap import config
 class TestConfig():
 
     @patch('catsnap.config.sys')
-    @patch('catsnap.config.os.path')
     @patch('catsnap.config.get_aws_credentials')
     @patch('catsnap.config.get_catsnap_config')
-    def test_ensure_config_files_exist__degenerate_case(self, path,
-            setup_boto, setup_catsnap, sys):
+    def test_ensure_config_files_exist__degenerate_case(self, setup_boto,
+            setup_catsnap, sys):
+        (_, creds) = tempfile.mkstemp()
 
-        path.exists.return_value = True
-        config.ensure_config_files_exist()
+        with patch('catsnap.config.os.path') as path:
+            path.exists.return_value = True
+            with patch('catsnap.config.CREDENTIALS_FILE', creds) as _:
+                config.ensure_config_files_exist()
         eq_(setup_boto.call_count, 0, "get_aws_credentials shouldn't've "
                 "been called")
         eq_(setup_catsnap.call_count, 0, "get_catsnap_config shouldn't've "
