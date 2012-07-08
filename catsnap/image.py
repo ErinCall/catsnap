@@ -10,10 +10,11 @@ class Image():
         self._tags=tags
 
     @classmethod
-    def new_from_url(cls, url):
+    def new_from_url(cls, url, tags=[]):
         response = requests.get(url)
         response.raise_for_status()
-        return cls(response.content, response.headers['content-type'])
+        return cls(response.content, response.headers['content-type'],
+                tags=tags)
 
     def tags(self, *args):
         if args:

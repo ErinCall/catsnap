@@ -5,12 +5,33 @@ import catsnap
 from catsnap import Config
 from catsnap.image import Image
 
+USAGE = """
+usage statement TBD
+"""
+
 def main():
+    if len(sys.argv) < 2:
+        show_help()
+    command = sys.argv[1]
+    if command == 'add':
+        if len(sys.argv) < 4:
+            show_help()
+        add(sys.argv[2], sys.argv[3:])
+    else:
+        show_help()
+
+def add(url, tags):
     config = catsnap.Config()
     config.ensure_config_files_exist()
     bucket = config.bucket()
-    image = Image.new_from_url(sys.argv[1])
-    image.save(bucket)
+    table = config.table()
+    image = Image.new_from_url(url, tags=tags)
+    image.save(bucket, table)
     print image.url(bucket)
 
+def show_help():
+    sys.stderr.write(USAGE)
+    sys.exit(1)
+
 main()
+

@@ -26,14 +26,14 @@ class TestImages():
     @patch('catsnap.image.Image.calculate_filename')
     def test_save__sends_tags_to_dynamo(self, calculate_filename):
         calculate_filename.return_value = 'sewingcat'
-        dynamo = Mock()
+        table = Mock()
         cat_tag = Mock()
         sewing_tag = Mock()
-        dynamo.new_item.side_effect = [ cat_tag, sewing_tag ]
+        table.new_item.side_effect = [ cat_tag, sewing_tag ]
         image = Image('sewing-cat.gif', 'image/gif')
         image.tags('cat', 'sewing')
-        image.save(Mock(), dynamo)
-        dynamo.new_item.assert_has_calls([
+        image.save(Mock(), table)
+        table.new_item.assert_has_calls([
             call(hash_key='cat', attrs={'sewingcat': 'sewingcat'}),
             call(hash_key='sewing', attrs={'sewingcat': 'sewingcat'})])
 
@@ -58,6 +58,11 @@ class TestImages():
 
         image = Image.new_from_url('http://some.url')
         eq_(image.contents, "Ain't no party like a Liz Lemon party")
+
+    @patch('catsnap.image.requests')
+    def test_new_from_url__set_tags(self, requests):
+        image = Image.new_from_url('http://some.url', tags=['funey', 'cat'])
+        eq_(image.tags(), ['funey', 'cat'])
 
     @raises(HTTPError)
     @patch('catsnap.image.requests')
