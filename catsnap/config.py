@@ -3,6 +3,7 @@ import os
 import sys
 import getpass
 import boto
+import ConfigParser
 
 from catsnap import settings
 
@@ -42,13 +43,21 @@ bucket = %s""" % bucket_name
 
 
 def connect():
+    bucket_name = _bucket_name()
     s3 = boto.connect_s3()
     all_buckets = [x.name for x in s3.get_all_buckets()]
-    if settings.BUCKET_BASE not in all_buckets:
-        bucket = s3.create_bucket(settings.BUCKET_BASE)
+    if bucket_name not in all_buckets:
+        bucket = s3.create_bucket(bucket_name)
     else:
-        bucket = s3.get_bucket(settings.BUCKET_BASE)
+        bucket = s3.get_bucket(bucket_name)
     return bucket
+
+def _bucket_name():
+    parser = ConfigParser.ConfigParser()
+    parser.read(CONFIG_FILE)
+    bucket_name = parser.get('catsnap', 'bucket')
+    return bucket_name
+
 
 def _input(*args, **kwargs):
     return raw_input(*args, **kwargs)

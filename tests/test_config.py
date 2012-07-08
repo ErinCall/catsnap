@@ -87,10 +87,12 @@ aws_secret_access_key = secret access key""")
 bucket = catsnap-mcgee""")
 
 class TestConnect():
+    @patch('catsnap.config._bucket_name')
     @patch('catsnap.config.boto')
-    def test_does_not_create_already_existing_bucket(self, mock_boto):
+    def test_does_not_re_create_buckets(self, mock_boto, _bucket_name):
+        _bucket_name.return_value = 'oodles'
         mock_bucket = Mock()
-        mock_bucket.name = settings.BUCKET_BASE
+        mock_bucket.name = 'oodles'
         s3 = Mock()
         s3.get_all_buckets.return_value = [ mock_bucket ]
         s3.get_bucket.return_value = mock_bucket
@@ -100,8 +102,10 @@ class TestConnect():
         eq_(s3.create_bucket.call_count, 0, "shouldn't've created a bucket")
         eq_(bucket, mock_bucket)
 
+    @patch('catsnap.config._bucket_name')
     @patch('catsnap.config.boto')
-    def test_creates_bucket_if_necessary(self, mock_boto):
+    def test_creates_bucket_if_necessary(self, mock_boto, _bucket_name):
+        _bucket_name.return_value = 'galvanized'
         s3 = Mock()
         mock_bucket = Mock()
         s3.create_bucket.return_value = mock_bucket
@@ -109,5 +113,15 @@ class TestConnect():
         mock_boto.connect_s3.return_value = s3
 
         bucket = config.connect()
-        s3.create_bucket.assert_called_with(settings.BUCKET_BASE)
+        s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
+
+    def test_determine_bucket_name(self):
+        (_, conf) = tempfile.mkstemp()
+        with open(conf, 'w') as config_file:
+            config_file.write("""[catsnap]
+bucket = boogles""")
+
+        with patch('catsnap.config.CONFIG_FILE', conf) as _:
+            bucket_name = config._bucket_name()
+        eq_(bucket_name, 'boogles')
