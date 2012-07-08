@@ -8,6 +8,7 @@ setup(name="catsnap",
       author="Andrew Lorente",
       author_email="andrew.lorente@gmail.com",
       packages=['catsnap'],
+      scripts=['scripts/catsnap'],
       install_requires=[
           "boto==2.5.2",
           "requests==0.13.2",
