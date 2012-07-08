@@ -44,7 +44,7 @@ def get_catsnap_config():
 bucket = %s""" % bucket_name
 
 
-def connect():
+def bucket():
     bucket_name = _bucket_name()
     s3 = boto.connect_s3()
     all_buckets = [x.name for x in s3.get_all_buckets()]

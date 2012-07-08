@@ -7,7 +7,7 @@ from catsnap.image import Image
 
 def main():
     catsnap.config.ensure_config_files_exist()
-    bucket = catsnap.config.connect()
+    bucket = catsnap.config.bucket()
     image = Image.new_from_url(sys.argv[1])
     image.save(bucket)
     print image.url(bucket)

@@ -88,7 +88,7 @@ aws_secret_access_key = secret access key""")
         eq_(conf, """[catsnap]
 bucket = catsnap-mcgee""")
 
-class TestConnect():
+class TestGetBucket():
     @patch('catsnap.config._bucket_name')
     @patch('catsnap.config.boto')
     def test_does_not_re_create_buckets(self, mock_boto, _bucket_name):
@@ -100,7 +100,7 @@ class TestConnect():
         s3.get_bucket.return_value = mock_bucket
         mock_boto.connect_s3.return_value = s3
 
-        bucket = config.connect()
+        bucket = config.bucket()
         eq_(s3.create_bucket.call_count, 0, "shouldn't've created a bucket")
         eq_(bucket, mock_bucket)
 
@@ -114,7 +114,7 @@ class TestConnect():
         s3.get_all_buckets.return_value = []
         mock_boto.connect_s3.return_value = s3
 
-        bucket = config.connect()
+        bucket = config.bucket()
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
