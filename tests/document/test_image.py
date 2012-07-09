@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 from mock import patch, Mock, MagicMock
 from nose.tools import eq_
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
+from tests import TestCase
 
 from catsnap.document.image import Image
 
-class TestAddTags():
+class TestAddTags(TestCase):
     def test_sends_to_dynamo(self):
         item = MagicMock()
         table = Mock()

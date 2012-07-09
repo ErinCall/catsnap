@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 from requests.exceptions import HTTPError
 from mock import patch, Mock, call
 from nose.tools import eq_, raises
+from tests import TestCase
 
 from catsnap.image_truck import ImageTruck
 
-class TestImages():
+class TestImages(TestCase):
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_save__uploads_image(self, calculate_filename):
         bucket = Mock()

@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 from mock import patch, Mock, MagicMock
 from nose.tools import eq_
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
+from tests import TestCase
 
 from catsnap.document.tag import Tag
 
-class TestTag():
+class TestTag(TestCase):
     @patch('catsnap.document.Config')
     def test_get_table_creates_table_conection(self, Config):
         config = Mock()
@@ -32,7 +33,7 @@ class TestTag():
         eq_(table, mock_table)
         eq_(config.table.call_count, 0)
 
-class TestAddingFile():
+class TestAddingFile(TestCase):
     def test_sends_to_dynamo(self):
         item = Mock()
         table = Mock()
@@ -61,7 +62,7 @@ class TestAddingFile():
                 [ 'Sewing_cat.gif', 'other_cat.gif' ])
         item.put.assert_called_with()
 
-class TestGetFilenames():
+class TestGetFilenames(TestCase):
     def test_get_filenames(self):
         item = MagicMock()
         item.__getitem__.return_value = ['BADCAFE', 'DEADBEEF']

@@ -4,15 +4,21 @@ import boto
 import tempfile
 from mock import patch, call, Mock
 from nose.tools import eq_
+from tests import TestCase
 
 from catsnap import settings
 from catsnap import Config
 
-class TestConfig():
+class TestConfig(TestCase):
     def test_it_is_a_singleton(self):
         config1 = Config()
         config2 = Config()
         assert config1 is config2
+
+    @patch('catsnap.Config.ensure_config_files_exist')
+    def test_initialization_runs_ensure_config(self, ensure_config):
+        Config()
+        ensure_config.assert_called_with()
 
     @patch('catsnap.sys')
     @patch('catsnap.Config.get_aws_credentials')
@@ -44,7 +50,7 @@ class TestConfig():
         with patch('catsnap.os.path') as path:
             path.exists.side_effect = [ True, False, True, False ]
             with patch('catsnap.Config.CREDENTIALS_FILE', creds) as _:
-                Config().ensure_config_files_exist()
+                Config()
         with open(creds, 'r') as creds_file:
             eq_(creds_file.read(), 'the credentials')
         sys.stdout.write.assert_called_with(
@@ -62,7 +68,7 @@ class TestConfig():
         with patch('catsnap.os.path') as path:
             path.exists.side_effect = [ False, True, False, True ]
             with patch('catsnap.Config.CONFIG_FILE', conf) as _:
-                Config().ensure_config_files_exist()
+                Config()
         with open(conf, 'r') as config_file:
             eq_(config_file.read(), 'the Config')
         sys.stdout.write.assert_called_with(
@@ -114,7 +120,7 @@ table_prefix = booya""")
 bucket = rutabaga
 table_prefix = wootabaga""")
 
-class TestGetBucket():
+class TestGetBucket(TestCase):
     @patch('catsnap.Config._bucket_name')
     @patch('catsnap.boto')
     def test_does_not_re_create_buckets(self, mock_boto, _bucket_name):
@@ -144,7 +150,7 @@ class TestGetBucket():
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
-class TestGetTable():
+class TestGetTable(TestCase):
     @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
     def test_creates_table_if_necessary(self, mock_boto, _table_prefix):
@@ -195,7 +201,7 @@ class TestGetTable():
         eq_(boto.connect_dynamodb.call_count, 0)
 
 
-class TestBuildParser():
+class TestBuildParser(TestCase):
     def test_build_parser(self):
         (_, conf) = tempfile.mkstemp()
         with open(conf, 'w') as config_file:

@@ -22,6 +22,9 @@ class Config(object):
                                 cls, *args, **kwargs)
         return cls._instance
 
+    def __init__(self):
+        self.ensure_config_files_exist()
+
     def ensure_config_files_exist(self):
         if not all(map(os.path.exists, [ self.CONFIG_FILE,
                                          self.CREDENTIALS_FILE ])):
