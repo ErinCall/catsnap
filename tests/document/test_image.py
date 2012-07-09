@@ -53,3 +53,43 @@ class TestAddTags():
         image_with_url.add_tags(['kitten'])
         item.__setitem__.assert_called_with('source_url', 'http://imgur.com')
 
+    def test_get_tags(self):
+        table = Mock()
+        item = MagicMock()
+        item.__getitem__.return_value = ['cat', 'kittycat', 'dancedancedance']
+        table.get_item.return_value = item
+        image = Image('BADBADBADBADBAD')
+        image._stored_table = table
+
+        tags = image.get_tags()
+        eq_(tags, [ 'cat', 'kittycat', 'dancedancedance' ])
+
+    def test_get_tags__returns_none_if_no_such_image(self):
+        table = Mock()
+        table.get_item.side_effect = DynamoDBKeyNotFoundError('no such image')
+        image = Image("TH15I5N0TEVENHEX")
+        image._stored_table = table
+
+        tags = image.get_tags()
+        eq_(tags, [])
+
+    def test_get_source_url(self):
+        table = Mock()
+        item = MagicMock()
+        item.__getitem__.return_value = 'booya.com/woot.gif'
+        table.get_item.return_value = item
+        image = Image('BADD00D')
+        image._stored_table = table
+
+        source_url = image.get_source_url()
+        eq_(source_url, 'booya.com/woot.gif')
+
+    def test_get_source_url__returns_none_if_no_such_image(self):
+        table = Mock()
+        table.get_item.side_effect = DynamoDBKeyNotFoundError('no such image')
+        image = Image("TH15I5N0TEVENHEX")
+        image._stored_table = table
+
+        source_url = image.get_source_url()
+        eq_(source_url, None)
+

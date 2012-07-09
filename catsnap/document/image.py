@@ -22,3 +22,17 @@ class Image(Document):
         if self.source_url is not None:
             item['source_url'] = self.source_url
         item.put()
+
+    def get_tags(self):
+        try:
+            item = self._table().get_item(self.filename)
+        except DynamoDBKeyNotFoundError:
+            return []
+        return item['tags']
+
+    def get_source_url(self):
+        try:
+            item = self._table().get_item(self.filename)
+        except DynamoDBKeyNotFoundError:
+            return None
+        return item['source_url']
