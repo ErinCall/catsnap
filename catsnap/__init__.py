@@ -7,11 +7,23 @@ import ConfigParser
 
 from catsnap import settings
 
-class Config():
+class Config(object):
 
     CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
     CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
     parser = None
+
+    _instance = None
+    _tables = {}
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Config, cls).__new__(
+                                cls, *args, **kwargs)
+        return cls._instance
+
+    def __init__(self):
+        self.ensure_config_files_exist()
 
     def ensure_config_files_exist(self):
         if not all(map(os.path.exists, [ self.CONFIG_FILE,
@@ -43,13 +55,13 @@ aws_secret_access_key = %(key)s""" % {'key_id': key_id, 'key': key}
                 "use '%s'): " % bucket_name)
         bucket_name = actual_bucket_name or bucket_name
 
-        table_name = bucket_name
-        actual_table_name = self._input("Please name your table (leave blank to "
-                "use '%s'): " % table_name)
-        table_name = actual_table_name or table_name
+        table_prefix = bucket_name
+        actual_table_prefix = self._input("Please choose a table prefix "
+                "(leave blank to use '%s'): " % table_prefix)
+        table_prefix = actual_table_prefix or table_prefix
         return """[catsnap]
 bucket = %s
-table = %s""" % (bucket_name, table_name)
+table_prefix = %s""" % (bucket_name, table_prefix)
 
     def bucket(self):
         bucket_name = self._bucket_name()
@@ -61,8 +73,12 @@ table = %s""" % (bucket_name, table_name)
             bucket = s3.get_bucket(bucket_name)
         return bucket
 
-    def table(self):
-        table_name = self._table_name()
+    def table(self, table_name):
+        table_prefix = self._table_prefix()
+        table_name = '%s-%s' % (table_prefix, table_name)
+
+        if table_name in self._tables:
+            return self._tables[table_name]
         dynamo = boto.connect_dynamodb()
         all_tables = dynamo.list_tables()
         if table_name not in all_tables:
@@ -79,8 +95,8 @@ table = %s""" % (bucket_name, table_name)
     def _bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
 
-    def _table_name(self):
-        return self._parser().get('catsnap', 'table')
+    def _table_prefix(self):
+        return self._parser().get('catsnap', 'table_prefix')
 
     def _parser(self):
         if self.parser is None:
