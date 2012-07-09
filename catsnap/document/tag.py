@@ -13,10 +13,10 @@ class Tag(Document):
     def add_file(self, filename):
         try:
             item = self._table().get_item(self.name)
-            item[filename] = filename
+            item['filenames'] = item['filenames'] + [filename]
         except DynamoDBKeyNotFoundError:
-            item = self._table().new_item(hash_key=self.name,
-                    attrs={filename: filename})
+            item = self._table().new_item(hash_key=self.name, attrs={
+                    'filenames': [ filename ]})
         item.put()
 
     def get_filenames(self):
@@ -24,4 +24,4 @@ class Tag(Document):
             item = self._table().get_item(self.name)
         except DynamoDBKeyNotFoundError:
             return []
-        return filter(lambda x: x != 'tag', item.keys())
+        return item['filenames']
