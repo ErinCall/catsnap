@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-import catsnap
+
 from catsnap import Config
-from catsnap.image import Image
-from catsnap.tag import Tag
+from catsnap.image_truck import ImageTruck
+from catsnap.document.tag import Tag
+from catsnap.document.image import Image
 
 USAGE = """
 Usage:
@@ -28,23 +29,25 @@ def main():
         show_help()
 
 def add(url, tags):
-    config = catsnap.Config()
-    config.ensure_config_files_exist()
-    bucket = config.bucket()
-    table = config.table()
-    image = Image.new_from_url(url, tags=tags)
-    image.save(bucket, table)
-    print image.url(bucket)
-
-def find(tags):
-    config = catsnap.Config()
-    config.ensure_config_files_exist()
-    bucket = config.bucket()
-    table = config.table()
+    truck = ImageTruck.new_from_url(url)
+    truck.upload()
+    image = Image(truck.calculate_filename(), truck.source_url)
+    image.add_tags(tags)
     for tag_name in tags:
         tag = Tag(tag_name)
-        for filename in tag.get_images(table):
-            print Image.url_for_filename(filename, bucket)
+        tag.add_file(image.filename)
+
+    print truck.url()
+
+def find(tags):
+    for tag_name in tags:
+        tag = Tag(tag_name)
+        for filename in tag.get_filenames():
+            image = Image(filename)
+            image_tags = ' '.join(image.get_tags())
+            url = ImageTruck.url_for_filename(filename)
+            print '%s   |   %s' % (url, image_tags)
+
 
 def show_help():
     sys.stderr.write(USAGE)
