@@ -7,7 +7,7 @@ from tests import TestCase
 
 from catsnap.image_truck import ImageTruck
 
-class TestImages(TestCase):
+class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_save__uploads_image(self, calculate_filename):
         bucket = Mock()
@@ -16,7 +16,8 @@ class TestImages(TestCase):
         calculate_filename.return_value = 'I am the keymaster'
 
         truck = ImageTruck('Are you the gatekeeper?', 'image/gif', None)
-        truck.upload(bucket, Mock())
+        truck._stored_bucket = bucket
+        truck.upload()
 
         bucket.new_key.assert_called_with('I am the keymaster')
         key.set_contents_from_string.assert_called_with(
@@ -61,11 +62,40 @@ class TestImages(TestCase):
         bucket.name = 'tune-carrier'
 
         truck = ImageTruck('greensleeves', None, None)
-        eq_(truck.url(bucket),
-                'https://s3.amazonaws.com/tune-carrier/greensleeves')
+        truck._stored_bucket = bucket
+        eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
-    def test_url_for_filename(self):
+    @patch('catsnap.image_truck.Config')
+    def test_url_for_filename(self, Config):
         bucket = Mock()
         bucket.name = 'greeble'
-        eq_(ImageTruck.url_for_filename('CAFEBABE', bucket),
+        config = Mock()
+        config.bucket.return_value = bucket
+        Config.return_value = config
+        eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
+
+    @patch('catsnap.image_truck.Config')
+    def test_get_bucket_creates_bucket_connection(self, Config):
+        config = Mock()
+        Config.return_value = config
+        mock_bucket = Mock()
+        config.bucket.return_value = mock_bucket
+
+        truck = ImageTruck(None, None, None)
+        bucket = truck._bucket()
+        eq_(bucket, mock_bucket)
+        eq_(truck._stored_bucket, mock_bucket)
+        config.bucket.assert_called_with()
+
+    @patch('catsnap.image_truck.Config')
+    def test_get_bucket_creates_bucket_connection(self, Config):
+        config = Mock()
+        Config.return_value = config
+        mock_bucket = Mock()
+        truck = ImageTruck(None, None, None)
+        truck._stored_bucket = mock_bucket
+
+        bucket = truck._bucket()
+        eq_(bucket, mock_bucket)
+        eq_(config.table.call_count, 0)

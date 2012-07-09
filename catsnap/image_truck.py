@@ -5,7 +5,11 @@ from __future__ import unicode_literals
 import requests
 import hashlib
 
+from catsnap import Config
+
 class ImageTruck():
+    _stored_bucket = None
+
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
@@ -18,12 +22,16 @@ class ImageTruck():
         return cls(response.content, response.headers['content-type'],
                 url)
 
-    @classmethod
-    def url_for_filename(cls, filename, bucket):
-        return cls._url(filename, bucket.name)
+    def _bucket(self):
+        self._stored_bucket = self._stored_bucket or Config().bucket()
+        return self._stored_bucket
 
-    def upload(self, bucket, table):
-        key = bucket.new_key(self.calculate_filename())
+    @classmethod
+    def url_for_filename(cls, filename):
+        return cls._url(filename, Config().bucket().name)
+
+    def upload(self):
+        key = self._bucket().new_key(self.calculate_filename())
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(self.contents)
         key.make_public()
@@ -33,8 +41,8 @@ class ImageTruck():
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
 
-    def url(self, bucket):
-        return self._url(self.calculate_filename(), bucket.name)
+    def url(self):
+        return self._url(self.calculate_filename(), self._bucket().name)
 
     @classmethod
     def _url(cls, filename, bucket_name):
