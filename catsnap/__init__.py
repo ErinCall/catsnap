@@ -13,6 +13,15 @@ class Config():
     CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
     parser = None
 
+    _instance = None
+    _tables = {}
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Config, cls).__new__(
+                                cls, *args, **kwargs)
+        return cls._instance
+
     def ensure_config_files_exist(self):
         if not all(map(os.path.exists, [ self.CONFIG_FILE,
                                          self.CREDENTIALS_FILE ])):
@@ -64,6 +73,9 @@ table_prefix = %s""" % (bucket_name, table_prefix)
     def table(self, table_name):
         table_prefix = self._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
+
+        if table_name in self._tables:
+            return self._tables[table_name]
         dynamo = boto.connect_dynamodb()
         all_tables = dynamo.list_tables()
         if table_name not in all_tables:

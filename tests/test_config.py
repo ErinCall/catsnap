@@ -178,6 +178,19 @@ class TestGetTable():
         eq_(dynamo.create_table.call_count, 0, "shouldn't've created a table")
         eq_(table, mock_table)
 
+    @patch('catsnap.Config._table_prefix')
+    @patch('catsnap.boto')
+    def test_memoization(self, boto, _table_prefix):
+        _table_prefix.return_value = 'foo'
+        config = Config()
+        mock_table = Mock()
+        config._tables = {'foo-tags': mock_table}
+
+        table = config.table('tags')
+        eq_(table, mock_table)
+        eq_(boto.connect_dynamodb.call_count, 0)
+
+
 class TestBuildParser():
     def test_build_parser(self):
         (_, conf) = tempfile.mkstemp()

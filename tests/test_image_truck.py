@@ -4,18 +4,18 @@ from requests.exceptions import HTTPError
 from mock import patch, Mock, call
 from nose.tools import eq_, raises
 
-from catsnap.image import Image
+from catsnap.image_truck import ImageTruck
 
 class TestImages():
-    @patch('catsnap.image.Image.calculate_filename')
+    @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_save__uploads_image(self, calculate_filename):
         bucket = Mock()
         key = Mock()
         bucket.new_key.return_value = key
         calculate_filename.return_value = 'I am the keymaster'
 
-        image = Image('Are you the gatekeeper?', 'image/gif')
-        image.save(bucket, Mock())
+        truck = ImageTruck('Are you the gatekeeper?', 'image/gif', None)
+        truck.upload(bucket, Mock())
 
         bucket.new_key.assert_called_with('I am the keymaster')
         key.set_contents_from_string.assert_called_with(
@@ -23,65 +23,48 @@ class TestImages():
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_with()
 
-    @patch('catsnap.image.Tag')
-    @patch('catsnap.image.Image.calculate_filename')
-    def test_save__sends_tags_to_dynamo(self, calculate_filename, Tag):
-        calculate_filename.return_value = 'sewingcat'
-        cat_tag = Mock()
-        sewing_tag = Mock()
-        table = Mock()
-        Tag.side_effect = [ cat_tag, sewing_tag ]
-        image = Image('sewing-cat.gif', 'image/gif', ['cat', 'sewing'])
-
-        image.save(Mock(), table)
-        cat_tag.save.assert_called_with(table, 'sewingcat')
-        sewing_tag.save.assert_called_with(table, 'sewingcat')
-
-    @patch('catsnap.image.hashlib')
+    @patch('catsnap.image_truck.hashlib')
     def test_calculate_filename(self, hashlib):
         sha = Mock()
         sha.hexdigest.return_value = 'indigestible'
         hashlib.sha1.return_value = sha
-        image = Image('razors', None)
-        eq_(image.calculate_filename(), 'indigestible')
+        truck = ImageTruck('razors', None, None)
+        eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
 
-    @patch('catsnap.image.requests')
+    @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
         response = Mock()
         response.content = "Ain't no party like a Liz Lemon party"
         response.headers = {'content-type': 'party'}
         requests.get.return_value = response
 
-        image = Image.new_from_url('http://some.url')
-        eq_(image.contents, "Ain't no party like a Liz Lemon party")
-
-    @patch('catsnap.image.requests')
-    def test_new_from_url__set_tags(self, requests):
-        image = Image.new_from_url('http://some.url', tags=['funey', 'cat'])
-        eq_(image.tags(), ['funey', 'cat'])
+        truck = ImageTruck.new_from_url('http://some.url')
+        eq_(truck.contents, "Ain't no party like a Liz Lemon party")
+        eq_(truck.content_type, "party")
+        eq_(truck.source_url, "http://some.url")
 
     @raises(HTTPError)
-    @patch('catsnap.image.requests')
+    @patch('catsnap.image_truck.requests')
     def test_new_from_url__raises_on_non_200(self, requests):
         response = Mock()
         response.raise_for_status.side_effect = HTTPError
         requests.get.return_value = response
 
-        Image.new_from_url('http://some.url')
+        ImageTruck.new_from_url('http://some.url')
 
-    @patch('catsnap.image.Image.calculate_filename')
+    @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url(self, calculate_filename):
         calculate_filename.return_value = 'greensleeves'
         bucket = Mock()
         bucket.name = 'tune-carrier'
 
-        image = Image('greensleeves', None)
-        eq_(image.url(bucket),
+        truck = ImageTruck('greensleeves', None, None)
+        eq_(truck.url(bucket),
                 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
     def test_url_for_filename(self):
         bucket = Mock()
         bucket.name = 'greeble'
-        eq_(Image.url_for_filename('CAFEBABE', bucket),
+        eq_(ImageTruck.url_for_filename('CAFEBABE', bucket),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
