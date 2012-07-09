@@ -86,12 +86,12 @@ aws_secret_access_key = secret access key""")
         _input.assert_has_calls([
             call("Please name your bucket (leave blank to use "
                 "'catsnap-mcgee'): "),
-            call("Please name your table (leave blank to use "
+            call("Please choose a table prefix (leave blank to use "
                 "'catsnap-mcgee'): "),
         ])
         eq_(conf, """[catsnap]
 bucket = catsnap-mcgee
-table = catsnap-mcgee""")
+table_prefix = catsnap-mcgee""")
 
     @patch('catsnap.os')
     @patch('catsnap.Config._input')
@@ -102,13 +102,13 @@ table = catsnap-mcgee""")
         conf = Config().get_catsnap_config()
         eq_(conf, """[catsnap]
 bucket = booya
-table = booya""")
+table_prefix = booya""")
 
         _input.side_effect = ['rutabaga', 'wootabaga']
         conf = Config().get_catsnap_config()
         eq_(conf, """[catsnap]
 bucket = rutabaga
-table = wootabaga""")
+table_prefix = wootabaga""")
 
 class TestGetBucket():
     @patch('catsnap.Config._bucket_name')
@@ -141,10 +141,10 @@ class TestGetBucket():
         eq_(bucket, mock_bucket)
 
 class TestGetTable():
-    @patch('catsnap.Config._table_name')
+    @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
-    def test_creates_table_if_necessary(self, mock_boto, _table_name):
-        _table_name.return_value = 'myemmatable'
+    def test_creates_table_if_necessary(self, mock_boto, _table_prefix):
+        _table_prefix.return_value = 'myemmatable'
         dynamo = Mock()
         mock_table = Mock()
         schema = Mock()
@@ -153,28 +153,28 @@ class TestGetTable():
         dynamo.create_schema.return_value = schema
         mock_boto.connect_dynamodb.return_value = dynamo
 
-        table = Config().table()
+        table = Config().table('things')
         dynamo.create_schema.assert_called_with(
                 hash_key_name='tag',
                 hash_key_proto_value='S')
-        dynamo.create_table.assert_called_with(name='myemmatable',
+        dynamo.create_table.assert_called_with(name='myemmatable-things',
                 schema=schema,
                 read_units=3,
                 write_units=5)
         eq_(table, mock_table)
 
-    @patch('catsnap.Config._table_name')
+    @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
-    def test_does_not_re_create_tables(self, mock_boto, _table_name):
-        _table_name.return_value = 'rooibos'
+    def test_does_not_re_create_tables(self, mock_boto, _table_prefix):
+        _table_prefix.return_value = 'rooibos'
         mock_table = Mock()
-        mock_table.name = 'rooibos'
+        mock_table.name = 'rooibos-things'
         dynamo = Mock()
-        dynamo.list_tables.return_value = [ 'rooibos' ]
+        dynamo.list_tables.return_value = [ 'rooibos-things' ]
         dynamo.get_table.return_value = mock_table
         mock_boto.connect_dynamodb.return_value = dynamo
 
-        table = Config().table()
+        table = Config().table('things')
         eq_(dynamo.create_table.call_count, 0, "shouldn't've created a table")
         eq_(table, mock_table)
 
@@ -184,12 +184,12 @@ class TestBuildParser():
         with open(conf, 'w') as config_file:
             config_file.write("""[catsnap]
 bucket = boogles
-table = bugglez""")
+table_prefix = bugglez""")
 
         config = Config()
         with patch('catsnap.Config.CONFIG_FILE', conf) as _:
             parser = config._parser()
         eq_(parser.get('catsnap', 'bucket'), 'boogles')
-        eq_(parser.get('catsnap', 'table'), 'bugglez')
+        eq_(parser.get('catsnap', 'table_prefix'), 'bugglez')
         eq_(config._bucket_name(), 'boogles')
-        eq_(config._table_name(), 'bugglez')
+        eq_(config._table_prefix(), 'bugglez')
