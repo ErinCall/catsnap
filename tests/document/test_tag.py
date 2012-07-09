@@ -35,7 +35,7 @@ class TestTag(TestCase):
 
 class TestAddingFile(TestCase):
     def test_sends_to_dynamo(self):
-        item = Mock()
+        item = MagicMock()
         table = Mock()
         table.get_item.side_effect = DynamoDBKeyNotFoundError('no such tag')
         table.new_item.return_value = item
@@ -43,14 +43,14 @@ class TestAddingFile(TestCase):
         tag._stored_table = table
 
         tag.add_file('Sewing_cat.gif')
-        table.new_item.assert_called_with(hash_key='cat', attrs ={
-                'filenames': [ 'Sewing_cat.gif' ]})
+        table.new_item.assert_called_with(hash_key='cat', attrs ={})
+        item.__setitem__.assert_called_with('filenames', '["Sewing_cat.gif"]')
         item.put.assert_called_with()
 
     def test_updates_existing_tag(self):
         table = Mock()
         item = MagicMock()
-        item.__getitem__.return_value = [ 'Sewing_cat.gif' ]
+        item.__getitem__.return_value = '[ "Sewing_cat.gif" ]'
         table.get_item.return_value = item
 
         tag = Tag('cat')
@@ -59,13 +59,13 @@ class TestAddingFile(TestCase):
 
         eq_(table.new_item.call_count, 0, "shouldn't've made a new entry")
         item.__setitem__.assert_called_with('filenames',
-                [ 'Sewing_cat.gif', 'other_cat.gif' ])
+                '["Sewing_cat.gif", "other_cat.gif"]')
         item.put.assert_called_with()
 
 class TestGetFilenames(TestCase):
     def test_get_filenames(self):
         item = MagicMock()
-        item.__getitem__.return_value = ['BADCAFE', 'DEADBEEF']
+        item.__getitem__.return_value = '["BADCAFE", "DEADBEEF"]'
         table = Mock()
         table.get_item.return_value = item
         tag = Tag('cat')

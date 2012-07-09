@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import json
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
 from catsnap.document import Document
@@ -12,15 +13,16 @@ class Image(Document):
         self.source_url = source_url
 
     def add_tags(self, tags):
+        existing_tags = []
         try:
             item = self._table().get_item(self.filename)
-            item['tags'] = item['tags'] + tags
+            existing_tags = json.loads(item['tags'])
         except DynamoDBKeyNotFoundError:
             item = self._table().new_item(hash_key=self.filename, attrs={
-                'tags': tags,
                 'source_url': self.source_url})
         if self.source_url is not None:
             item['source_url'] = self.source_url
+        item['tags'] = json.dumps(existing_tags + tags)
         item.put()
 
     def get_tags(self):
@@ -28,7 +30,7 @@ class Image(Document):
             item = self._table().get_item(self.filename)
         except DynamoDBKeyNotFoundError:
             return []
-        return item['tags']
+        return json.loads(item['tags'])
 
     def get_source_url(self):
         try:

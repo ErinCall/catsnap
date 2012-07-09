@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock, MagicMock, call
 from nose.tools import eq_
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 from tests import TestCase
@@ -18,14 +18,14 @@ class TestAddTags(TestCase):
 
         image.add_tags(['cat', 'kitten'])
         table.new_item.assert_called_with(hash_key='deadbeef', attrs = {
-            'tags': [ 'cat', 'kitten' ],
             'source_url': 'mlkshk.com/kitty'})
+        item.__setitem__.assert_called_with('tags', '["cat", "kitten"]')
         item.put.assert_called_with()
 
     def test_appends_tags_to_existing_image(self):
         table = Mock()
         item = MagicMock()
-        item.__getitem__.return_value = ['cat']
+        item.__getitem__.return_value = '["cat"]'
         table.get_item.return_value = item
 
         image = Image('BABB1E5')
@@ -33,7 +33,7 @@ class TestAddTags(TestCase):
         image.add_tags(['kitten'])
 
         eq_(table.new_item.call_count, 0, "shouldn't've made a new entry")
-        item.__setitem__.assert_called_with('tags', ['cat', 'kitten'])
+        item.__setitem__.assert_called_with('tags', '["cat", "kitten"]')
         item.put.assert_called_with()
 
     def test_overwrites_source_url_if_present(self):
@@ -41,7 +41,7 @@ class TestAddTags(TestCase):
         item = MagicMock()
         def getitem(key):
             if key == 'tags':
-                return [ 'cat' ]
+                return '["cat"]'
             elif key == 'source_url':
                 return 'http://mlkshk.com'
             else:
@@ -52,18 +52,20 @@ class TestAddTags(TestCase):
         image_with_url._stored_table = table
 
         image_with_url.add_tags(['kitten'])
-        item.__setitem__.assert_called_with('source_url', 'http://imgur.com')
+        item.__setitem__.assert_has_calls([
+            call('source_url', 'http://imgur.com'),
+            call('tags', '["cat", "kitten"]')])
 
     def test_get_tags(self):
         table = Mock()
         item = MagicMock()
-        item.__getitem__.return_value = ['cat', 'kittycat', 'dancedancedance']
+        item.__getitem__.return_value = '["cat", "kittycat", "dancedance"]'
         table.get_item.return_value = item
         image = Image('BADBADBADBADBAD')
         image._stored_table = table
 
         tags = image.get_tags()
-        eq_(tags, [ 'cat', 'kittycat', 'dancedancedance' ])
+        eq_(tags, ['cat', 'kittycat', 'dancedance'])
 
     def test_get_tags__returns_none_if_no_such_image(self):
         table = Mock()
