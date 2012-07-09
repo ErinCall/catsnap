@@ -36,6 +36,18 @@ class TestAddTags(TestCase):
         item.__setitem__.assert_called_with('tags', '["cat", "kitten"]')
         item.put.assert_called_with()
 
+    def test_appended_tags_are_unique(self):
+        table = Mock()
+        item = MagicMock()
+        item.__getitem__.return_value = '["cat"]'
+        table.get_item.return_value = item
+
+        image = Image('BABB1E5')
+        image._stored_table = table
+        image.add_tags(['cat'])
+
+        item.__setitem__.assert_called_with('tags', '["cat"]')
+
     def test_overwrites_source_url_if_present(self):
         table = Mock()
         item = MagicMock()

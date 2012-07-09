@@ -4,6 +4,7 @@ import json
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
 from catsnap.document import Document
+from catsnap.ordered_set import OrderedSet
 
 class Image(Document):
     _table_name = 'image'
@@ -22,7 +23,7 @@ class Image(Document):
                 'source_url': self.source_url})
         if self.source_url is not None:
             item['source_url'] = self.source_url
-        item['tags'] = json.dumps(existing_tags + tags)
+        item['tags'] = json.dumps(list(OrderedSet(existing_tags + tags)))
         item.put()
 
     def get_tags(self):

@@ -62,6 +62,17 @@ class TestAddingFile(TestCase):
                 '["Sewing_cat.gif", "other_cat.gif"]')
         item.put.assert_called_with()
 
+    def test_appended_filenames_are_unique(self):
+        table = Mock()
+        item = MagicMock()
+        item.__getitem__.return_value = '[ "Sewing_cat.gif" ]'
+        table.get_item.return_value = item
+
+        tag = Tag('cat')
+        tag._stored_table = table
+        tag.add_file('Sewing_cat.gif')
+        item.__setitem__.assert_called_with('filenames', '["Sewing_cat.gif"]')
+
 class TestGetFilenames(TestCase):
     def test_get_filenames(self):
         item = MagicMock()

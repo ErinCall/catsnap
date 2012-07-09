@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import json
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
+from catsnap.ordered_set import OrderedSet
 from catsnap.document import Document
 
 class Tag(Document):
@@ -19,7 +20,8 @@ class Tag(Document):
         except DynamoDBKeyNotFoundError:
             item = self._table().new_item(hash_key=self.name, attrs={})
 
-        item['filenames'] = json.dumps(existing_filenames + [filename])
+        item['filenames'] = json.dumps(list(OrderedSet(existing_filenames +
+                                                       [filename])))
         item.put()
 
     def get_filenames(self):
