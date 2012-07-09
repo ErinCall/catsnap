@@ -7,7 +7,7 @@ import ConfigParser
 
 from catsnap import settings
 
-class Config():
+class Config(object):
 
     CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
     CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')

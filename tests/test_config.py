@@ -9,6 +9,10 @@ from catsnap import settings
 from catsnap import Config
 
 class TestConfig():
+    def test_it_is_a_singleton(self):
+        config1 = Config()
+        config2 = Config()
+        assert config1 is config2
 
     @patch('catsnap.sys')
     @patch('catsnap.Config.get_aws_credentials')
