@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 import sys
+import time
 
 from catsnap import Config
 from catsnap.image_truck import ImageTruck
 from catsnap.document.tag import Tag
 from catsnap.document.image import Image
+
+from boto.exception import DynamoDBResponseError
 
 USAGE = """
 Usage:
@@ -53,5 +56,20 @@ def show_help():
     sys.stderr.write(USAGE)
     sys.exit(1)
 
-main()
+try:
+    main()
+except DynamoDBResponseError, e:
+    if e.status == 400 and e.error_code == u'ResourceNotFoundException':
+        sys.stderr.write("""
+######
+######
+######
+I caught a ResourceNotFoundException while trying to interact with DynamoDB.
+This can happen sometimes right after creating a new DB table--it takes a while
+before the table is ready for queries. Please wait a bit and try again...
+######
+######
+######
+""")
+    raise
 
