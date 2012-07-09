@@ -6,14 +6,19 @@ Catsnap is a tool for managing your pictures. Never again will you find yourself
 How it works
 ------------
 
-Catsnap uses Amazon S3 and DynamoDb to store and organize your images. Images are hosted for public access on S3. Each image can have one or more tags associated with it.
+Catsnap uses Amazon S3 and DynamoDb to store and organize your images. Images are hosted for public access on S3, and each image can have one or more tags associated with it.
 
-Installation
-------------
+Once you store an image, you can look it up by its tags. Easy!
 
-* git clone https://github.com/AndrewLorente/catsnap.git
-* cd catsnap
-* python setup.py install
+Installation and Setup
+----------------------
+
+* install catsnap: ``pip install catsnap``
+* This will install catsnap to ``/usr/local/share/python``. Make sure it's in your $PATH by adding this line to your ``.bashrc`` or ``.bash_profile``:
+  - ``export PATH=/usr/local/share/python:$PATH``
+* `Sign up for an Amazon Web Services account <https://aws-portal.amazon.com/gp/aws/developer/registration/index.html>`_.
+* Make sure your're signed up for S3 and DynamoDB (you typically are by default).
+* the catsnap script will take care of all other setup when it first runs.
 
 Using Catsnap
 -------------
