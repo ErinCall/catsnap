@@ -74,16 +74,14 @@ except DynamoDBResponseError, e:
     if e.status == 400 and e.error_code == u'ResourceNotFoundException':
         sys.stderr.write("""
 ######
-######
-######
 I caught a ResourceNotFoundException while trying to interact with DynamoDB.
 This may mean that you need to run `catsnap setup`. This can also happen
 sometimes right after creating a new DB table--it takes a while before the
 table is ready for queries. If you've run setup recently, please wait a bit
 and try again...
 ######
-######
-######
 """)
-    raise
+        sys.exit(1)
+    else:
+        raise
 
