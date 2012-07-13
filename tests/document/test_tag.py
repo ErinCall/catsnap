@@ -7,32 +7,6 @@ from tests import TestCase
 
 from catsnap.document.tag import Tag
 
-class TestTag(TestCase):
-    @patch('catsnap.document.Config')
-    def test_get_table_creates_table_conection(self, Config):
-        config = Mock()
-        Config.return_value = config
-        mock_table = Mock()
-        config.table.return_value = mock_table
-
-        tag = Tag('cats')
-        table = tag._table()
-        eq_(tag._stored_table, mock_table)
-        eq_(table, mock_table)
-        config.table.assert_called_with('tag')
-
-    @patch('catsnap.document.Config')
-    def test_get_table_is_memoized(self, Config):
-        config = Mock()
-        Config.return_value = config
-        tag = Tag('dogs')
-        mock_table = Mock()
-        tag._stored_table = mock_table
-
-        table = tag._table()
-        eq_(table, mock_table)
-        eq_(config.table.call_count, 0)
-
 class TestAddingFile(TestCase):
     def test_sends_to_dynamo(self):
         item = MagicMock()
