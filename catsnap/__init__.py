@@ -6,6 +6,7 @@ import boto
 import ConfigParser
 
 from catsnap import settings
+from boto.exception import DynamoDBResponseError
 
 class Config(object):
 
@@ -73,6 +74,25 @@ table_prefix = %s""" % (bucket_name, table_prefix)
             bucket = s3.get_bucket(bucket_name)
         return bucket
 
+    def create_table(self, table_name):
+        table_prefix = self._table_prefix()
+        table_name = '%s-%s' % (table_prefix, table_name)
+
+        dynamo = boto.connect_dynamodb()
+        schema = dynamo.create_schema(hash_key_name='tag',
+                hash_key_proto_value='S')
+        try:
+            table = dynamo.create_table(name=table_name,
+                    schema=schema,
+                    read_units=3,
+                    write_units=5)
+        except DynamoDBResponseError, e:
+            if e.error_code == 'ResourceInUseException':
+                return self.table(table_name)
+            else:
+                raise
+        return table
+
     def table(self, table_name):
         table_prefix = self._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
@@ -80,17 +100,7 @@ table_prefix = %s""" % (bucket_name, table_prefix)
         if table_name in self._tables:
             return self._tables[table_name]
         dynamo = boto.connect_dynamodb()
-        all_tables = dynamo.list_tables()
-        if table_name not in all_tables:
-            schema = dynamo.create_schema(hash_key_name='tag',
-                    hash_key_proto_value='S')
-            table = dynamo.create_table(name=table_name,
-                    schema=schema,
-                    read_units=3,
-                    write_units=5)
-        else:
-            table = dynamo.get_table(table_name)
-        return table
+        return dynamo.get_table(table_name)
 
     def _bucket_name(self):
         return self._parser().get('catsnap', 'bucket')

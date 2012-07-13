@@ -14,6 +14,7 @@ USAGE = """
 Usage:
     catsnap add [image_url] tag1 tag2 ...
     catsnap find tag1 tag2 ...
+    catsnap setup
 """
 
 def main():
@@ -28,6 +29,10 @@ def main():
         if len(sys.argv) < 3:
             show_help()
         find(sys.argv[2:])
+    elif command == 'setup':
+        if len(sys.argv) > 2:
+            show_help()
+        setup()
     else:
         show_help()
 
@@ -51,6 +56,13 @@ def find(tags):
             url = ImageTruck.url_for_filename(filename)
             print '%s   |   %s' % (url, image_tags)
 
+def setup():
+    Tag.create()
+    Image.create()
+    sys.stdout.write("""
+I've created image and tag tables. Dynamodb tables take some time after being
+created before they're available for use--please wait a minute to add an image.
+""")
 
 def show_help():
     sys.stderr.write(USAGE)
@@ -65,8 +77,10 @@ except DynamoDBResponseError, e:
 ######
 ######
 I caught a ResourceNotFoundException while trying to interact with DynamoDB.
-This can happen sometimes right after creating a new DB table--it takes a while
-before the table is ready for queries. Please wait a bit and try again...
+This may mean that you need to run `catsnap setup`. This can also happen
+sometimes right after creating a new DB table--it takes a while before the
+table is ready for queries. If you've run setup recently, please wait a bit
+and try again...
 ######
 ######
 ######

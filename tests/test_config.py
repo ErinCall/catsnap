@@ -153,28 +153,6 @@ class TestGetBucket(TestCase):
 class TestGetTable(TestCase):
     @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
-    def test_creates_table_if_necessary(self, mock_boto, _table_prefix):
-        _table_prefix.return_value = 'myemmatable'
-        dynamo = Mock()
-        mock_table = Mock()
-        schema = Mock()
-        dynamo.create_table.return_value = mock_table
-        dynamo.list_tables.return_value = []
-        dynamo.create_schema.return_value = schema
-        mock_boto.connect_dynamodb.return_value = dynamo
-
-        table = Config().table('things')
-        dynamo.create_schema.assert_called_with(
-                hash_key_name='tag',
-                hash_key_proto_value='S')
-        dynamo.create_table.assert_called_with(name='myemmatable-things',
-                schema=schema,
-                read_units=3,
-                write_units=5)
-        eq_(table, mock_table)
-
-    @patch('catsnap.Config._table_prefix')
-    @patch('catsnap.boto')
     def test_does_not_re_create_tables(self, mock_boto, _table_prefix):
         _table_prefix.return_value = 'rooibos'
         mock_table = Mock()
@@ -200,6 +178,42 @@ class TestGetTable(TestCase):
         eq_(table, mock_table)
         eq_(boto.connect_dynamodb.call_count, 0)
 
+class TestCreateTable(TestCase):
+    @patch('catsnap.Config._table_prefix')
+    @patch('catsnap.boto')
+    def test_create_table(self, mock_boto, _table_prefix):
+        _table_prefix.return_value = 'myemmatable'
+        dynamo = Mock()
+        mock_table = Mock()
+        schema = Mock()
+        dynamo.create_table.return_value = mock_table
+        dynamo.create_schema.return_value = schema
+        mock_boto.connect_dynamodb.return_value = dynamo
+
+        table = Config().create_table('things')
+        dynamo.create_schema.assert_called_with(
+                hash_key_name='tag',
+                hash_key_proto_value='S')
+        dynamo.create_table.assert_called_with(name='myemmatable-things',
+                schema=schema,
+                read_units=3,
+                write_units=5)
+        eq_(table, mock_table)
+
+    @patch('catsnap.Config.table')
+    @patch('catsnap.boto')
+    def test_no_error_if_table_exists(self, mock_boto, table):
+#        boto.exception.DynamoDBResponseError: DynamoDBResponseError: 400 Bad Request
+#{u'message': u'Attempt to change a resource which is still in use: Duplicate table name: catsnap-andrewlorente-image', u'__type': u'com.amazonaws.dynamodb.v20111205#ResourceInUseException'}
+        dynamo = Mock()
+        error = boto.exception.DynamoDBResponseError(400, 'table exists')
+        error.error_code = 'ResourceInUseException'
+        dynamo.create_table.side_effect = error
+        mock_boto.connect_dynamodb.return_value = dynamo
+        table.return_value = 'this is the table'
+
+        created_table = Config().create_table('things')
+        eq_(created_table, 'this is the table')
 
 class TestBuildParser(TestCase):
     def test_build_parser(self):
