@@ -14,11 +14,11 @@ Installation and Setup
 ----------------------
 
 * install catsnap: ``pip install catsnap``
-* This will install catsnap to ``/usr/local/share/python``. Make sure it's in your $PATH by adding this line to your ``.bashrc`` or ``.bash_profile``:
+* This may install catsnap to ``/usr/local/share/python``. If you're getting 'command not found' errors, make sure catsnap is in your $PATH by adding this line to your ``.bashrc`` or ``.bash_profile``:
   - ``export PATH=/usr/local/share/python:$PATH``
 * `Sign up for an Amazon Web Services account <https://aws-portal.amazon.com/gp/aws/developer/registration/index.html>`_.
-* Make sure your're signed up for S3 and DynamoDB (you typically are by default).
-* the catsnap script will take care of all other setup when it first runs.
+* Make sure you're signed up for S3 and DynamoDB (you typically are by default).
+* run ``catsnap setup`` and the catsnap script will take care of all other setup.
 
 Using Catsnap
 -------------
