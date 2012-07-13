@@ -14,7 +14,7 @@ setup(name="catsnap",
           "boto==2.5.2",
           "requests==0.13.2",
 
-          "mock==1.0.0a2",
+          "mock==0.8",
           "nose==1.1.2",
           ],
       )
