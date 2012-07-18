@@ -150,6 +150,22 @@ class TestGetBucket(TestCase):
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
+    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.boto')
+    def test_get_bucket_is_memoized(self, mock_boto, _bucket_name):
+        _bucket_name.return_value = 'oodles'
+        mock_bucket = Mock()
+        mock_bucket.name = 'oodles'
+        s3 = Mock()
+        s3.get_all_buckets.return_value = [ mock_bucket ]
+        s3.get_bucket.side_effect = [ 1, 2 ]
+        mock_boto.connect_s3.return_value = s3
+
+        bucket1 = Config().bucket()
+        bucket2 = Config().bucket()
+        assert bucket1 is bucket2, 'multiple s3 connections were established'
+        eq_(s3.get_bucket.call_count, 1)
+
 class TestGetTable(TestCase):
     @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
@@ -201,7 +217,7 @@ class TestGetTable(TestCase):
         eq_(boto.connect_dynamodb.call_count, 0)
 
 
-class TestGetDynamoDB(TestCase):
+class TestGetConnections(TestCase):
     @patch('catsnap.boto')
     def test_get_dynamodb(self, boto):
         Config().get_dynamodb()
@@ -215,6 +231,20 @@ class TestGetDynamoDB(TestCase):
 
         assert dynamo1 is dynamo2, 'different connections were established'
         eq_(boto.connect_dynamodb.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_s3(self, boto):
+        Config().get_s3()
+        eq_(boto.connect_s3.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_s3__is_memoized(self, boto):
+        boto.connect_dynamodb.side_effect = [1, 2]
+        sss1 = Config().get_s3()
+        sss2 = Config().get_s3()
+
+        assert sss1 is sss2, 'different connections were established'
+        eq_(boto.connect_s3.call_count, 1)
 
 
 class TestBuildParser(TestCase):

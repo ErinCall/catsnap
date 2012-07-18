@@ -15,7 +15,10 @@ class Config(object):
 
     _instance = None
     _tables = {}
+    _bucket = None
+
     _dynamo_connection = None
+    _s3_connection = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -65,14 +68,15 @@ bucket = %s
 table_prefix = %s""" % (bucket_name, table_prefix)
 
     def bucket(self):
-        bucket_name = self._bucket_name()
-        s3 = boto.connect_s3()
-        all_buckets = [x.name for x in s3.get_all_buckets()]
-        if bucket_name not in all_buckets:
-            bucket = s3.create_bucket(bucket_name)
-        else:
-            bucket = s3.get_bucket(bucket_name)
-        return bucket
+        if not self._bucket:
+            bucket_name = self._bucket_name()
+            s3 = self.get_s3()
+            all_buckets = [x.name for x in s3.get_all_buckets()]
+            if bucket_name not in all_buckets:
+                self._bucket = s3.create_bucket(bucket_name)
+            else:
+                self._bucket = s3.get_bucket(bucket_name)
+        return self._bucket
 
     def table(self, table_name):
         table_prefix = self._table_prefix()
@@ -100,6 +104,11 @@ table_prefix = %s""" % (bucket_name, table_prefix)
         if not self._dynamo_connection:
             self._dynamo_connection = boto.connect_dynamodb()
         return self._dynamo_connection
+
+    def get_s3(self):
+        if not self._s3_connection:
+            self._s3_connection = boto.connect_s3()
+        return self._s3_connection
 
     def _bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
