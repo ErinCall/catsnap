@@ -17,9 +17,10 @@ class TestAddTags(TestCase):
         image._stored_table = table
 
         image.add_tags(['cat', 'kitten'])
-        table.new_item.assert_called_with(hash_key='deadbeef', attrs = {
-            'source_url': 'mlkshk.com/kitty'})
-        item.__setitem__.assert_called_with('tags', '["cat", "kitten"]')
+        table.new_item.assert_called_with(hash_key='deadbeef', attrs={})
+        item.__setitem__.assert_has_calls([
+                call('source_url', 'mlkshk.com/kitty'),
+                call('tags', '["cat", "kitten"]')])
         item.put.assert_called_with()
 
     def test_appends_tags_to_existing_image(self):

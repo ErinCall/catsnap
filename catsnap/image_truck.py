@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 import requests
 import hashlib
+import subprocess
+import re
 
 from catsnap import Config
 
@@ -21,6 +23,26 @@ class ImageTruck():
         response.raise_for_status()
         return cls(response.content, response.headers['content-type'],
                 url)
+
+    @classmethod
+    def new_from_file(cls, filename):
+        with open(filename, 'r') as image_file:
+            contents = image_file.read()
+        file_info = subprocess.check_output(['file', filename])
+        match = re.search(r'(\w+) image data', file_info)
+        if not match:
+            raise TypeError("'%s' doesn't seem to be an image file" % filename)
+        filetype = match.groups()[0].lower()
+
+        return cls(contents, 'image/'+filetype, None)
+
+    @classmethod
+    def new_from_something(cls, path):
+        url = requests.utils.urlparse(path)
+        if url.scheme:
+            return cls.new_from_url(path)
+        else:
+            return cls.new_from_file(path)
 
     def _bucket(self):
         self._stored_bucket = self._stored_bucket or Config().bucket()
