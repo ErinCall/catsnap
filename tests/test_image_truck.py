@@ -55,14 +55,15 @@ class TestImageTruck(TestCase):
 
         ImageTruck.new_from_url('http://some.url')
 
+    @patch('catsnap.image_truck.Config')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url(self, calculate_filename):
+    def test_url(self, calculate_filename, Config):
+        config = Mock()
+        config.bucket_name.return_value = 'tune-carrier'
+        Config.return_value = config
         calculate_filename.return_value = 'greensleeves'
-        bucket = Mock()
-        bucket.name = 'tune-carrier'
 
         truck = ImageTruck('greensleeves', None, None)
-        truck._stored_bucket = bucket
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
     @patch('catsnap.image_truck.Config')

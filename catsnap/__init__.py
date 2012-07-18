@@ -69,7 +69,7 @@ table_prefix = %s""" % (bucket_name, table_prefix)
 
     def bucket(self):
         if not self._bucket:
-            bucket_name = self._bucket_name()
+            bucket_name = self.bucket_name()
             s3 = self.get_s3()
             all_buckets = [x.name for x in s3.get_all_buckets()]
             if bucket_name not in all_buckets:
@@ -110,7 +110,7 @@ table_prefix = %s""" % (bucket_name, table_prefix)
             self._s3_connection = boto.connect_s3()
         return self._s3_connection
 
-    def _bucket_name(self):
+    def bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
 
     def _table_prefix(self):

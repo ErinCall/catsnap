@@ -121,10 +121,10 @@ bucket = rutabaga
 table_prefix = wootabaga""")
 
 class TestGetBucket(TestCase):
-    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
-    def test_does_not_re_create_buckets(self, mock_boto, _bucket_name):
-        _bucket_name.return_value = 'oodles'
+    def test_does_not_re_create_buckets(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'oodles'
         mock_bucket = Mock()
         mock_bucket.name = 'oodles'
         s3 = Mock()
@@ -136,10 +136,10 @@ class TestGetBucket(TestCase):
         eq_(s3.create_bucket.call_count, 0, "shouldn't've created a bucket")
         eq_(bucket, mock_bucket)
 
-    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
-    def test_creates_bucket_if_necessary(self, mock_boto, _bucket_name):
-        _bucket_name.return_value = 'galvanized'
+    def test_creates_bucket_if_necessary(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'galvanized'
         s3 = Mock()
         mock_bucket = Mock()
         s3.create_bucket.return_value = mock_bucket
@@ -150,10 +150,10 @@ class TestGetBucket(TestCase):
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
 
-    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
-    def test_get_bucket_is_memoized(self, mock_boto, _bucket_name):
-        _bucket_name.return_value = 'oodles'
+    def test_get_bucket_is_memoized(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'oodles'
         mock_bucket = Mock()
         mock_bucket.name = 'oodles'
         s3 = Mock()
@@ -260,5 +260,5 @@ table_prefix = bugglez""")
             parser = config._parser()
         eq_(parser.get('catsnap', 'bucket'), 'boogles')
         eq_(parser.get('catsnap', 'table_prefix'), 'bugglez')
-        eq_(config._bucket_name(), 'boogles')
+        eq_(config.bucket_name(), 'boogles')
         eq_(config._table_prefix(), 'bugglez')
