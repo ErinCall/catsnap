@@ -201,6 +201,22 @@ class TestGetTable(TestCase):
         eq_(boto.connect_dynamodb.call_count, 0)
 
 
+class TestGetDynamoDB(TestCase):
+    @patch('catsnap.boto')
+    def test_get_dynamodb(self, boto):
+        Config().get_dynamodb()
+        eq_(boto.connect_dynamodb.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_dynamodb__is_memoized(self, boto):
+        boto.connect_dynamodb.side_effect = [1, 2]
+        dynamo1 = Config().get_dynamodb()
+        dynamo2 = Config().get_dynamodb()
+
+        assert dynamo1 is dynamo2, 'different connections were established'
+        eq_(boto.connect_dynamodb.call_count, 1)
+
+
 class TestBuildParser(TestCase):
     def test_build_parser(self):
         (_, conf) = tempfile.mkstemp()

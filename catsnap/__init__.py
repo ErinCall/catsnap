@@ -15,6 +15,7 @@ class Config(object):
 
     _instance = None
     _tables = {}
+    _dynamo_connection = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -79,7 +80,7 @@ table_prefix = %s""" % (bucket_name, table_prefix)
 
         if table_name in self._tables:
             return self._tables[table_name]
-        dynamo = boto.connect_dynamodb()
+        dynamo = self.get_dynamodb()
         all_tables = dynamo.list_tables()
         if table_name not in all_tables:
             #This actually oughtta say `hash_key_name=table_name`
@@ -94,6 +95,11 @@ table_prefix = %s""" % (bucket_name, table_prefix)
         else:
             table = dynamo.get_table(table_name)
         return table
+
+    def get_dynamodb(self):
+        if not self._dynamo_connection:
+            self._dynamo_connection = boto.connect_dynamodb()
+        return self._dynamo_connection
 
     def _bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
