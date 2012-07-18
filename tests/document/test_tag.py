@@ -6,6 +6,7 @@ from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 from tests import TestCase
 
 from catsnap.document.tag import Tag
+from catsnap import HASH_KEY
 
 class TestTag(TestCase):
     @patch('catsnap.document.Config')
@@ -19,7 +20,7 @@ class TestTag(TestCase):
         table = tag._table()
         eq_(tag._stored_table, mock_table)
         eq_(table, mock_table)
-        config.table.assert_called_with('tag')
+        config.table.assert_called_with(HASH_KEY)
 
     @patch('catsnap.document.Config')
     def test_get_table_is_memoized(self, Config):

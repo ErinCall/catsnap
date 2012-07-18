@@ -7,7 +7,7 @@ from nose.tools import eq_
 from tests import TestCase
 
 from catsnap import settings
-from catsnap import Config
+from catsnap import Config, HASH_KEY
 
 class TestConfig(TestCase):
     def test_it_is_a_singleton(self):
@@ -181,7 +181,7 @@ class TestGetTable(TestCase):
 
         table = Config().table('things')
         dynamo.create_schema.assert_called_with(
-                hash_key_name='tag',
+                hash_key_name=HASH_KEY,
                 hash_key_proto_value='S')
         dynamo.create_table.assert_called_with(name='myemmatable-things',
                 schema=schema,

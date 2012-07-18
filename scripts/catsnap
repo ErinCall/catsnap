@@ -7,6 +7,7 @@ from catsnap import Config
 from catsnap.image_truck import ImageTruck
 from catsnap.document.tag import Tag
 from catsnap.document.image import Image
+from catsnap.batch.image_batch import get_images
 
 from boto.exception import DynamoDBResponseError
 
@@ -43,13 +44,16 @@ def add(url, tags):
     print truck.url()
 
 def find(tags):
+    filenames = set()
     for tag_name in tags:
         tag = Tag(tag_name)
-        for filename in tag.get_filenames():
-            image = Image(filename)
-            image_tags = ' '.join(image.get_tags())
-            url = ImageTruck.url_for_filename(filename)
-            print '%s   |   %s' % (url, image_tags)
+        filenames.update(tag.get_filenames())
+    images = get_images(filenames)
+    for image in images:
+        filename = image['filename']
+        image_tags = ' '.join(image['tags'])
+        url = ImageTruck.url_for_filename(filename)
+        print '%s   |   %s' % (url, image_tags)
 
 
 def show_help():

@@ -7,6 +7,11 @@ import ConfigParser
 
 from catsnap import settings
 
+#This really oughtta be, like, the tablename or something, but I screwed up, so
+#now there're existing catsnap installs that use this schema. Sucks :(
+#So yeah every table is keyed on an attribute called 'tag'
+HASH_KEY = 'tag'
+
 class Config(object):
 
     CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
@@ -87,10 +92,7 @@ table_prefix = %s""" % (bucket_name, table_prefix)
         dynamo = self.get_dynamodb()
         all_tables = dynamo.list_tables()
         if table_name not in all_tables:
-            #This actually oughtta say `hash_key_name=table_name`
-            #But I frigged up and now there're in-place catsnap installations
-            #So I'm gonna live with it. :(
-            schema = dynamo.create_schema(hash_key_name='tag',
+            schema = dynamo.create_schema(hash_key_name=HASH_KEY,
                     hash_key_proto_value='S')
             table = dynamo.create_table(name=table_name,
                     schema=schema,
