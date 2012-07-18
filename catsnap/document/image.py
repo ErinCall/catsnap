@@ -19,8 +19,7 @@ class Image(Document):
             item = self._table().get_item(self.filename)
             existing_tags = json.loads(item['tags'])
         except DynamoDBKeyNotFoundError:
-            item = self._table().new_item(hash_key=self.filename, attrs={
-                'source_url': self.source_url})
+            item = self._table().new_item(hash_key=self.filename, attrs={})
         if self.source_url is not None:
             item['source_url'] = self.source_url
         item['tags'] = json.dumps(list(OrderedSet(existing_tags + tags)))
