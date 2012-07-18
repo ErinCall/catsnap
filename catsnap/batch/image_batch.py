@@ -21,19 +21,9 @@ def get_images(filenames):
         for key in response['UnprocessedKeys'][table.name]['Keys']:
             unprocessed_keys.append(key['HashKeyElement'])
 
-    return BatchProxy(unprocessed_keys, items)
-
-class BatchProxy(object):
-    def __init__(self, unprocessed_keys, items):
-        self.items = items
-        self.unprocessed_keys = unprocessed_keys
-
-    def __iter__(self):
-        for item in self.items:
-            yield item
-
-        if not self.unprocessed_keys:
-            raise StopIteration
-        for item in get_images(self.unprocessed_keys):
-            yield item
-
+    for item in items:
+        yield item
+    if not unprocessed_keys:
+        raise StopIteration
+    for item in get_images(unprocessed_keys):
+        yield item
