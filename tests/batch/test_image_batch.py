@@ -82,6 +82,8 @@ class TestImageBatch(TestCase):
         images = list(get_images(['whatever']))
         eq_(images, self._standard_fixture_images())
 
+    def test_get_images__degenerate_case(self):
+        eq_(list(get_images([])), [])
     def _standard_fixture_images(self):
         return [
             {

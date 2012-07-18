@@ -5,6 +5,8 @@ from boto.dynamodb.batch import BatchList
 import json
 
 def get_images(filenames):
+    if not filenames:
+        raise StopIteration
     dynamo = Config().get_dynamodb()
     table = Config().table('image')
     batch_list = BatchList(dynamo)
