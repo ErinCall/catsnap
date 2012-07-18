@@ -13,6 +13,7 @@ from boto.exception import DynamoDBResponseError
 USAGE = """
 Usage:
     catsnap add [image_url] tag1 tag2 ...
+    catsnap add [file_path] tag1 tag2 ...
     catsnap find tag1 tag2 ...
     catsnap setup
 """
@@ -36,8 +37,8 @@ def main():
     else:
         show_help()
 
-def add(url, tags):
-    truck = ImageTruck.new_from_url(url)
+def add(path, tags):
+    truck = ImageTruck.new_from_something(path)
     truck.upload()
     image = Image(truck.calculate_filename(), truck.source_url)
     image.add_tags(tags)
