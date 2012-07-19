@@ -64,7 +64,7 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self):
-        return self._url(self.calculate_filename(), self._bucket().name)
+        return self._url(self.calculate_filename(), Config().bucket_name())
 
     @classmethod
     def _url(cls, filename, bucket_name):

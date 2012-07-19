@@ -13,3 +13,6 @@ class TestCase():
         catsnap.Config.CONFIG_FILE = config
         catsnap.Config.CREDENTIALS_FILE = creds
         catsnap.getpass = Mock()
+
+    def tearDown(self):
+        catsnap.Config._instance = None

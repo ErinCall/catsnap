@@ -6,6 +6,7 @@ from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 from tests import TestCase
 
 from catsnap.document.tag import Tag
+from catsnap import HASH_KEY
 
 class TestAddingFile(TestCase):
     def test_sends_to_dynamo(self):

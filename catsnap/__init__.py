@@ -8,6 +8,11 @@ import ConfigParser
 from catsnap import settings
 from boto.exception import DynamoDBResponseError
 
+#This really oughtta be, like, the tablename or something, but I screwed up, so
+#now there're existing catsnap installs that use this schema. Sucks :(
+#So yeah every table is keyed on an attribute called 'tag'
+HASH_KEY = 'tag'
+
 class Config(object):
 
     CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
@@ -16,6 +21,10 @@ class Config(object):
 
     _instance = None
     _tables = {}
+    _bucket = None
+
+    _dynamo_connection = None
+    _s3_connection = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -65,20 +74,21 @@ bucket = %s
 table_prefix = %s""" % (bucket_name, table_prefix)
 
     def bucket(self):
-        bucket_name = self._bucket_name()
-        s3 = boto.connect_s3()
-        all_buckets = [x.name for x in s3.get_all_buckets()]
-        if bucket_name not in all_buckets:
-            bucket = s3.create_bucket(bucket_name)
-        else:
-            bucket = s3.get_bucket(bucket_name)
-        return bucket
+        if not self._bucket:
+            bucket_name = self.bucket_name()
+            s3 = self.get_s3()
+            all_buckets = [x.name for x in s3.get_all_buckets()]
+            if bucket_name not in all_buckets:
+                self._bucket = s3.create_bucket(bucket_name)
+            else:
+                self._bucket = s3.get_bucket(bucket_name)
+        return self._bucket
 
     def create_table(self, table_name):
         table_prefix = self._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
 
-        dynamo = boto.connect_dynamodb()
+        dynamo = self.get_dynamodb()
         schema = dynamo.create_schema(hash_key_name='tag',
                 hash_key_proto_value='S')
         try:
@@ -99,10 +109,20 @@ table_prefix = %s""" % (bucket_name, table_prefix)
 
         if table_name in self._tables:
             return self._tables[table_name]
-        dynamo = boto.connect_dynamodb()
+        dynamo = self.get_dynamodb()
         return dynamo.get_table(table_name)
 
-    def _bucket_name(self):
+    def get_dynamodb(self):
+        if not self._dynamo_connection:
+            self._dynamo_connection = boto.connect_dynamodb()
+        return self._dynamo_connection
+
+    def get_s3(self):
+        if not self._s3_connection:
+            self._s3_connection = boto.connect_s3()
+        return self._s3_connection
+
+    def bucket_name(self):
         return self._parser().get('catsnap', 'bucket')
 
     def _table_prefix(self):

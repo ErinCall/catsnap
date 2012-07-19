@@ -7,7 +7,7 @@ from nose.tools import eq_
 from tests import TestCase
 
 from catsnap import settings
-from catsnap import Config
+from catsnap import Config, HASH_KEY
 
 class TestConfig(TestCase):
     def test_it_is_a_singleton(self):
@@ -121,10 +121,10 @@ bucket = rutabaga
 table_prefix = wootabaga""")
 
 class TestGetBucket(TestCase):
-    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
-    def test_does_not_re_create_buckets(self, mock_boto, _bucket_name):
-        _bucket_name.return_value = 'oodles'
+    def test_does_not_re_create_buckets(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'oodles'
         mock_bucket = Mock()
         mock_bucket.name = 'oodles'
         s3 = Mock()
@@ -136,10 +136,10 @@ class TestGetBucket(TestCase):
         eq_(s3.create_bucket.call_count, 0, "shouldn't've created a bucket")
         eq_(bucket, mock_bucket)
 
-    @patch('catsnap.Config._bucket_name')
+    @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
-    def test_creates_bucket_if_necessary(self, mock_boto, _bucket_name):
-        _bucket_name.return_value = 'galvanized'
+    def test_creates_bucket_if_necessary(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'galvanized'
         s3 = Mock()
         mock_bucket = Mock()
         s3.create_bucket.return_value = mock_bucket
@@ -149,6 +149,22 @@ class TestGetBucket(TestCase):
         bucket = Config().bucket()
         s3.create_bucket.assert_called_with('galvanized')
         eq_(bucket, mock_bucket)
+
+    @patch('catsnap.Config.bucket_name')
+    @patch('catsnap.boto')
+    def test_get_bucket_is_memoized(self, mock_boto, bucket_name):
+        bucket_name.return_value = 'oodles'
+        mock_bucket = Mock()
+        mock_bucket.name = 'oodles'
+        s3 = Mock()
+        s3.get_all_buckets.return_value = [ mock_bucket ]
+        s3.get_bucket.side_effect = [ 1, 2 ]
+        mock_boto.connect_s3.return_value = s3
+
+        bucket1 = Config().bucket()
+        bucket2 = Config().bucket()
+        assert bucket1 is bucket2, 'multiple s3 connections were established'
+        eq_(s3.get_bucket.call_count, 1)
 
 class TestGetTable(TestCase):
     @patch('catsnap.Config._table_prefix')
@@ -200,11 +216,13 @@ class TestCreateTable(TestCase):
                 write_units=5)
         eq_(table, mock_table)
 
+    @patch('catsnap.Config._table_prefix')
     @patch('catsnap.Config.table')
     @patch('catsnap.boto')
-    def test_no_error_if_table_exists(self, mock_boto, table):
+    def test_no_error_if_table_exists(self, mock_boto, table, _table_prefix):
 #        boto.exception.DynamoDBResponseError: DynamoDBResponseError: 400 Bad Request
 #{u'message': u'Attempt to change a resource which is still in use: Duplicate table name: catsnap-andrewlorente-image', u'__type': u'com.amazonaws.dynamodb.v20111205#ResourceInUseException'}
+        _table_prefix.return_value = 'foo'
         dynamo = Mock()
         error = boto.exception.DynamoDBResponseError(400, 'table exists')
         error.error_code = 'ResourceInUseException'
@@ -214,6 +232,36 @@ class TestCreateTable(TestCase):
 
         created_table = Config().create_table('things')
         eq_(created_table, 'this is the table')
+
+class TestGetConnections(TestCase):
+    @patch('catsnap.boto')
+    def test_get_dynamodb(self, boto):
+        Config().get_dynamodb()
+        eq_(boto.connect_dynamodb.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_dynamodb__is_memoized(self, boto):
+        boto.connect_dynamodb.side_effect = [1, 2]
+        dynamo1 = Config().get_dynamodb()
+        dynamo2 = Config().get_dynamodb()
+
+        assert dynamo1 is dynamo2, 'different connections were established'
+        eq_(boto.connect_dynamodb.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_s3(self, boto):
+        Config().get_s3()
+        eq_(boto.connect_s3.call_count, 1)
+
+    @patch('catsnap.boto')
+    def test_get_s3__is_memoized(self, boto):
+        boto.connect_dynamodb.side_effect = [1, 2]
+        sss1 = Config().get_s3()
+        sss2 = Config().get_s3()
+
+        assert sss1 is sss2, 'different connections were established'
+        eq_(boto.connect_s3.call_count, 1)
+
 
 class TestBuildParser(TestCase):
     def test_build_parser(self):
@@ -228,5 +276,5 @@ table_prefix = bugglez""")
             parser = config._parser()
         eq_(parser.get('catsnap', 'bucket'), 'boogles')
         eq_(parser.get('catsnap', 'table_prefix'), 'bugglez')
-        eq_(config._bucket_name(), 'boogles')
+        eq_(config.bucket_name(), 'boogles')
         eq_(config._table_prefix(), 'bugglez')
