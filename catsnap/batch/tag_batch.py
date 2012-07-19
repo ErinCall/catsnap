@@ -32,3 +32,29 @@ def get_tags(tag_names):
         yield { 'tag': item[HASH_KEY],
                 'filenames': json.loads(item['filenames'])}
 
+def add_image_to_tags(filename, tag_names):
+    items = list(get_tag_items(tag_names))
+    for item in items:
+        filenames = json.loads(item['filenames'])
+        filenames.append(filename)
+        item['filenames'] = json.dumps(filenames)
+
+    table = Config().table('tag')
+    for new_tag in set(tag_names) - set(x[HASH_KEY] for x in items):
+        items.append(table.new_item(hash_key = new_tag,
+                attrs={'filenames': json.dumps([filename])}))
+
+    _submit_items(table, items)
+
+def _submit_items(table, items):
+    dynamo = Config().get_dynamodb()
+    write_list = BatchWriteList(dynamo)
+    write_list.add_batch(table, puts=items)
+    response = write_list.submit()
+    if 'UnprocessedItems' in response \
+            and table.name in response['UnprocessedItems']:
+        unprocessed_keys = set(x['PutRequest']['Item'][HASH_KEY]
+                for x in response['UnprocessedItems'][table.name])
+        unprocessed_items = filter(
+                lambda x: x[HASH_KEY] in unprocessed_keys, items)
+        _submit_items(table, unprocessed_items)

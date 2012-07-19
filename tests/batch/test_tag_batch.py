@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock, call
 from nose.tools import eq_
 from tests import TestCase
 
 from catsnap import HASH_KEY
-from catsnap.batch.tag_batch import get_tags
+from catsnap.batch.tag_batch import get_tags, add_image_to_tags
 
 class TestTagBatch(TestCase):
     @patch('catsnap.batch.tag_batch.Config')
@@ -95,3 +95,53 @@ class TestTagBatch(TestCase):
     def test_get_tags__degenerate_case(self):
         eq_(list(get_tags([])), [])
 
+
+    @patch('catsnap.batch.tag_batch.BatchWriteList')
+    @patch('catsnap.batch.tag_batch.Config')
+    @patch('catsnap.batch.tag_batch.get_tag_items')
+    def test_add_image_to_tags(self, get_tag_items, Config, BatchWriteList):
+        existing_tag_item = MagicMock()
+        def existing_getitem(key):
+            if key == 'filenames':
+                return '["facade"]'
+            elif key == HASH_KEY:
+                return 'bleep'
+            else:
+                raise ValueError(key)
+        existing_tag_item.__getitem__.side_effect = existing_getitem
+        get_tag_items.return_value = [ existing_tag_item ]
+        new_tag_item = MagicMock()
+        new_tag_item.__getitem__.return_value = 'bloop'
+        table = Mock()
+        table.new_item.return_value = new_tag_item
+        table.name = 'thetablename'
+        config = Mock()
+        config.table.return_value = table
+        dynamo = Mock()
+        config.get_dynamodb.return_value = dynamo
+        Config.return_value = config
+        write_list = Mock()
+        first_response = {
+                'UnprocessedItems': { 'thetablename': [
+                        {'PutRequest': {
+                            'Item': {
+                                'tag': 'bloop',
+                                'filenames': '["beefcafe"]'}}}]},
+                'Responses': {'thetablename': {'ConsumedCapacityUnits': 5.0}}}
+        second_response = {'Responses': {'thetablename':
+                {'ConsumedCapacityUnits': 5.0}}}
+        write_list.submit.side_effect = [first_response, second_response]
+        BatchWriteList.return_value = write_list
+
+        add_image_to_tags('beefcafe', ['bleep', 'bloop'])
+
+        existing_tag_item.__setitem__.assert_called_with('filenames',
+                '["facade", "beefcafe"]')
+        get_tag_items.assert_called_with(['bleep', 'bloop'])
+        table.new_item.assert_called_with(hash_key='bloop',
+                attrs={'filenames':'["beefcafe"]'})
+        BatchWriteList.assert_called_with(dynamo)
+        write_list.add_batch.assert_has_calls([
+                call(table, puts=[existing_tag_item, new_tag_item]),
+                call(table, puts=[new_tag_item])])
+        eq_(write_list.submit.call_count, 2)
