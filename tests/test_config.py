@@ -183,16 +183,18 @@ class TestGetTable(TestCase):
         eq_(table, mock_table)
 
     @patch('catsnap.Config._table_prefix')
-    @patch('catsnap.boto')
-    def test_memoization(self, boto, _table_prefix):
+    def test_memoization(self, _table_prefix):
         _table_prefix.return_value = 'foo'
         config = Config()
         mock_table = Mock()
-        config._tables = {'foo-tags': mock_table}
+        config._dynamo_connection = Mock()
+        config._dynamo_connection.get_table.return_value = mock_table
 
         table = config.table('tags')
         eq_(table, mock_table)
-        eq_(boto.connect_dynamodb.call_count, 0)
+        eq_(config._dynamo_connection.get_table.call_count, 1)
+        table = config.table('tags')
+        eq_(config._dynamo_connection.get_table.call_count, 1)
 
 class TestCreateTable(TestCase):
     @patch('catsnap.Config._table_prefix')

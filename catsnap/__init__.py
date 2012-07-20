@@ -28,8 +28,7 @@ class Config(object):
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(Config, cls).__new__(
-                                cls, *args, **kwargs)
+            cls._instance = super(Config, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
     def __init__(self):
@@ -107,10 +106,10 @@ table_prefix = %s""" % (bucket_name, table_prefix)
         table_prefix = self._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
 
-        if table_name in self._tables:
-            return self._tables[table_name]
-        dynamo = self.get_dynamodb()
-        return dynamo.get_table(table_name)
+        if table_name not in self._tables:
+            dynamo = self.get_dynamodb()
+            self._tables[table_name] = dynamo.get_table(table_name)
+        return self._tables[table_name]
 
     def get_dynamodb(self):
         if not self._dynamo_connection:
