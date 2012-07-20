@@ -116,29 +116,6 @@ class TestGetBucket(TestCase):
         eq_(s3.get_bucket.call_count, 1)
 
 class TestGetTable(TestCase):
-    @patch('catsnap.Config._access_key_id')
-    @patch('catsnap.Config._secret_access_key')
-    @patch('catsnap.Config._table_prefix')
-    @patch('catsnap.boto')
-    def test_does_not_re_create_tables(self, mock_boto, _table_prefix,
-            _secret_access_key, _access_key_id):
-        _table_prefix.return_value = 'rooibos'
-        _secret_access_key.return_value = 'sekritpassword'
-        _access_key_id.return_value = 'itsme'
-        mock_table = Mock()
-        mock_table.name = 'rooibos-things'
-        dynamo = Mock()
-        dynamo.list_tables.return_value = [ 'rooibos-things' ]
-        dynamo.get_table.return_value = mock_table
-        mock_boto.connect_dynamodb.return_value = dynamo
-
-        table = Config().table('things')
-        eq_(dynamo.create_table.call_count, 0, "shouldn't've created a table")
-        eq_(table, mock_table)
-        mock_boto.connect_dynamodb.assert_called_with(
-                aws_access_key_id='itsme',
-                aws_secret_access_key='sekritpassword')
-
     @patch('catsnap.Config._table_prefix')
     def test_memoization(self, _table_prefix):
         _table_prefix.return_value = 'foo'
