@@ -32,12 +32,3 @@ class TestBaseBehavior(TestCase):
         table = document._table()
         eq_(table, mock_table)
         eq_(config.table.call_count, 0)
-
-    @patch('catsnap.document.Config')
-    def test_create(self, Config):
-        config = Mock()
-        Config.return_value = config
-        with patch('catsnap.document.Document._table_name', 'root'):
-            Document.create()
-        config.create_table.assert_called_with('root')
-

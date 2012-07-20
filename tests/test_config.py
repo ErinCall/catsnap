@@ -69,6 +69,32 @@ class TestConfig(TestCase):
         eq_(config.parser.get('catsnap', 'bucket'), 'rutabaga')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'wootabaga')
 
+class TestSetup(TestCase):
+    @patch('catsnap.Config.create_table')
+    def test_creates_tables(self, create_table):
+        config = Config()
+        tables_created = config.setup()
+        create_table.assert_has_calls([
+            call('tag'),
+            call('image')])
+        eq_(tables_created, 2)
+
+    @patch('catsnap.Config.create_table')
+    def test_returns_number_of_new_tables(self, create_table):
+        error = boto.exception.DynamoDBResponseError(400, 'table exists')
+        error.error_code = 'ResourceInUseException'
+        def do_create_table(table_name):
+            if table_name == 'tag':
+                return Mock()
+            else:
+                raise error
+        create_table.side_effect = do_create_table
+
+        config = Config()
+        tables_created = config.setup()
+
+        eq_(tables_created, 1)
+
 class TestGetBucket(TestCase):
     @patch('catsnap.Config.bucket_name')
     @patch('catsnap.boto')
@@ -151,23 +177,6 @@ class TestCreateTable(TestCase):
                 read_units=3,
                 write_units=5)
         eq_(table, mock_table)
-
-    @patch('catsnap.Config._table_prefix')
-    @patch('catsnap.Config.table')
-    @patch('catsnap.boto')
-    def test_no_error_if_table_exists(self, mock_boto, table, _table_prefix):
-#        boto.exception.DynamoDBResponseError: DynamoDBResponseError: 400 Bad Request
-#{u'message': u'Attempt to change a resource which is still in use: Duplicate table name: catsnap-andrewlorente-image', u'__type': u'com.amazonaws.dynamodb.v20111205#ResourceInUseException'}
-        _table_prefix.return_value = 'foo'
-        dynamo = Mock()
-        error = boto.exception.DynamoDBResponseError(400, 'table exists')
-        error.error_code = 'ResourceInUseException'
-        dynamo.create_table.side_effect = error
-        mock_boto.connect_dynamodb.return_value = dynamo
-        table.return_value = 'this is the table'
-
-        created_table = Config().create_table('things')
-        eq_(created_table, 'this is the table')
 
 class TestGetConnections(TestCase):
     @patch('catsnap.boto')

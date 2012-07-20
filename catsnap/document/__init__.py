@@ -10,7 +10,3 @@ class Document():
         self._stored_table = self._stored_table \
                 or Config().table(self._table_name)
         return self._stored_table
-
-    @classmethod
-    def create(cls):
-        Config().create_table(cls._table_name)

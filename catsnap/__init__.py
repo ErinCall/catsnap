@@ -78,6 +78,23 @@ class Config(object):
             self.parser.set('catsnap', 'table_prefix',
                     actual_table_prefix or table_prefix)
 
+    def setup(self):
+        created_tables = 0
+        try:
+            self.create_table('tag')
+            created_tables += 1
+        except DynamoDBResponseError, e:
+            if e.error_code != 'ResourceInUseException':
+                raise
+        try:
+            self.create_table('image')
+            created_tables += 1
+        except DynamoDBResponseError, e:
+            if e.error_code != 'ResourceInUseException':
+                raise
+
+        return created_tables
+
     def bucket(self):
         if not self._bucket:
             bucket_name = self.bucket_name()
@@ -96,17 +113,10 @@ class Config(object):
         dynamo = self.get_dynamodb()
         schema = dynamo.create_schema(hash_key_name='tag',
                 hash_key_proto_value='S')
-        try:
-            table = dynamo.create_table(name=table_name,
-                    schema=schema,
-                    read_units=3,
-                    write_units=5)
-        except DynamoDBResponseError, e:
-            if e.error_code == 'ResourceInUseException':
-                return self.table(table_name)
-            else:
-                raise
-        return table
+        return dynamo.create_table(name=table_name,
+                schema=schema,
+                read_units=3,
+                write_units=5)
 
     def table(self, table_name):
         table_prefix = self._table_prefix()

@@ -61,9 +61,9 @@ def find(tag_names):
         print '%s   |   %s' % (url, image_tags)
 
 def setup():
-    Tag.create()
-    Image.create()
-    sys.stdout.write("""
+    created_tables = Config().setup()
+    if created_tables:
+        sys.stdout.write("""
 I've created image and tag tables. Dynamodb tables take some time after being
 created before they're available for use--please wait a minute to add an image.
 """)
