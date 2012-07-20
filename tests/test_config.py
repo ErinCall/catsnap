@@ -15,76 +15,20 @@ class TestConfig(TestCase):
         config2 = Config()
         assert config1 is config2
 
-    @patch('catsnap.Config.ensure_config_files_exist')
-    def test_initialization_runs_ensure_config(self, ensure_config):
-        Config()
-        ensure_config.assert_called_with()
-
-    @patch('catsnap.sys')
-    @patch('catsnap.Config.get_aws_credentials')
-    @patch('catsnap.Config.get_catsnap_config')
-    def test_ensure_config_files_exist__degenerate_case(self, setup_boto,
-            setup_catsnap, sys):
-        (_, creds) = tempfile.mkstemp()
-
-        with patch('catsnap.os.path') as path:
-            path.exists.return_value = True
-            with patch('catsnap.Config.CREDENTIALS_FILE', creds) as _:
-                Config().ensure_config_files_exist()
-        eq_(setup_boto.call_count, 0, "get_aws_credentials shouldn't've "
-                "been called")
-        eq_(setup_catsnap.call_count, 0, "get_catsnap_config shouldn't've "
-                "been called")
-        eq_(sys.stdout.write.call_count, 0, "stdout.write shouldn't've "
-                "been called")
-
-    #using @patch(os.path) here will F up the mkstemp call :(
-    @patch('catsnap.sys')
-    @patch('catsnap.Config.get_catsnap_config')
-    @patch('catsnap.Config.get_aws_credentials')
-    def test_ensure_aws_config_exists(self, get_creds, get_config, sys):
-        get_config.side_effect = AssertionError("shouldn't've been called")
-        get_creds.return_value = 'the credentials'
-        (_, creds) = tempfile.mkstemp()
-
-        with patch('catsnap.os.path') as path:
-            path.exists.side_effect = [ True, False, True, False ]
-            with patch('catsnap.Config.CREDENTIALS_FILE', creds) as _:
-                Config()
-        with open(creds, 'r') as creds_file:
-            eq_(creds_file.read(), 'the credentials')
-        sys.stdout.write.assert_called_with(
-                "Looks like this is your first run.\n")
-
-    #using @patch(os.path) here will F up the mkstemp call :(
-    @patch('catsnap.sys')
-    @patch('catsnap.Config.get_aws_credentials')
-    @patch('catsnap.Config.get_catsnap_config')
-    def test_ensure_catsnap_config_exists(self, get_config, get_creds, sys):
-        get_creds.side_effect = AssertionError("shouldn't've been called")
-        get_config.return_value = 'the Config'
-        (_, conf) = tempfile.mkstemp()
-
-        with patch('catsnap.os.path') as path:
-            path.exists.side_effect = [ False, True, False, True ]
-            with patch('catsnap.Config.CONFIG_FILE', conf) as _:
-                Config()
-        with open(conf, 'r') as config_file:
-            eq_(config_file.read(), 'the Config')
-        sys.stdout.write.assert_called_with(
-                "Looks like this is your first run.\n")
-
+    @patch('catsnap.Config._input')
     @patch('catsnap.getpass')
     @patch('catsnap.sys')
-    def test_get_credentials(self, sys, getpass):
-        getpass.getpass.side_effect = ['access key id', 'secret access key']
+    def test_get_credentials(self, sys, getpass, _input):
+        getpass.getpass.return_value = 'secret access key'
+        _input.return_value = 'access key id'
 
-        creds = Config().get_aws_credentials()
+        config = Config()
         sys.stdout.write.assert_called_with("Find your credentials at "
                 "https://portal.aws.amazon.com/gp/aws/securityCredentials\n")
-        eq_(creds, """[Credentials]
-aws_access_key_id = access key id
-aws_secret_access_key = secret access key""")
+        eq_(config.parser.get('Credentials', 'aws_access_key_id'),
+                'access key id')
+        eq_(config.parser.get('Credentials', 'aws_secret_access_key'),
+                'secret access key')
 
     @patch('catsnap.os')
     @patch('catsnap.Config._input')
@@ -92,33 +36,38 @@ aws_secret_access_key = secret access key""")
         os.environ.__getitem__.return_value = 'mcgee'
         _input.return_value = ''
 
-        conf = Config().get_catsnap_config()
+        config = Config()
         _input.assert_has_calls([
             call("Please name your bucket (leave blank to use "
                 "'catsnap-mcgee'): "),
             call("Please choose a table prefix (leave blank to use "
                 "'catsnap-mcgee'): "),
         ])
-        eq_(conf, """[catsnap]
-bucket = catsnap-mcgee
-table_prefix = catsnap-mcgee""")
+        eq_(config.parser.get('catsnap', 'bucket'), 'catsnap-mcgee')
+        eq_(config.parser.get('catsnap', 'table_prefix'), 'catsnap-mcgee')
 
     @patch('catsnap.os')
     @patch('catsnap.Config._input')
-    def test_get_catsnap_config__custom_names(self, _input, os):
+    @patch('catsnap.Config.get_credentials')
+    def test_get_catsnap_config__one_custom_name(self, get_credentials,
+                                                 _input, os):
         os.environ.__getitem__.return_value = 'mcgee'
         _input.side_effect = ['booya', '']
 
-        conf = Config().get_catsnap_config()
-        eq_(conf, """[catsnap]
-bucket = booya
-table_prefix = booya""")
+        config = Config()
+        eq_(config.parser.get('catsnap', 'bucket'), 'booya')
+        eq_(config.parser.get('catsnap', 'table_prefix'), 'booya')
 
+    @patch('catsnap.os')
+    @patch('catsnap.Config._input')
+    @patch('catsnap.Config.get_credentials')
+    def test_get_catsnap_config__custom_names(self, get_credentials, _input, os):
+        os.environ.__getitem__.return_value = 'mcgee'
         _input.side_effect = ['rutabaga', 'wootabaga']
-        conf = Config().get_catsnap_config()
-        eq_(conf, """[catsnap]
-bucket = rutabaga
-table_prefix = wootabaga""")
+
+        config = Config()
+        eq_(config.parser.get('catsnap', 'bucket'), 'rutabaga')
+        eq_(config.parser.get('catsnap', 'table_prefix'), 'wootabaga')
 
 class TestGetBucket(TestCase):
     @patch('catsnap.Config.bucket_name')
@@ -167,10 +116,15 @@ class TestGetBucket(TestCase):
         eq_(s3.get_bucket.call_count, 1)
 
 class TestGetTable(TestCase):
+    @patch('catsnap.Config._access_key_id')
+    @patch('catsnap.Config._secret_access_key')
     @patch('catsnap.Config._table_prefix')
     @patch('catsnap.boto')
-    def test_does_not_re_create_tables(self, mock_boto, _table_prefix):
+    def test_does_not_re_create_tables(self, mock_boto, _table_prefix,
+            _secret_access_key, _access_key_id):
         _table_prefix.return_value = 'rooibos'
+        _secret_access_key.return_value = 'sekritpassword'
+        _access_key_id.return_value = 'itsme'
         mock_table = Mock()
         mock_table.name = 'rooibos-things'
         dynamo = Mock()
@@ -181,6 +135,9 @@ class TestGetTable(TestCase):
         table = Config().table('things')
         eq_(dynamo.create_table.call_count, 0, "shouldn't've created a table")
         eq_(table, mock_table)
+        mock_boto.connect_dynamodb.assert_called_with(
+                aws_access_key_id='itsme',
+                aws_secret_access_key='sekritpassword')
 
     @patch('catsnap.Config._table_prefix')
     def test_memoization(self, _table_prefix):
@@ -250,10 +207,15 @@ class TestGetConnections(TestCase):
         assert dynamo1 is dynamo2, 'different connections were established'
         eq_(boto.connect_dynamodb.call_count, 1)
 
+    @patch('catsnap.Config._access_key_id')
+    @patch('catsnap.Config._secret_access_key')
     @patch('catsnap.boto')
-    def test_get_s3(self, boto):
+    def test_get_s3(self, boto, _secret_access_key, _access_key_id):
+        _secret_access_key.return_value = 'letmein'
+        _access_key_id.return_value = 'itsme'
         Config().get_s3()
-        eq_(boto.connect_s3.call_count, 1)
+        boto.connect_s3.assert_called_once_with(
+                aws_secret_access_key='letmein', aws_access_key_id='itsme')
 
     @patch('catsnap.boto')
     def test_get_s3__is_memoized(self, boto):
@@ -263,20 +225,3 @@ class TestGetConnections(TestCase):
 
         assert sss1 is sss2, 'different connections were established'
         eq_(boto.connect_s3.call_count, 1)
-
-
-class TestBuildParser(TestCase):
-    def test_build_parser(self):
-        (_, conf) = tempfile.mkstemp()
-        with open(conf, 'w') as config_file:
-            config_file.write("""[catsnap]
-bucket = boogles
-table_prefix = bugglez""")
-
-        config = Config()
-        with patch('catsnap.Config.CONFIG_FILE', conf) as _:
-            parser = config._parser()
-        eq_(parser.get('catsnap', 'bucket'), 'boogles')
-        eq_(parser.get('catsnap', 'table_prefix'), 'bugglez')
-        eq_(config.bucket_name(), 'boogles')
-        eq_(config._table_prefix(), 'bugglez')

@@ -32,45 +32,51 @@ class Config(object):
         return cls._instance
 
     def __init__(self):
-        self.ensure_config_files_exist()
+        self.parser = ConfigParser.ConfigParser()
+        self.parser.read([self.CREDENTIALS_FILE, self.CONFIG_FILE])
 
-    def ensure_config_files_exist(self):
-        if not all(map(os.path.exists, [ self.CONFIG_FILE,
-                                         self.CREDENTIALS_FILE ])):
-            sys.stdout.write("Looks like this is your first run.\n")
-            if not os.path.exists(self.CONFIG_FILE):
-                config = self.get_catsnap_config()
-                with open(self.CONFIG_FILE, 'w', 0600) as config_file:
-                    config_file.write(config)
-            if not os.path.exists(self.CREDENTIALS_FILE):
-                credentials = self.get_aws_credentials()
-                with open(self.CREDENTIALS_FILE, 'w', 0600) as creds_file:
-                    creds_file.write(credentials)
-        else:
-            return
+        try:
+            self.parser.get('Credentials', 'aws_access_key_id')
+            self.parser.get('Credentials', 'aws_secret_access_key')
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            self.get_credentials()
 
-    def get_aws_credentials(self):
+        try:
+            self.parser.get('catsnap', 'bucket')
+            self.parser.get('catsnap', 'table_prefix')
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            self.get_config()
+
+        with open(self.CONFIG_FILE, 'w', 600) as config_file:
+            self.parser.write(config_file)
+
+    def get_credentials(self):
         sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
                          "gp/aws/securityCredentials\n")
-        key_id = getpass.getpass('Enter your access key id: ')
-        key = getpass.getpass('Enter your secret access key: ')
-        return """[Credentials]
-aws_access_key_id = %(key_id)s
-aws_secret_access_key = %(key)s""" % {'key_id': key_id, 'key': key}
+        if not self.parser.has_section('Credentials'):
+            self.parser.add_section('Credentials')
+        if not self.parser.has_option('Credentials', 'aws_access_key_id'):
+            self.parser.set('Credentials', 'aws_access_key_id',
+                    self._input('Enter your access key id: '))
+        if not self.parser.has_option('Credentials', 'aws_secret_access_key'):
+            self.parser.set('Credentials', 'aws_secret_access_key',
+                    getpass.getpass('Enter your secret access key: '))
 
-    def get_catsnap_config(self):
-        bucket_name = '%s-%s' % (settings.BUCKET_BASE, os.environ['USER'])
-        actual_bucket_name = self._input("Please name your bucket (leave blank to "
-                "use '%s'): " % bucket_name)
-        bucket_name = actual_bucket_name or bucket_name
+    def get_config(self):
+        if not self.parser.has_section('catsnap'):
+            self.parser.add_section('catsnap')
+        if not self.parser.has_option('catsnap', 'bucket'):
+            bucket_name = '%s-%s' % (settings.BUCKET_BASE, os.environ['USER'])
+            actual_bucket_name = self._input("Please name your bucket (leave "
+                    "blank to use '%s'): " % bucket_name)
+            self.parser.set('catsnap', 'bucket', actual_bucket_name or bucket_name)
 
-        table_prefix = bucket_name
-        actual_table_prefix = self._input("Please choose a table prefix "
-                "(leave blank to use '%s'): " % table_prefix)
-        table_prefix = actual_table_prefix or table_prefix
-        return """[catsnap]
-bucket = %s
-table_prefix = %s""" % (bucket_name, table_prefix)
+        if not self.parser.has_option('catsnap', 'table_prefix'):
+            table_prefix = self.parser.get('catsnap', 'bucket')
+            actual_table_prefix = self._input("Please choose a table prefix "
+                    "(leave blank to use '%s'): " % table_prefix)
+            self.parser.set('catsnap', 'table_prefix',
+                    actual_table_prefix or table_prefix)
 
     def bucket(self):
         if not self._bucket:
@@ -113,26 +119,29 @@ table_prefix = %s""" % (bucket_name, table_prefix)
 
     def get_dynamodb(self):
         if not self._dynamo_connection:
-            self._dynamo_connection = boto.connect_dynamodb()
+            self._dynamo_connection = boto.connect_dynamodb(
+                    aws_access_key_id=self._access_key_id(),
+                    aws_secret_access_key=self._secret_access_key())
         return self._dynamo_connection
 
     def get_s3(self):
         if not self._s3_connection:
-            self._s3_connection = boto.connect_s3()
+            self._s3_connection = boto.connect_s3(
+                    aws_access_key_id=self._access_key_id(),
+                    aws_secret_access_key=self._secret_access_key())
         return self._s3_connection
 
     def bucket_name(self):
-        return self._parser().get('catsnap', 'bucket')
+        return self.parser.get('catsnap', 'bucket')
 
     def _table_prefix(self):
-        return self._parser().get('catsnap', 'table_prefix')
+        return self.parser.get('catsnap', 'table_prefix')
 
-    def _parser(self):
-        if self.parser is None:
-            parser = ConfigParser.ConfigParser()
-            parser.read(self.CONFIG_FILE)
-            self.parser = parser
-        return self.parser
+    def _access_key_id(self):
+        return self.parser.get('Credentials', 'aws_access_key_id')
+
+    def _secret_access_key(self):
+        return self.parser.get('Credentials', 'aws_secret_access_key')
 
     def _input(self, *args, **kwargs):
         return raw_input(*args, **kwargs)
