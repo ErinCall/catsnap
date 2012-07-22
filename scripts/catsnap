@@ -2,6 +2,7 @@
 
 import sys
 import time
+import argparse
 
 from catsnap import Config
 from catsnap.image_truck import ImageTruck
@@ -12,55 +13,28 @@ from catsnap.batch.tag_batch import get_tags, add_image_to_tags
 
 from boto.exception import DynamoDBResponseError
 
-USAGE = """
-Usage:
-    catsnap add [image_url] tag1 tag2 ...
-    catsnap add [file_path] tag1 tag2 ...
-    catsnap find tag1 tag2 ...
-    catsnap setup
-"""
-
-def main():
-    if len(sys.argv) < 2:
-        show_help()
-    command = sys.argv[1]
-    if command == 'add':
-        if len(sys.argv) < 4:
-            show_help()
-        add(sys.argv[2], sys.argv[3:])
-    elif command == 'find':
-        if len(sys.argv) < 3:
-            show_help()
-        find(sys.argv[2:])
-    elif command == 'setup':
-        if len(sys.argv) > 2:
-            show_help()
-        setup()
-    else:
-        show_help()
-
-def add(path, tags):
-    truck = ImageTruck.new_from_something(path)
+def add(args):
+    truck = ImageTruck.new_from_something(args.path)
     truck.upload()
     image = Image(truck.calculate_filename(), truck.source_url)
-    image.add_tags(tags)
-    add_image_to_tags(truck.calculate_filename(), tags)
+    image.add_tags(args.tags)
+    add_image_to_tags(truck.calculate_filename(), args.tags)
 
-    print truck.url()
+    print truck.url(extension=args.extension)
 
-def find(tag_names):
+def find(args):
     filenames = set()
-    tags = get_tags(tag_names)
+    tags = get_tags(args.tags)
     for tag in tags:
         filenames.update(tag['filenames'])
     images = get_images(filenames)
     for image in images:
         filename = image['filename']
         image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename)
+        url = ImageTruck.url_for_filename(filename, extension=args.extension)
         print '%s   |   %s' % (url, image_tags)
 
-def setup():
+def setup(args):
     Tag.create()
     Image.create()
     sys.stdout.write("""
@@ -71,6 +45,28 @@ created before they're available for use--please wait a minute to add an image.
 def show_help():
     sys.stderr.write(USAGE)
     sys.exit(1)
+
+def main():
+    parser = argparse.ArgumentParser(
+            description='Store and search for images by tag.')
+    parser.add_argument('-e', '--extension', action='store_true',
+            help="append '#.gif' to urls (e.g. for pasting in Campfire)")
+    subparsers = parser.add_subparsers(help='Actions')
+
+    add_command = subparsers.add_parser('add', help='add an image')
+    add_command.add_argument('path', help='url or filename to add')
+    add_command.add_argument('tags', nargs='+', help='tags for this image')
+    add_command.set_defaults(func=add)
+
+    find_command = subparsers.add_parser('find', help='find an image')
+    find_command.add_argument('tags', nargs='+', help='tags to find')
+    find_command.set_defaults(func=find)
+
+    setup_command = subparsers.add_parser('setup', help='do first-time setup')
+    setup_command.set_defaults(func=setup)
+
+    args = parser.parse_args()
+    args.func(args)
 
 try:
     main()
