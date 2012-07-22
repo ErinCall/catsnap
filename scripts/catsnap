@@ -20,7 +20,7 @@ def add(args):
     image.add_tags(args.tags)
     add_image_to_tags(truck.calculate_filename(), args.tags)
 
-    print truck.url()
+    print truck.url(extension=args.extension)
 
 def find(args):
     filenames = set()
@@ -31,7 +31,7 @@ def find(args):
     for image in images:
         filename = image['filename']
         image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename)
+        url = ImageTruck.url_for_filename(filename, extension=args.extension)
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):
@@ -48,8 +48,10 @@ def show_help():
 
 def main():
     parser = argparse.ArgumentParser(
-            description='store and search for images by tag')
-    subparsers = parser.add_subparsers()
+            description='Store and search for images by tag.')
+    parser.add_argument('-e', '--extension', action='store_true',
+            help="append '#.gif' to urls (e.g. for pasting in Campfire)")
+    subparsers = parser.add_subparsers(help='Actions')
 
     add_command = subparsers.add_parser('add', help='add an image')
     add_command.add_argument('path', help='url or filename to add')
