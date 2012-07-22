@@ -50,7 +50,7 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename):
-        return cls._url(filename, Config().bucket().name)
+        return cls._url(filename, Config().bucket_name())
 
     def upload(self):
         key = self._bucket().new_key(self.calculate_filename())

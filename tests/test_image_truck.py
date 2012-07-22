@@ -111,10 +111,8 @@ class TestImageTruck(TestCase):
 
     @patch('catsnap.image_truck.Config')
     def test_url_for_filename(self, Config):
-        bucket = Mock()
-        bucket.name = 'greeble'
         config = Mock()
-        config.bucket.return_value = bucket
+        config.bucket_name.return_value = 'greeble'
         Config.return_value = config
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
