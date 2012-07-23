@@ -104,6 +104,28 @@ class TestConfig(TestCase):
         eq_(config.parser.get('catsnap', 'bucket'), 'mypics')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'mypics')
 
+    @patch('catsnap.Config._input')
+    def test_change_config__one_setting_name(self, _input):
+        config = Config(get_missing_settings=False)
+        self._set_parser_defaults(config.parser)
+        _input.return_value = 'truckit'
+
+        config.get_settings(override_existing=True, settings=['bucket'])
+        _input.assert_called_once_with("Please name your bucket (leave blank "
+                "to use 'mypics'): ")
+        eq_(config.parser.get('catsnap', 'bucket'), 'truckit')
+
+    @patch('catsnap.Config.get_credentials')
+    @patch('catsnap.Config.get_config')
+    def test_get_settings__passes_setting_names_along(self, get_config,
+            get_credentials):
+        config = Config(get_missing_settings=False)
+        config.parser = Mock()
+        config.get_settings(override_existing=True, settings=[
+                'bucket'])
+        get_config.assert_called_once_with(['bucket'], override_existing=True)
+        get_credentials.assert_called_once_with(['bucket'],
+                override_existing=True)
 
     @patch('catsnap.Config._input')
     def test_change_config__does_not_override_custom_table_prefix(self, _input):
@@ -120,7 +142,7 @@ class TestConfig(TestCase):
         config.parser.has_option.return_value = True
         _input.return_value = 'pics'
 
-        config.get_config(override_existing=True)
+        config.get_config(['bucket'], override_existing=True)
         config.parser.set.assert_called_once_with('catsnap', 'bucket', 'pics')
 
     def _set_parser_defaults(self, parser):

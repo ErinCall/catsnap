@@ -39,16 +39,20 @@ class Config(object):
         if get_missing_settings:
             self.get_settings()
 
-    def get_settings(self, override_existing=False):
+    def get_settings(self, override_existing=False, settings=[]):
         missing_creds = False
         missing_config = False
+
+        if settings == []:
+            settings = ['aws_access_key_id', 'aws_secret_access_key',
+                        'bucket', 'table_prefix']
         try:
             self.parser.get('Credentials', 'aws_access_key_id')
             self.parser.get('Credentials', 'aws_secret_access_key')
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             missing_creds = True
         if override_existing or missing_creds:
-            self.get_credentials(override_existing=override_existing)
+            self.get_credentials(settings, override_existing=override_existing)
 
         try:
             self.parser.get('catsnap', 'bucket')
@@ -56,25 +60,25 @@ class Config(object):
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             missing_config = True
         if override_existing or missing_config:
-            self.get_config(override_existing=override_existing)
+            self.get_config(settings, override_existing=override_existing)
 
         with open(self.CONFIG_FILE, 'w', 600) as config_file:
             self.parser.write(config_file)
 
-    def get_credentials(self, override_existing=False):
+    def get_credentials(self, settings, override_existing=False):
         sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
                          "gp/aws/securityCredentials\n")
 
         self._get_setting('Credentials', 'aws_access_key_id',
                 'Enter your access key id%s: ',
                 " (leave blank to keep using '%s')",
-                override_existing, self._input)
+                override_existing, self._input, settings)
         self._get_setting('Credentials', 'aws_secret_access_key',
                 'Enter your secret access key%s',
                 " (leave blank to keep using what you had before)",
-                override_existing, getpass.getpass)
+                override_existing, getpass.getpass, settings)
 
-    def get_config(self, override_existing=False):
+    def get_config(self, settings, override_existing=False):
         if not self.parser.has_section('catsnap'):
             self.parser.add_section('catsnap')
 
@@ -86,7 +90,7 @@ class Config(object):
         self._get_setting('catsnap', 'bucket',
                 "Please name your bucket%s: ",
                 " (leave blank to use '%s')",
-                override_existing, self._input,
+                override_existing, self._input, settings,
                 global_default='%s-%s' % (BUCKET_BASE, os.environ['USER']))
 
         if not has_custom_prefix:
@@ -95,7 +99,10 @@ class Config(object):
 
     def _get_setting(self, section, setting_name, message,
                     override_message, override_existing, read,
-                    global_default=None):
+                    settings, global_default=None):
+        if setting_name not in settings:
+            return
+
         if not self.parser.has_section(section):
             self.parser.add_section(section)
 
