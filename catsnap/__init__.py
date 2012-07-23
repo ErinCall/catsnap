@@ -72,11 +72,8 @@ class Config(object):
             self.parser.set('catsnap', 'bucket', actual_bucket_name or bucket_name)
 
         if not self.parser.has_option('catsnap', 'table_prefix'):
-            table_prefix = self.parser.get('catsnap', 'bucket')
-            actual_table_prefix = self._input("Please choose a table prefix "
-                    "(leave blank to use '%s'): " % table_prefix)
             self.parser.set('catsnap', 'table_prefix',
-                    actual_table_prefix or table_prefix)
+                    self.parser.get('catsnap', 'bucket'))
 
     def setup(self):
         created_tables = 0

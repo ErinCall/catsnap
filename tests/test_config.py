@@ -30,19 +30,16 @@ class TestConfig(TestCase):
         eq_(config.parser.get('Credentials', 'aws_secret_access_key'),
                 'secret access key')
 
+    @patch('catsnap.Config.get_credentials')
     @patch('catsnap.os')
     @patch('catsnap.Config._input')
-    def test_get_catsnap_config(self, _input, os):
+    def test_get_catsnap_config(self, _input, os, get_credentials):
         os.environ.__getitem__.return_value = 'mcgee'
         _input.return_value = ''
 
         config = Config()
-        _input.assert_has_calls([
-            call("Please name your bucket (leave blank to use "
-                "'catsnap-mcgee'): "),
-            call("Please choose a table prefix (leave blank to use "
-                "'catsnap-mcgee'): "),
-        ])
+        _input.assert_called_once_with("Please name your bucket (leave "
+                "blank to use 'catsnap-mcgee'): ")
         eq_(config.parser.get('catsnap', 'bucket'), 'catsnap-mcgee')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'catsnap-mcgee')
 
@@ -57,17 +54,6 @@ class TestConfig(TestCase):
         config = Config()
         eq_(config.parser.get('catsnap', 'bucket'), 'booya')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'booya')
-
-    @patch('catsnap.os')
-    @patch('catsnap.Config._input')
-    @patch('catsnap.Config.get_credentials')
-    def test_get_catsnap_config__custom_names(self, get_credentials, _input, os):
-        os.environ.__getitem__.return_value = 'mcgee'
-        _input.side_effect = ['rutabaga', 'wootabaga']
-
-        config = Config()
-        eq_(config.parser.get('catsnap', 'bucket'), 'rutabaga')
-        eq_(config.parser.get('catsnap', 'table_prefix'), 'wootabaga')
 
 class TestSetup(TestCase):
     @patch('catsnap.Config.create_table')
