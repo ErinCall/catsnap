@@ -14,6 +14,10 @@ from boto.exception import DynamoDBResponseError
 HASH_KEY = 'tag'
 BUCKET_BASE = 'catsnap'
 
+AUTH_SETTINGS = ['aws_access_key_id', 'aws_secret_access_key']
+CATSNAP_SETTINGS = ['bucket']
+ALL_SETTINGS = AUTH_SETTINGS + CATSNAP_SETTINGS
+
 class Config(object):
 
     CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
@@ -44,19 +48,18 @@ class Config(object):
         missing_config = False
 
         if settings == []:
-            settings = ['aws_access_key_id', 'aws_secret_access_key',
-                        'bucket', 'table_prefix']
+            settings = ALL_SETTINGS
         try:
-            self.parser.get('Credentials', 'aws_access_key_id')
-            self.parser.get('Credentials', 'aws_secret_access_key')
+            for setting in AUTH_SETTINGS:
+                self.parser.get('Credentials', setting)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             missing_creds = True
         if override_existing or missing_creds:
             self.get_credentials(settings, override_existing=override_existing)
 
         try:
-            self.parser.get('catsnap', 'bucket')
-            self.parser.get('catsnap', 'table_prefix')
+            for setting in CATSNAP_SETTINGS:
+                self.parser.get('catsnap', setting)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             missing_config = True
         if override_existing or missing_config:

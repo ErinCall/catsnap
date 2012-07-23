@@ -4,6 +4,7 @@ import sys
 import time
 import argparse
 
+import catsnap
 from catsnap import Config
 from catsnap.image_truck import ImageTruck
 from catsnap.document.tag import Tag
@@ -68,7 +69,11 @@ def main():
     config_command = subparsers.add_parser('config',
             help='update configuration')
     config_command.add_argument('settings', nargs='*', help='settings to '
-            'update (or leave blank, to loop through all available settings)')
+            'update (or leave blank, to loop through all available settings)',
+            choices=map(str, catsnap.ALL_SETTINGS))
+    # we had to map str() on the settings because of an argparse bug:
+    # if the user specifies an invalid option here, the error message
+    # uses the __repr__ of the choices rather than their __str__.
     config_command.set_defaults(func=update_config)
 
     args = parser.parse_args()
