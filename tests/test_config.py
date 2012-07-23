@@ -69,12 +69,7 @@ class TestConfig(TestCase):
     def test_change_config(self, _input, getpass, os):
         os.environ.__getitem__.return_value = 'mcgee'
         config = Config(get_missing_settings=False)
-        config.parser.add_section('Credentials')
-        config.parser.add_section('catsnap')
-        config.parser.set('Credentials', 'aws_access_key_id', 'itsme')
-        config.parser.set('Credentials', 'aws_secret_access_key', 'letmein')
-        config.parser.set('catsnap', 'bucket', 'mypics')
-        config.parser.set('catsnap', 'table_prefix', 'mypics')
+        self._set_parser_defaults(config.parser)
 
         _input.side_effect = [ 'hereiam', 'catsnap-giggity' ]
         getpass.getpass.return_value = 'pa55word'
@@ -83,7 +78,7 @@ class TestConfig(TestCase):
         _input.assert_has_calls([
                 call("Enter your access key id (leave blank to keep using "
                         "'itsme'): "),
-                call("Please name your bucket (leave blank to keep using "
+                call("Please name your bucket (leave blank to use "
                         "'mypics'): ")])
         getpass.getpass.assert_called_once_with('Enter your secret access key '
                 '(leave blank to keep using what you had before): ')
@@ -98,12 +93,7 @@ class TestConfig(TestCase):
     def test_change_config(self, _input, getpass, os):
         os.environ.__getitem__.return_value = 'mcgee'
         config = Config(get_missing_settings=False)
-        config.parser.add_section('Credentials')
-        config.parser.add_section('catsnap')
-        config.parser.set('Credentials', 'aws_access_key_id', 'itsme')
-        config.parser.set('Credentials', 'aws_secret_access_key', 'letmein')
-        config.parser.set('catsnap', 'bucket', 'mypics')
-        config.parser.set('catsnap', 'table_prefix', 'mypics')
+        self._set_parser_defaults(config.parser)
 
         _input.return_value = ''
         getpass.getpass.return_value = ''
@@ -113,6 +103,7 @@ class TestConfig(TestCase):
         eq_(config.parser.get('Credentials', 'aws_secret_access_key'), 'letmein')
         eq_(config.parser.get('catsnap', 'bucket'), 'mypics')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'mypics')
+
 
     @patch('catsnap.Config._input')
     def test_change_config__does_not_override_custom_table_prefix(self, _input):
@@ -131,6 +122,14 @@ class TestConfig(TestCase):
 
         config.get_config(override_existing=True)
         config.parser.set.assert_called_once_with('catsnap', 'bucket', 'pics')
+
+    def _set_parser_defaults(self, parser):
+        parser.add_section('Credentials')
+        parser.add_section('catsnap')
+        parser.set('Credentials', 'aws_access_key_id', 'itsme')
+        parser.set('Credentials', 'aws_secret_access_key', 'letmein')
+        parser.set('catsnap', 'bucket', 'mypics')
+        parser.set('catsnap', 'table_prefix', 'mypics')
 
 class TestSetup(TestCase):
     @patch('catsnap.Config.create_table')

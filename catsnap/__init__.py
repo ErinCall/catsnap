@@ -64,56 +64,57 @@ class Config(object):
     def get_credentials(self, override_existing=False):
         sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
                          "gp/aws/securityCredentials\n")
-        if not self.parser.has_section('Credentials'):
-            self.parser.add_section('Credentials')
 
-        has_key_id = self.parser.has_option('Credentials', 'aws_access_key_id')
-        has_secret_key = self.parser.has_option('Credentials',
-                'aws_secret_access_key')
-        if override_existing or not has_key_id:
-            use_default = ''
-            if has_key_id:
-                use_default = " (leave blank to keep using '%s')" % \
-                        self.parser.get('Credentials', 'aws_access_key_id')
-            key_id = self._input('Enter your access key id%s: ' % use_default)
-            if has_key_id and not key_id:
-                key_id = self.parser.get('Credentials', 'aws_access_key_id')
-            self.parser.set('Credentials', 'aws_access_key_id', key_id)
-
-        if override_existing or not has_secret_key:
-            use_default = ''
-            if has_secret_key:
-                use_default = " (leave blank to keep using what you had before)"
-            secret_key = getpass.getpass('Enter your secret access key%s: '
-                        % use_default)
-            if has_secret_key and not secret_key:
-                secret_key = self.parser.get('Credentials',
-                        'aws_secret_access_key')
-            self.parser.set('Credentials', 'aws_secret_access_key', secret_key)
+        self._get_setting('Credentials', 'aws_access_key_id',
+                'Enter your access key id%s: ',
+                " (leave blank to keep using '%s')",
+                override_existing, self._input)
+        self._get_setting('Credentials', 'aws_secret_access_key',
+                'Enter your secret access key%s',
+                " (leave blank to keep using what you had before)",
+                override_existing, getpass.getpass)
 
     def get_config(self, override_existing=False):
         if not self.parser.has_section('catsnap'):
             self.parser.add_section('catsnap')
 
-        has_bucket = self.parser.has_option('catsnap', 'bucket')
-        has_custom_prefix =  has_bucket \
+        has_custom_prefix =  self.parser.has_option('catsnap', 'bucket') \
                 and self.parser.has_option('catsnap', 'table_prefix') \
                 and self.parser.get('catsnap', 'bucket') != \
                         self.parser.get('catsnap', 'table_prefix')
-        if override_existing or not has_bucket:
-            bucket_name = '%s-%s' % (BUCKET_BASE, os.environ['USER'])
-            use = 'use'
-            if has_bucket:
-                bucket_name = self.parser.get('catsnap', 'bucket')
-                use = 'keep using'
-            actual_bucket_name = self._input("Please name your bucket (leave "
-                    "blank to %(use)s '%(bucket_name)s'): " % {
-                        'use': use, 'bucket_name': bucket_name})
-            self.parser.set('catsnap', 'bucket', actual_bucket_name or bucket_name)
+
+        self._get_setting('catsnap', 'bucket',
+                "Please name your bucket%s: ",
+                " (leave blank to use '%s')",
+                override_existing, self._input,
+                global_default='%s-%s' % (BUCKET_BASE, os.environ['USER']))
 
         if not has_custom_prefix:
             self.parser.set('catsnap', 'table_prefix',
                     self.parser.get('catsnap', 'bucket'))
+
+    def _get_setting(self, section, setting_name, message,
+                    override_message, override_existing, read,
+                    global_default=None):
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
+
+        has_setting = self.parser.has_option(section, setting_name)
+        if override_existing or not has_setting:
+            use_default = ''
+            if global_default:
+                use_default = override_message % global_default
+            if has_setting:
+                try:
+                    use_default = override_message % \
+                            self.parser.get(section, setting_name)
+                except TypeError:
+                    use_default = override_message
+            setting_value = read(message % use_default)
+            if has_setting and not setting_value:
+                setting_value = self.parser.get(section, setting_name)
+            setting_value = setting_value or global_default
+            self.parser.set(section, setting_name, setting_value)
 
     def setup(self):
         created_tables = 0
