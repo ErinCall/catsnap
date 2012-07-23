@@ -42,9 +42,9 @@ I've created image and tag tables. Dynamodb tables take some time after being
 created before they're available for use--please wait a minute to add an image.
 """)
 
-def show_help():
-    sys.stderr.write(USAGE)
-    sys.exit(1)
+def update_config(args):
+    config = Config(get_missing_settings=False)
+    config.get_settings(override_existing=True)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -64,6 +64,10 @@ def main():
 
     setup_command = subparsers.add_parser('setup', help='do first-time setup')
     setup_command.set_defaults(func=setup)
+
+    config_command = subparsers.add_parser('config',
+            help='update configuration')
+    config_command.set_defaults(func=update_config)
 
     args = parser.parse_args()
     args.func(args)
