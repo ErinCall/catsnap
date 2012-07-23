@@ -1,1 +1,0 @@
-BUCKET_BASE = 'catsnap'

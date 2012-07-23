@@ -12,6 +12,7 @@ from boto.exception import DynamoDBResponseError
 #now there're existing catsnap installs that use this schema. Sucks :(
 #So yeah every table is keyed on an attribute called 'tag'
 HASH_KEY = 'tag'
+BUCKET_BASE = 'catsnap'
 
 class Config(object):
 
@@ -100,7 +101,7 @@ class Config(object):
                 and self.parser.get('catsnap', 'bucket') != \
                         self.parser.get('catsnap', 'table_prefix')
         if override_existing or not has_bucket:
-            bucket_name = '%s-%s' % (settings.BUCKET_BASE, os.environ['USER'])
+            bucket_name = '%s-%s' % (BUCKET_BASE, os.environ['USER'])
             use = 'use'
             if has_bucket:
                 bucket_name = self.parser.get('catsnap', 'bucket')
