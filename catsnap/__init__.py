@@ -31,47 +31,86 @@ class Config(object):
             cls._instance = super(Config, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, get_missing_settings=True):
         self.parser = ConfigParser.ConfigParser()
         self.parser.read([self.CREDENTIALS_FILE, self.CONFIG_FILE])
 
+        if get_missing_settings:
+            self.get_settings()
+
+    def get_settings(self, override_existing=False):
+        missing_creds = False
+        missing_config = False
         try:
             self.parser.get('Credentials', 'aws_access_key_id')
             self.parser.get('Credentials', 'aws_secret_access_key')
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-            self.get_credentials()
+            missing_creds = True
+        if override_existing or missing_creds:
+            self.get_credentials(override_existing=override_existing)
 
         try:
             self.parser.get('catsnap', 'bucket')
             self.parser.get('catsnap', 'table_prefix')
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-            self.get_config()
+            missing_config = True
+        if override_existing or missing_config:
+            self.get_config(override_existing=override_existing)
 
         with open(self.CONFIG_FILE, 'w', 600) as config_file:
             self.parser.write(config_file)
 
-    def get_credentials(self):
+    def get_credentials(self, override_existing=False):
         sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
                          "gp/aws/securityCredentials\n")
         if not self.parser.has_section('Credentials'):
             self.parser.add_section('Credentials')
-        if not self.parser.has_option('Credentials', 'aws_access_key_id'):
-            self.parser.set('Credentials', 'aws_access_key_id',
-                    self._input('Enter your access key id: '))
-        if not self.parser.has_option('Credentials', 'aws_secret_access_key'):
-            self.parser.set('Credentials', 'aws_secret_access_key',
-                    getpass.getpass('Enter your secret access key: '))
 
-    def get_config(self):
+        has_key_id = self.parser.has_option('Credentials', 'aws_access_key_id')
+        has_secret_key = self.parser.has_option('Credentials',
+                'aws_secret_access_key')
+        if override_existing or not has_key_id:
+            use_default = ''
+            if has_key_id:
+                use_default = " (leave blank to keep using '%s')" % \
+                        self.parser.get('Credentials', 'aws_access_key_id')
+            key_id = self._input('Enter your access key id%s: ' % use_default)
+            if has_key_id and not key_id:
+                key_id = self.parser.get('Credentials', 'aws_access_key_id')
+            self.parser.set('Credentials', 'aws_access_key_id', key_id)
+
+        if override_existing or not has_secret_key:
+            use_default = ''
+            if has_secret_key:
+                use_default = " (leave blank to keep using what you had before)"
+            secret_key = getpass.getpass('Enter your secret access key%s: '
+                        % use_default)
+            if has_secret_key and not secret_key:
+                secret_key = self.parser.get('Credentials',
+                        'aws_secret_access_key')
+            self.parser.set('Credentials', 'aws_secret_access_key', secret_key)
+
+    def get_config(self, override_existing=False):
         if not self.parser.has_section('catsnap'):
             self.parser.add_section('catsnap')
-        if not self.parser.has_option('catsnap', 'bucket'):
+
+        has_bucket = self.parser.has_option('catsnap', 'bucket')
+        has_custom_prefix =  has_bucket \
+                and self.parser.has_option('catsnap', 'table_prefix') \
+                and self.parser.get('catsnap', 'bucket') != \
+                        self.parser.get('catsnap', 'table_prefix')
+        if override_existing or not has_bucket:
             bucket_name = '%s-%s' % (settings.BUCKET_BASE, os.environ['USER'])
+            use = 'use'
+            if has_bucket:
+                bucket_name = self.parser.get('catsnap', 'bucket')
+                use = 'keep using'
             actual_bucket_name = self._input("Please name your bucket (leave "
-                    "blank to use '%s'): " % bucket_name)
+                    "blank to %(use)s '%(bucket_name)s'): " % {
+                        'use': use, 'bucket_name': bucket_name})
             self.parser.set('catsnap', 'bucket', actual_bucket_name or bucket_name)
 
-        if not self.parser.has_option('catsnap', 'table_prefix'):
+        if not has_custom_prefix:
             self.parser.set('catsnap', 'table_prefix',
                     self.parser.get('catsnap', 'bucket'))
 

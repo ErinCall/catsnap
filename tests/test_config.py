@@ -55,6 +55,83 @@ class TestConfig(TestCase):
         eq_(config.parser.get('catsnap', 'bucket'), 'booya')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'booya')
 
+    @patch('catsnap.Config.get_credentials')
+    @patch('catsnap.Config.get_config')
+    def test_create_config_withut_setting_up(self, get_config,
+            get_credentials):
+        config = Config(get_missing_settings=False)
+        assert not get_credentials.called
+        assert not get_config.called
+
+    @patch('catsnap.os')
+    @patch('catsnap.getpass')
+    @patch('catsnap.Config._input')
+    def test_change_config(self, _input, getpass, os):
+        os.environ.__getitem__.return_value = 'mcgee'
+        config = Config(get_missing_settings=False)
+        config.parser.add_section('Credentials')
+        config.parser.add_section('catsnap')
+        config.parser.set('Credentials', 'aws_access_key_id', 'itsme')
+        config.parser.set('Credentials', 'aws_secret_access_key', 'letmein')
+        config.parser.set('catsnap', 'bucket', 'mypics')
+        config.parser.set('catsnap', 'table_prefix', 'mypics')
+
+        _input.side_effect = [ 'hereiam', 'catsnap-giggity' ]
+        getpass.getpass.return_value = 'pa55word'
+
+        config.get_settings(override_existing=True)
+        _input.assert_has_calls([
+                call("Enter your access key id (leave blank to keep using "
+                        "'itsme'): "),
+                call("Please name your bucket (leave blank to keep using "
+                        "'mypics'): ")])
+        getpass.getpass.assert_called_once_with('Enter your secret access key '
+                '(leave blank to keep using what you had before): ')
+        eq_(config.parser.get('Credentials', 'aws_access_key_id'), 'hereiam')
+        eq_(config.parser.get('Credentials', 'aws_secret_access_key'), 'pa55word')
+        eq_(config.parser.get('catsnap', 'bucket'), 'catsnap-giggity')
+        eq_(config.parser.get('catsnap', 'table_prefix'), 'catsnap-giggity')
+
+    @patch('catsnap.os')
+    @patch('catsnap.getpass')
+    @patch('catsnap.Config._input')
+    def test_change_config(self, _input, getpass, os):
+        os.environ.__getitem__.return_value = 'mcgee'
+        config = Config(get_missing_settings=False)
+        config.parser.add_section('Credentials')
+        config.parser.add_section('catsnap')
+        config.parser.set('Credentials', 'aws_access_key_id', 'itsme')
+        config.parser.set('Credentials', 'aws_secret_access_key', 'letmein')
+        config.parser.set('catsnap', 'bucket', 'mypics')
+        config.parser.set('catsnap', 'table_prefix', 'mypics')
+
+        _input.return_value = ''
+        getpass.getpass.return_value = ''
+
+        config.get_settings(override_existing=True)
+        eq_(config.parser.get('Credentials', 'aws_access_key_id'), 'itsme')
+        eq_(config.parser.get('Credentials', 'aws_secret_access_key'), 'letmein')
+        eq_(config.parser.get('catsnap', 'bucket'), 'mypics')
+        eq_(config.parser.get('catsnap', 'table_prefix'), 'mypics')
+
+    @patch('catsnap.Config._input')
+    def test_change_config__does_not_override_custom_table_prefix(self, _input):
+        existing_settings = {
+                'bucket': 'im-ah-gezz',
+                'table_prefix': 'that-catsnap-thing'}
+        def get_setting(section, setting_name):
+            if section != 'catsnap':
+                raise ValueError(section)
+            return existing_settings[setting_name]
+        config = Config(get_missing_settings=False)
+        config.parser = Mock()
+        config.parser.get.side_effect = get_setting
+        config.parser.has_option.return_value = True
+        _input.return_value = 'pics'
+
+        config.get_config(override_existing=True)
+        config.parser.set.assert_called_once_with('catsnap', 'bucket', 'pics')
+
 class TestSetup(TestCase):
     @patch('catsnap.Config.create_table')
     def test_creates_tables(self, create_table):
