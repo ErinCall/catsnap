@@ -44,7 +44,7 @@ created before they're available for use--please wait a minute to add an image.
 
 def update_config(args):
     config = Config(get_missing_settings=False)
-    config.get_settings(override_existing=True)
+    config.get_settings(override_existing=True, settings=args.settings)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -67,6 +67,8 @@ def main():
 
     config_command = subparsers.add_parser('config',
             help='update configuration')
+    config_command.add_argument('settings', nargs='*', help='settings to '
+            'update (or leave blank, to loop through all available settings)')
     config_command.set_defaults(func=update_config)
 
     args = parser.parse_args()
