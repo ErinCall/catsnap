@@ -5,7 +5,7 @@ import time
 import argparse
 
 import catsnap
-from catsnap import Config
+from catsnap import Config, Client
 from catsnap.image_truck import ImageTruck
 from catsnap.document.tag import Tag
 from catsnap.document.image import Image
@@ -36,7 +36,7 @@ def find(args):
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):
-    created_tables = Config().setup()
+    created_tables = Client().setup()
     if created_tables:
         sys.stdout.write("""
 I've created image and tag tables. Dynamodb tables take some time after being

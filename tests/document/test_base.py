@@ -7,28 +7,28 @@ from tests import TestCase
 from catsnap.document import Document
 
 class TestBaseBehavior(TestCase):
-    @patch('catsnap.document.Config')
-    def test_get_table_creates_table_conection(self, Config):
-        config = Mock()
-        Config.return_value = config
+    @patch('catsnap.document.Client')
+    def test_get_table_creates_table_conection(self, Client):
+        client = Mock()
+        Client.return_value = client
         mock_table = Mock()
-        config.table.return_value = mock_table
+        client.table.return_value = mock_table
 
         document = Document()
         document._table_name = 'grouchy'
         table = document._table()
         eq_(document._stored_table, mock_table)
         eq_(table, mock_table)
-        config.table.assert_called_with('grouchy')
+        client.table.assert_called_with('grouchy')
 
-    @patch('catsnap.document.Config')
-    def test_get_table_is_memoized(self, Config):
-        config = Mock()
-        Config.return_value = config
+    @patch('catsnap.document.Client')
+    def test_get_table_is_memoized(self, Client):
+        client = Mock()
+        Client.return_value = client
         document = Document()
         mock_table = Mock()
         document._stored_table = mock_table
 
         table = document._table()
         eq_(table, mock_table)
-        eq_(config.table.call_count, 0)
+        eq_(client.table.call_count, 0)

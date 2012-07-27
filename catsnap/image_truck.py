@@ -7,7 +7,7 @@ import hashlib
 import subprocess
 import re
 
-from catsnap import Config
+from catsnap import Config, Client
 
 class ImageTruck():
     _stored_bucket = None
@@ -45,7 +45,7 @@ class ImageTruck():
             return cls.new_from_file(path)
 
     def _bucket(self):
-        self._stored_bucket = self._stored_bucket or Config().bucket()
+        self._stored_bucket = self._stored_bucket or Client().bucket()
         return self._stored_bucket
 
     @classmethod

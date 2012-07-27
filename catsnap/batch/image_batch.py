@@ -1,14 +1,14 @@
 from __future__ import unicode_literals
 
-from catsnap import Config, HASH_KEY
+from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchList
 import json
 
 def get_images(filenames):
     if not filenames:
         raise StopIteration
-    dynamo = Config().get_dynamodb()
-    table = Config().table('image')
+    dynamo = Client().get_dynamodb()
+    table = Client().table('image')
     batch_list = BatchList(dynamo)
     batch_list.add_batch(table, filenames,
             attributes_to_get=['tags', HASH_KEY])

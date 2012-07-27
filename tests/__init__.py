@@ -16,3 +16,4 @@ class TestCase():
 
     def tearDown(self):
         catsnap.Config._instance = None
+        catsnap.Client._instance = None

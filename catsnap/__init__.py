@@ -18,23 +18,18 @@ AUTH_SETTINGS = ['aws_access_key_id', 'aws_secret_access_key']
 CATSNAP_SETTINGS = ['bucket']
 ALL_SETTINGS = AUTH_SETTINGS + CATSNAP_SETTINGS
 
-class Config(object):
-
-    CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
-    CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
-    parser = None
-
+class Singleton(object):
     _instance = None
-    _tables = {}
-    _bucket = None
-
-    _dynamo_connection = None
-    _s3_connection = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(Config, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(Singleton, cls).__new__(cls, *args, **kwargs)
         return cls._instance
+
+class Config(Singleton):
+    CREDENTIALS_FILE = os.path.join(os.environ['HOME'], '.boto')
+    CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
+    parser = None
 
     def __init__(self, get_missing_settings=True):
         self.parser = ConfigParser.ConfigParser()
@@ -126,6 +121,28 @@ class Config(object):
             setting_value = setting_value or global_default
             self.parser.set(section, setting_name, setting_value)
 
+    def bucket_name(self):
+        return self.parser.get('catsnap', 'bucket')
+
+    def _table_prefix(self):
+        return self.parser.get('catsnap', 'table_prefix')
+
+    def _access_key_id(self):
+        return self.parser.get('Credentials', 'aws_access_key_id')
+
+    def _secret_access_key(self):
+        return self.parser.get('Credentials', 'aws_secret_access_key')
+
+    def _input(self, *args, **kwargs):
+        return raw_input(*args, **kwargs)
+
+class Client(Singleton):
+    _tables = {}
+    _bucket = None
+
+    _dynamo_connection = None
+    _s3_connection = None
+
     def setup(self):
         created_tables = 0
         try:
@@ -145,7 +162,7 @@ class Config(object):
 
     def bucket(self):
         if not self._bucket:
-            bucket_name = self.bucket_name()
+            bucket_name = Config().bucket_name()
             s3 = self.get_s3()
             all_buckets = [x.name for x in s3.get_all_buckets()]
             if bucket_name not in all_buckets:
@@ -155,7 +172,7 @@ class Config(object):
         return self._bucket
 
     def create_table(self, table_name):
-        table_prefix = self._table_prefix()
+        table_prefix = Config()._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
 
         dynamo = self.get_dynamodb()
@@ -167,7 +184,7 @@ class Config(object):
                 write_units=5)
 
     def table(self, table_name):
-        table_prefix = self._table_prefix()
+        table_prefix = Config()._table_prefix()
         table_name = '%s-%s' % (table_prefix, table_name)
 
         if table_name not in self._tables:
@@ -178,28 +195,14 @@ class Config(object):
     def get_dynamodb(self):
         if not self._dynamo_connection:
             self._dynamo_connection = boto.connect_dynamodb(
-                    aws_access_key_id=self._access_key_id(),
-                    aws_secret_access_key=self._secret_access_key())
+                    aws_access_key_id=Config()._access_key_id(),
+                    aws_secret_access_key=Config()._secret_access_key())
         return self._dynamo_connection
 
     def get_s3(self):
         if not self._s3_connection:
             self._s3_connection = boto.connect_s3(
-                    aws_access_key_id=self._access_key_id(),
-                    aws_secret_access_key=self._secret_access_key())
+                    aws_access_key_id=Config()._access_key_id(),
+                    aws_secret_access_key=Config()._secret_access_key())
         return self._s3_connection
 
-    def bucket_name(self):
-        return self.parser.get('catsnap', 'bucket')
-
-    def _table_prefix(self):
-        return self.parser.get('catsnap', 'table_prefix')
-
-    def _access_key_id(self):
-        return self.parser.get('Credentials', 'aws_access_key_id')
-
-    def _secret_access_key(self):
-        return self.parser.get('Credentials', 'aws_secret_access_key')
-
-    def _input(self, *args, **kwargs):
-        return raw_input(*args, **kwargs)

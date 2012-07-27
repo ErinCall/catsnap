@@ -8,13 +8,13 @@ from catsnap import HASH_KEY
 from catsnap.batch.tag_batch import get_tags, add_image_to_tags
 
 class TestTagBatch(TestCase):
-    @patch('catsnap.batch.tag_batch.Config')
+    @patch('catsnap.batch.tag_batch.Client')
     @patch('catsnap.batch.tag_batch.BatchList')
-    def test_get_tags(self, BatchList, Config):
-        mock_config = Mock()
+    def test_get_tags(self, BatchList, Client):
+        mock_client = Mock()
         table = Mock()
         table.name = 'the-name-of-the-table'
-        mock_config.table.return_value = table
+        mock_client.table.return_value = table
         dynamo = Mock()
         dynamo.batch_get_item.return_value = {
                 'UnprocessedKeys': {},
@@ -28,8 +28,8 @@ class TestTagBatch(TestCase):
                                 HASH_KEY: 'dogs',
                                 'filenames': '["5ca1ab1e", "deadbeef"]'}],
                         'ConsumedCapacityUnits': 10.0}}}
-        mock_config.get_dynamodb.return_value = dynamo
-        Config.return_value = mock_config
+        mock_client.get_dynamodb.return_value = dynamo
+        Client.return_value = mock_client
         batch_list = Mock()
         BatchList.return_value = batch_list
 
@@ -47,14 +47,14 @@ class TestTagBatch(TestCase):
                 'filenames': [ '5ca1ab1e', 'deadbeef']}])
 
 
-    @patch('catsnap.batch.tag_batch.Config')
+    @patch('catsnap.batch.tag_batch.Client')
     @patch('catsnap.batch.tag_batch.BatchList')
     def test_get_tags__checks_back_on_unprocessed_keys(self,
-            BatchList, Config):
-        mock_config = Mock()
+            BatchList, Client):
+        mock_client = Mock()
         table = Mock()
         table.name = 'thetablename'
-        mock_config.table.return_value = table
+        mock_client.table.return_value = table
         dynamo = Mock()
         first_getitem = {
                 'UnprocessedKeys': {
@@ -78,8 +78,8 @@ class TestTagBatch(TestCase):
                                 'filenames': '["5ca1ab1e", "deadbeef"]'}],
                         'ConsumedCapacityUnits': 10.0}}}
         dynamo.batch_get_item.side_effect = [first_getitem, second_getitem]
-        mock_config.get_dynamodb.return_value = dynamo
-        Config.return_value = mock_config
+        mock_client.get_dynamodb.return_value = dynamo
+        Client.return_value = mock_client
         batch_list = Mock()
         BatchList.return_value = batch_list
 
@@ -97,9 +97,9 @@ class TestTagBatch(TestCase):
 
 
     @patch('catsnap.batch.tag_batch.BatchWriteList')
-    @patch('catsnap.batch.tag_batch.Config')
+    @patch('catsnap.batch.tag_batch.Client')
     @patch('catsnap.batch.tag_batch.get_tag_items')
-    def test_add_image_to_tags(self, get_tag_items, Config, BatchWriteList):
+    def test_add_image_to_tags(self, get_tag_items, Client, BatchWriteList):
         existing_tag_item = MagicMock()
         def existing_getitem(key):
             if key == 'filenames':
@@ -115,11 +115,11 @@ class TestTagBatch(TestCase):
         table = Mock()
         table.new_item.return_value = new_tag_item
         table.name = 'thetablename'
-        config = Mock()
-        config.table.return_value = table
+        client = Mock()
+        client.table.return_value = table
         dynamo = Mock()
-        config.get_dynamodb.return_value = dynamo
-        Config.return_value = config
+        client.get_dynamodb.return_value = dynamo
+        Client.return_value = client
         write_list = Mock()
         first_response = {
                 'UnprocessedItems': { 'thetablename': [
