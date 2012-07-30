@@ -15,6 +15,7 @@ class TestConfig(TestCase):
         _input.return_value = 'access key id'
 
         config = Config()
+        config.get_settings()
         sys.stdout.write.assert_called_with("Find your credentials at "
                 "https://portal.aws.amazon.com/gp/aws/securityCredentials\n")
         eq_(config.parser.get('Credentials', 'aws_access_key_id'),
@@ -30,6 +31,7 @@ class TestConfig(TestCase):
         _input.return_value = ''
 
         config = Config()
+        config.get_settings()
         _input.assert_called_once_with("Please name your bucket (leave "
                 "blank to use 'catsnap-mcgee'): ")
         eq_(config.parser.get('catsnap', 'bucket'), 'catsnap-mcgee')
@@ -44,6 +46,7 @@ class TestConfig(TestCase):
         _input.side_effect = ['booya', '']
 
         config = Config()
+        config.get_settings()
         eq_(config.parser.get('catsnap', 'bucket'), 'booya')
         eq_(config.parser.get('catsnap', 'table_prefix'), 'booya')
 
@@ -51,7 +54,7 @@ class TestConfig(TestCase):
     @patch('catsnap.Config.get_config')
     def test_create_config_withut_setting_up(self, get_config,
             get_credentials):
-        config = Config(get_missing_settings=False)
+        config = Config()
         assert not get_credentials.called
         assert not get_config.called
 
@@ -60,7 +63,7 @@ class TestConfig(TestCase):
     @patch('catsnap.Config._input')
     def test_change_config(self, _input, getpass, os):
         os.environ.__getitem__.return_value = 'mcgee'
-        config = Config(get_missing_settings=False)
+        config = Config()
         self._set_parser_defaults(config.parser)
 
         _input.side_effect = [ 'hereiam', 'catsnap-giggity' ]
@@ -84,7 +87,7 @@ class TestConfig(TestCase):
     @patch('catsnap.Config._input')
     def test_change_config(self, _input, getpass, os):
         os.environ.__getitem__.return_value = 'mcgee'
-        config = Config(get_missing_settings=False)
+        config = Config()
         self._set_parser_defaults(config.parser)
 
         _input.return_value = ''
@@ -98,7 +101,7 @@ class TestConfig(TestCase):
 
     @patch('catsnap.Config._input')
     def test_change_config__one_setting_name(self, _input):
-        config = Config(get_missing_settings=False)
+        config = Config()
         self._set_parser_defaults(config.parser)
         _input.return_value = 'truckit'
 
@@ -111,7 +114,7 @@ class TestConfig(TestCase):
     @patch('catsnap.Config.get_config')
     def test_get_settings__passes_setting_names_along(self, get_config,
             get_credentials):
-        config = Config(get_missing_settings=False)
+        config = Config()
         config.parser = Mock()
         config.get_settings(override_existing=True, settings=[
                 'bucket'])
@@ -128,7 +131,7 @@ class TestConfig(TestCase):
             if section != 'catsnap':
                 raise ValueError(section)
             return existing_settings[setting_name]
-        config = Config(get_missing_settings=False)
+        config = Config()
         config.parser = Mock()
         config.parser.get.side_effect = get_setting
         config.parser.has_option.return_value = True

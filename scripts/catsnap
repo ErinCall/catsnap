@@ -44,7 +44,7 @@ created before they're available for use--please wait a minute to add an image.
 """)
 
 def update_config(args):
-    config = Config(get_missing_settings=False)
+    config = Config()
     config.get_settings(override_existing=True, settings=args.settings)
 
 def main():

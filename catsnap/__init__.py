@@ -31,12 +31,9 @@ class Config(Singleton):
     CONFIG_FILE = os.path.join(os.environ['HOME'], '.catsnap')
     parser = None
 
-    def __init__(self, get_missing_settings=True):
+    def __init__(self):
         self.parser = ConfigParser.ConfigParser()
         self.parser.read([self.CREDENTIALS_FILE, self.CONFIG_FILE])
-
-        if get_missing_settings:
-            self.get_settings()
 
     def get_settings(self, override_existing=False, settings=[]):
         missing_creds = False
@@ -142,6 +139,11 @@ class Client(Singleton):
 
     _dynamo_connection = None
     _s3_connection = None
+    config = None
+
+    def __init__(self):
+        config = Config()
+        config.get_settings()
 
     def setup(self):
         created_tables = 0

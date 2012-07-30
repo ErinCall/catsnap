@@ -11,11 +11,14 @@ from catsnap import Config, Client
 
 class ImageTruck():
     _stored_bucket = None
+    config = None
 
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
+        self.config = Config()
+        self.config.get_settings()
 
     @classmethod
     def new_from_url(cls, url):
