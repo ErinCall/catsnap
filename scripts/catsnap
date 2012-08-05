@@ -39,8 +39,8 @@ def find(args):
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):
-    created_tables = Client().setup()
     update_config(args)
+    created_tables = Client().setup()
     if created_tables:
         sys.stdout.write("""
 I've created image and tag tables. Dynamodb tables take some time after being
