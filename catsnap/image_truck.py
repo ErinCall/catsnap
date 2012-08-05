@@ -7,7 +7,8 @@ import hashlib
 import subprocess
 import re
 
-from catsnap import Config, Client
+from catsnap import Client
+from catsnap.config import MetaConfig
 
 class ImageTruck():
     _stored_bucket = None
@@ -17,8 +18,7 @@ class ImageTruck():
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
-        self.config = Config()
-        self.config.get_settings()
+        self.config = MetaConfig()
 
     @classmethod
     def new_from_url(cls, url):
@@ -53,7 +53,7 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename, **kwargs):
-        return cls._url(filename, Config().bucket_name(), **kwargs)
+        return cls._url(filename, MetaConfig()['bucket'], **kwargs)
 
     def upload(self):
         key = self._bucket().new_key(self.calculate_filename())
@@ -67,7 +67,7 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename(), Config().bucket_name(),
+        return self._url(self.calculate_filename(), MetaConfig()['bucket'],
                 **kwargs)
 
     @classmethod

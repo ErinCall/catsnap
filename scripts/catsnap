@@ -3,11 +3,13 @@
 import sys
 import time
 import argparse
+import StringIO
 
 import catsnap
-from catsnap import Config, Client
+from catsnap import Client
+import catsnap.config.file_config
+from catsnap.config import MetaConfig
 from catsnap.image_truck import ImageTruck
-from catsnap.document.tag import Tag
 from catsnap.document.image import Image
 from catsnap.batch.image_batch import get_images
 from catsnap.batch.tag_batch import get_tags, add_image_to_tags
@@ -24,6 +26,7 @@ def add(args):
     print truck.url(extension=args.extension)
 
 def find(args):
+    config = MetaConfig()
     filenames = set()
     tags = get_tags(args.tags)
     for tag in tags:
@@ -32,11 +35,12 @@ def find(args):
     for image in images:
         filename = image['filename']
         image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename, extension=args.extension)
+        url = ImageTruck.url_for_filename(filename, extension=config['extension'])
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):
     created_tables = Client().setup()
+    update_config(args)
     if created_tables:
         sys.stdout.write("""
 I've created image and tag tables. Dynamodb tables take some time after being
@@ -44,14 +48,28 @@ created before they're available for use--please wait a minute to add an image.
 """)
 
 def update_config(args):
-    config = Config()
-    config.get_settings(override_existing=True, settings=args.settings)
+    config = catsnap.config.file_config.FileConfig()
+    if 'settings' in args:
+        config.collect_settings(settings_to_get=args.settings)
+    else:
+        config.collect_settings()
 
 def main():
+    orig_stdout = sys.stdout
+    stdout_capture = StringIO.StringIO()
+    sys.stdout = stdout_capture
+    error = None
+    try:
+        config = MetaConfig()
+    except SystemExit:
+        #the argparse inside the ArgumentConfig will print to
+        #stdout and then throw a SYSTEM GODDAMN EXIT.
+        error = stdout_capture.getvalue()
+    finally:
+        sys.stdout = orig_stdout
     parser = argparse.ArgumentParser(
+            usage='',
             description='Store and search for images by tag.')
-    parser.add_argument('-e', '--extension', action='store_true',
-            help="append '#.gif' to urls (e.g. for pasting in Campfire)")
     subparsers = parser.add_subparsers(help='Actions')
 
     add_command = subparsers.add_parser('add', help='add an image')
@@ -68,15 +86,42 @@ def main():
 
     config_command = subparsers.add_parser('config',
             help='update configuration')
+    #we have to manually add a "no choice" option because of what appears to
+    #be an argparse bug: choices=[...] requires some choice even though
+    #nargs='*' says "no choice is required."
+    choices = map(str, catsnap.config.file_config.ALL_SETTINGS)
+    choices.append([])
     config_command.add_argument('settings', nargs='*', help='settings to '
             'update (or leave blank, to loop through all available settings)',
-            choices=map(str, catsnap.ALL_SETTINGS))
-    # we had to map str() on the settings because of an argparse bug:
-    # if the user specifies an invalid option here, the error message
-    # uses the __repr__ of the choices rather than their __str__.
+            choices=choices)
+    #we had to map str() on the settings because of an argparse bug:
+    #if the user specifies an invalid option here, the error message
+    #uses the __repr__ of the choices rather than their __str__.
     config_command.set_defaults(func=update_config)
 
-    args = parser.parse_args()
+    #this help command is necessary because the argparse inside MetaConfig
+    #doesn't see the `-h` in `catsnap find -h` as a flag on find, but as a
+    #flag on catsnap itself. find never gets to see the -h and we don't get
+    #its help from it.
+    help_command = subparsers.add_parser('help',
+            help='show help for an individual command')
+    parsers = {
+            'add': add_command,
+            'find': find_command,
+            'setup': setup_command,
+            'help': help_command,
+            'config': config_command}
+    help_command.add_argument('command', nargs=1,
+            choices=parsers.keys())
+    def show_command_help(args):
+        sys.stderr.write(parsers[args.command[0]].format_help())
+    help_command.set_defaults(func=show_command_help)
+
+    if error is not None:
+        sys.stderr.write(error)
+        sys.stderr.write(parser.format_help())
+        sys.exit(2)
+    args = parser.parse_args(config['arg'])
     args.func(args)
 
 try:

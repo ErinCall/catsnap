@@ -1,19 +1,26 @@
 from __future__ import unicode_literals
+
 from mock import MagicMock
+import tempfile
 
 import catsnap
-import tempfile
+import catsnap.config.file_config
 
 class TestCase():
 
     def setUp(self):
         (_, creds) = tempfile.mkstemp()
+        self.creds_tempfile = creds
         (_, config) = tempfile.mkstemp()
-        catsnap.Config._input = MagicMock()
-        catsnap.Config.CONFIG_FILE = config
-        catsnap.Config.CREDENTIALS_FILE = creds
-        catsnap.getpass = MagicMock()
+        self.config_tempfile = config
+        catsnap.config.file_config.FileConfig._input = MagicMock()
+        catsnap.config.file_config.CONFIG_FILE = config
+        catsnap.config.file_config.LEGACY_CREDENTIALS_FILE = creds
+
+        catsnap.config.argument_config.sys = MagicMock()
+
+        catsnap.config.file_config.getpass = MagicMock()
 
     def tearDown(self):
-        catsnap.Config._instance = None
+        catsnap.config.MetaConfig._instance = None
         catsnap.Client._instance = None

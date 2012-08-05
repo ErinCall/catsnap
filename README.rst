@@ -28,6 +28,14 @@ Add an image:
 Find an image by tag:
     ``catsnap find kitten``
 
+Configuring Catsnap
+-------------------
+
+Catsnap supports configuration in 3 ways: environment variable, config file, and command-line argument. Command-line flags override config file settings, which override environment variables. Variables in each environment look slightly different:
+    ``export CATSNAP_AWS_ACCESS_KEY_ID=itsme``
+    ``catsnap --aws-access-key-id=itsme ...``
+    ``echo 'aws_access_key_id = itsme' >> ~/.catsnap`` (this is not strictly correct; the setting needs to be in the correct section. It is best to use ``catsnap config`` to edit your ~/.catsnap)
+
 How Catsnap interacts with your AWS account
 -------------------------------------------
 

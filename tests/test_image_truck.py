@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import tempfile
 from requests.exceptions import HTTPError
-from mock import patch, Mock, call
+from mock import patch, MagicMock, Mock, call
 from nose.tools import eq_, raises
 from tests import TestCase
 
@@ -98,24 +98,21 @@ class TestImageTruck(TestCase):
         ImageTruck.new_from_something('/Users/andrewlorente/.bashrc')
         new_from_file.assert_called_with('/Users/andrewlorente/.bashrc')
 
-    @patch('catsnap.image_truck.Config')
+    @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url(self, calculate_filename, Config):
-        config = Mock()
-        config.bucket_name.return_value = 'tune-carrier'
-        Config.return_value = config
+    def test_url(self, calculate_filename, MockMetaConfig):
+        MockMetaConfig.return_value = { 'bucket': 'tune-carrier'}
         calculate_filename.return_value = 'greensleeves'
 
         truck = ImageTruck('greensleeves', None, None)
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
     @patch('catsnap.image_truck.ImageTruck._url')
-    @patch('catsnap.image_truck.Config')
+    @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url__with_extension(self, calculate_filename, Config, _url):
-        config = Mock()
-        config.bucket_name.return_value = 'tune-carrier'
-        Config.return_value = config
+    def test_url__with_extension(self, calculate_filename,
+                                 MockMetaConfig, _url):
+        MockMetaConfig.return_value = {'bucket': 'tune-carrier'}
         calculate_filename.return_value = 'greensleeves'
         truck = ImageTruck('greensleeves', None, None)
 
@@ -123,20 +120,16 @@ class TestImageTruck(TestCase):
         _url.assert_called_once_with('greensleeves', 'tune-carrier',
                 extension=True)
 
-    @patch('catsnap.image_truck.Config')
-    def test_url_for_filename(self, Config):
-        config = Mock()
-        config.bucket_name.return_value = 'greeble'
-        Config.return_value = config
+    @patch('catsnap.image_truck.MetaConfig')
+    def test_url_for_filename(self, MockMetaConfig):
+        MockMetaConfig.return_value = {'bucket': 'greeble'}
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
 
-    @patch('catsnap.image_truck.Config')
+    @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck._url')
-    def test_url_for_filename__with_extension(self, _url, Config):
-        config = Mock()
-        config.bucket_name.return_value = 'greeble'
-        Config.return_value = config
+    def test_url_for_filename__with_extension(self, _url, MockMetaConfig):
+        MockMetaConfig.return_value = {'bucket': 'greeble'}
 
         ImageTruck.url_for_filename('CAFEBABE', extension=True)
         _url.assert_called_once_with('CAFEBABE', 'greeble', extension=True)
@@ -149,10 +142,9 @@ class TestImageTruck(TestCase):
         url = ImageTruck._url('deadbeef', 'tuneholder', extension=True)
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')
 
-    @patch('catsnap.image_truck.Config')
-    def test_get_bucket_creates_bucket_connection(self, Config):
-        config = Mock()
-        Config.return_value = config
+    @patch('catsnap.image_truck.MetaConfig')
+    def test_get_bucket_creates_bucket_connection(self, MockMetaConfig):
+        MockMetaConfig.return_value = MagicMock()
         mock_bucket = Mock()
         config.bucket.return_value = mock_bucket
 
@@ -162,14 +154,13 @@ class TestImageTruck(TestCase):
         eq_(truck._stored_bucket, mock_bucket)
         config.bucket.assert_called_with()
 
-    @patch('catsnap.image_truck.Config')
-    def test_get_bucket_creates_bucket_connection(self, Config):
-        config = Mock()
-        Config.return_value = config
+    @patch('catsnap.image_truck.MetaConfig')
+    def test_get_bucket_creates_bucket_connection(self, MockMetaConfig):
+        config = {}
+        MockMetaConfig.return_value = config
         mock_bucket = Mock()
         truck = ImageTruck(None, None, None)
         truck._stored_bucket = mock_bucket
 
         bucket = truck._bucket()
         eq_(bucket, mock_bucket)
-        eq_(config.table.call_count, 0)
