@@ -51,3 +51,6 @@ class TestArgumentConfig(TestCase):
         ok_('aws_access_key_id' not in config)
         ok_('brezhnev' not in config)
 
+    def test_fails_if_it_does_not_know_about_a_setting_in_all_settings(self):
+        with patch('catsnap.config.base.Config.ALL_SETTINGS', ['brofulness']):
+            assert_raises(AttributeError, ArgumentConfig)

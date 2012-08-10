@@ -3,7 +3,9 @@ from __future__ import unicode_literals
 import sys
 import argparse
 
-class ArgumentConfig(object):
+from catsnap.config.base import Config
+
+class ArgumentConfig(Config):
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--aws-access-key-id', help="Your AWS access key "
@@ -23,6 +25,10 @@ class ArgumentConfig(object):
         #argument, rather than as the script-name
         argv = sys.argv[1:]
         self._args = parser.parse_args(argv)
+
+        for setting in self.ALL_SETTINGS:
+            if not hasattr(self._args, setting):
+                raise AttributeError(setting)
 
     def __getitem__(self, item):
         try:

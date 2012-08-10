@@ -13,7 +13,7 @@ class TestCase():
         self.creds_tempfile = creds
         (_, config) = tempfile.mkstemp()
         self.config_tempfile = config
-        catsnap.config.file_config.FileConfig._input = MagicMock()
+        catsnap.config.file_config._input = MagicMock()
         catsnap.config.file_config.CONFIG_FILE = config
         catsnap.config.file_config.LEGACY_CREDENTIALS_FILE = creds
 
