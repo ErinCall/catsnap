@@ -12,13 +12,11 @@ from catsnap.config import MetaConfig
 
 class ImageTruck():
     _stored_bucket = None
-    config = None
 
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
-        self.config = MetaConfig()
 
     @classmethod
     def new_from_url(cls, url):
