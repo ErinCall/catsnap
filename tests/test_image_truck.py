@@ -101,7 +101,8 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url(self, calculate_filename, MockMetaConfig):
-        MockMetaConfig.return_value = { 'bucket': 'tune-carrier'}
+        config = Mock(bucket='tune-carrier')
+        MockMetaConfig.return_value = config
         calculate_filename.return_value = 'greensleeves'
 
         truck = ImageTruck('greensleeves', None, None)
@@ -112,24 +113,25 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url__with_extension(self, calculate_filename,
                                  MockMetaConfig, _url):
-        MockMetaConfig.return_value = {'bucket': 'tune-carrier'}
+        MockMetaConfig.return_value = Mock(bucket='tune-carrier',
+                extension=True)
         calculate_filename.return_value = 'greensleeves'
         truck = ImageTruck('greensleeves', None, None)
 
-        truck.url(extension=True)
+        truck.url()
         _url.assert_called_once_with('greensleeves', 'tune-carrier',
                 extension=True)
 
     @patch('catsnap.image_truck.MetaConfig')
     def test_url_for_filename(self, MockMetaConfig):
-        MockMetaConfig.return_value = {'bucket': 'greeble'}
+        MockMetaConfig.return_value = Mock(bucket='greeble')
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
 
     @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck._url')
     def test_url_for_filename__with_extension(self, _url, MockMetaConfig):
-        MockMetaConfig.return_value = {'bucket': 'greeble'}
+        MockMetaConfig.return_value = Mock(bucket='greeble')
 
         ImageTruck.url_for_filename('CAFEBABE', extension=True)
         _url.assert_called_once_with('CAFEBABE', 'greeble', extension=True)
@@ -156,7 +158,7 @@ class TestImageTruck(TestCase):
 
     @patch('catsnap.image_truck.MetaConfig')
     def test_get_bucket_creates_bucket_connection(self, MockMetaConfig):
-        config = {}
+        config = Mock()
         MockMetaConfig.return_value = config
         mock_bucket = Mock()
         truck = ImageTruck(None, None, None)

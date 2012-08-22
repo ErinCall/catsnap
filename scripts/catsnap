@@ -8,6 +8,7 @@ import StringIO
 import catsnap
 from catsnap import Client
 import catsnap.config.file_config
+from catsnap.config.base import Config
 from catsnap.config import MetaConfig
 from catsnap.image_truck import ImageTruck
 from catsnap.document.image import Image
@@ -23,7 +24,7 @@ def add(args):
     image.add_tags(args.tags)
     add_image_to_tags(truck.calculate_filename(), args.tags)
 
-    print truck.url(extension=args.extension)
+    print truck.url()
 
 def find(args):
     config = MetaConfig()
@@ -35,7 +36,7 @@ def find(args):
     for image in images:
         filename = image['filename']
         image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename, extension=config['extension'])
+        url = ImageTruck.url_for_filename(filename, extension=config.extension)
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):
@@ -89,7 +90,7 @@ def main():
     #we have to manually add a "no choice" option because of what appears to
     #be an argparse bug: choices=[...] requires some choice even though
     #nargs='*' says "no choice is required."
-    choices = map(str, catsnap.config.file_config.ALL_SETTINGS)
+    choices = map(str, Config.ALL_SETTINGS)
     choices.append([])
     config_command.add_argument('settings', nargs='*', help='settings to '
             'update (or leave blank, to loop through all available settings)',

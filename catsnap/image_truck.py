@@ -51,7 +51,7 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename, **kwargs):
-        return cls._url(filename, MetaConfig()['bucket'], **kwargs)
+        return cls._url(filename, MetaConfig().bucket, **kwargs)
 
     def upload(self):
         key = self._bucket().new_key(self.calculate_filename())
@@ -65,13 +65,15 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename(), MetaConfig()['bucket'],
-                **kwargs)
+        return self._url(self.calculate_filename(), MetaConfig().bucket,
+                extension=MetaConfig().extension)
 
     @classmethod
     def _url(cls, filename, bucket_name, extension=False):
         url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
                 'bucket': bucket_name, 'filename': filename}
-        if extension:
+        # we're using `is True` here to distinguish from `is some Mock that a
+        # test author accidentally slipped in`
+        if extension is True:
             url = url + '#.gif'
         return url

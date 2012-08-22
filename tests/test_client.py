@@ -37,8 +37,8 @@ class TestGetBucket(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_does_not_re_create_buckets(self, mock_boto, MockMetaConfig):
-        config = {'bucket': 'oodles', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         mock_bucket = Mock()
         mock_bucket.name = 'oodles'
@@ -54,8 +54,8 @@ class TestGetBucket(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_creates_bucket_if_necessary(self, mock_boto, MockMetaConfig):
-        config = {'bucket': 'galvanized', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='galvanized', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         s3 = Mock()
         mock_bucket = Mock()
@@ -70,8 +70,8 @@ class TestGetBucket(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_get_bucket_is_memoized(self, mock_boto, MockMetaConfig):
-        config = {'bucket': 'oodles', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         mock_bucket = Mock()
         mock_bucket.name = 'oodles'
@@ -88,7 +88,7 @@ class TestGetBucket(TestCase):
 class TestGetTable(TestCase):
     @patch('catsnap.MetaConfig')
     def test_memoization(self, MockMetaConfig):
-        config = {'bucket': 'foo'}
+        config = Mock(bucket='foo')
         MockMetaConfig.return_value = config
         client = Client()
         mock_table = Mock()
@@ -105,8 +105,8 @@ class TestCreateTable(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_create_table(self, mock_boto, MockMetaConfig):
-        config = {'bucket': 'myemmatable', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='myemmatable', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         dynamo = Mock()
         mock_table = Mock()
@@ -129,8 +129,8 @@ class TestGetConnections(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_get_dynamodb(self, boto, MockMetaConfig):
-        config = {'bucket': 'oodles', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         Client().get_dynamodb()
         eq_(boto.connect_dynamodb.call_count, 1)
@@ -138,8 +138,8 @@ class TestGetConnections(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_get_dynamodb__is_memoized(self, boto, MockMetaConfig):
-        config = {'bucket': 'oodles', 'aws_access_key_id': 'foo',
-                'aws_secret_access_key': 'bar'}
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
         MockMetaConfig.return_value = config
         boto.connect_dynamodb.side_effect = [1, 2]
         dynamo1 = Client().get_dynamodb()
@@ -151,7 +151,7 @@ class TestGetConnections(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_get_s3(self, boto, MockMetaConfig):
-        config = {'aws_access_key_id': 'itsme', 'aws_secret_access_key': 'letmein'}
+        config = Mock(aws_access_key_id='itsme', aws_secret_access_key='letmein')
         MockMetaConfig.return_value = config
         Client().get_s3()
         boto.connect_s3.assert_called_once_with(
@@ -161,7 +161,7 @@ class TestGetConnections(TestCase):
     @patch('catsnap.MetaConfig')
     @patch('catsnap.boto')
     def test_get_s3__is_memoized(self, boto, MockMetaConfig):
-        config = {'aws_access_key_id': 'itsme', 'aws_secret_access_key': 'letmein'}
+        config = Mock(aws_access_key_id='itsme', aws_secret_access_key='letmein')
         MockMetaConfig.return_value = config
         boto.connect_dynamodb.side_effect = [1, 2]
         sss1 = Client().get_s3()

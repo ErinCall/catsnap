@@ -32,3 +32,14 @@ class TestMetaConfig(TestCase):
                     "a setting.")
         else:
             raise AssertionError('this test shoulda thrown')
+
+    def test_getattr_delegates_to_getitem(self):
+        config = MetaConfig()
+        config._argument_config = {'aws_access_key_id': 'itsme'}
+
+        eq_(config.aws_access_key_id, 'itsme')
+
+    def test_getattr_raises_for_unknown_settings(self):
+        config = MetaConfig()
+
+        assert_raises(AttributeError, lambda: config.number_5)

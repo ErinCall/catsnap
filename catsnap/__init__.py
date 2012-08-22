@@ -40,7 +40,7 @@ class Client(Singleton):
 
     def bucket(self):
         if not self._bucket:
-            bucket_name = MetaConfig()['bucket']
+            bucket_name = MetaConfig().bucket
             s3 = self.get_s3()
             all_buckets = [x.name for x in s3.get_all_buckets()]
             if bucket_name not in all_buckets:
@@ -50,7 +50,7 @@ class Client(Singleton):
         return self._bucket
 
     def create_table(self, table_name):
-        table_prefix = MetaConfig()['bucket']
+        table_prefix = MetaConfig().bucket
         table_name = '%s-%s' % (table_prefix, table_name)
 
         dynamo = self.get_dynamodb()
@@ -62,7 +62,7 @@ class Client(Singleton):
                 write_units=5)
 
     def table(self, table_name):
-        table_prefix = MetaConfig()['bucket']
+        table_prefix = MetaConfig().bucket
         table_name = '%s-%s' % (table_prefix, table_name)
 
         if table_name not in self._tables:
@@ -73,14 +73,14 @@ class Client(Singleton):
     def get_dynamodb(self):
         if not self._dynamo_connection:
             self._dynamo_connection = boto.connect_dynamodb(
-                    aws_access_key_id=MetaConfig()['aws_access_key_id'],
-                    aws_secret_access_key=MetaConfig()['aws_secret_access_key'])
+                    aws_access_key_id=MetaConfig().aws_access_key_id,
+                    aws_secret_access_key=MetaConfig().aws_secret_access_key)
         return self._dynamo_connection
 
     def get_s3(self):
         if not self._s3_connection:
             self._s3_connection = boto.connect_s3(
-                    aws_access_key_id=MetaConfig()['aws_access_key_id'],
-                    aws_secret_access_key=MetaConfig()['aws_secret_access_key'])
+                    aws_access_key_id=MetaConfig().aws_access_key_id,
+                    aws_secret_access_key=MetaConfig().aws_secret_access_key)
         return self._s3_connection
 
