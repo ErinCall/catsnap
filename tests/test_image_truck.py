@@ -9,15 +9,18 @@ from tests import TestCase
 from catsnap.image_truck import ImageTruck
 
 class TestImageTruck(TestCase):
+    @patch('catsnap.image_truck.Client')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_save__uploads_image(self, calculate_filename):
+    def test_save__uploads_image(self, calculate_filename, MockClient):
         bucket = Mock()
         key = Mock()
         bucket.new_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
         calculate_filename.return_value = 'I am the keymaster'
 
         truck = ImageTruck('Are you the gatekeeper?', 'image/gif', None)
-        truck._stored_bucket = bucket
         truck.upload()
 
         bucket.new_key.assert_called_with('I am the keymaster')
@@ -143,26 +146,3 @@ class TestImageTruck(TestCase):
     def test_calculate_url__with_extension(self):
         url = ImageTruck._url('deadbeef', 'tuneholder', extension=True)
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')
-
-    @patch('catsnap.image_truck.MetaConfig')
-    def test_get_bucket_creates_bucket_connection(self, MockMetaConfig):
-        MockMetaConfig.return_value = MagicMock()
-        mock_bucket = Mock()
-        config.bucket.return_value = mock_bucket
-
-        truck = ImageTruck(None, None, None)
-        bucket = truck._bucket()
-        eq_(bucket, mock_bucket)
-        eq_(truck._stored_bucket, mock_bucket)
-        config.bucket.assert_called_with()
-
-    @patch('catsnap.image_truck.MetaConfig')
-    def test_get_bucket_creates_bucket_connection(self, MockMetaConfig):
-        config = Mock()
-        MockMetaConfig.return_value = config
-        mock_bucket = Mock()
-        truck = ImageTruck(None, None, None)
-        truck._stored_bucket = mock_bucket
-
-        bucket = truck._bucket()
-        eq_(bucket, mock_bucket)

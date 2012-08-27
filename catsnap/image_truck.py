@@ -11,8 +11,6 @@ from catsnap import Client
 from catsnap.config import MetaConfig
 
 class ImageTruck():
-    _stored_bucket = None
-
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
@@ -45,16 +43,12 @@ class ImageTruck():
         else:
             return cls.new_from_file(path)
 
-    def _bucket(self):
-        self._stored_bucket = self._stored_bucket or Client().bucket()
-        return self._stored_bucket
-
     @classmethod
     def url_for_filename(cls, filename, **kwargs):
         return cls._url(filename, MetaConfig().bucket, **kwargs)
 
     def upload(self):
-        key = self._bucket().new_key(self.calculate_filename())
+        key = Client().bucket().new_key(self.calculate_filename())
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(self.contents)
         key.make_public()
