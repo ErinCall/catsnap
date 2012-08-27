@@ -3,13 +3,14 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="2.0.0",
+      version="2.0.1",
       description="catalog and store funny pictures",
       author="Andrew Lorente",
       author_email="andrew.lorente@gmail.com",
       url="github.com/andrewlorente/catsnap",
       packages=['catsnap',
                 'catsnap.document',
+                'catsnap.config',
                 'catsnap.batch'],
       scripts=['scripts/catsnap'],
       install_requires=[
