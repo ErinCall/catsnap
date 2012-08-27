@@ -8,13 +8,13 @@ from catsnap import HASH_KEY
 from catsnap.batch.image_batch import get_images
 
 class TestImageBatch(TestCase):
-    @patch('catsnap.batch.image_batch.Config')
+    @patch('catsnap.batch.image_batch.Client')
     @patch('catsnap.batch.image_batch.BatchList')
-    def test_get_images(self, BatchList, Config):
-        mock_config = Mock()
+    def test_get_images(self, BatchList, Client):
+        mock_client = Mock()
         table = Mock()
         table.name = 'the-name-of-the-table'
-        mock_config.table.return_value = table
+        mock_client.table.return_value = table
         dynamo = Mock()
         dynamo.batch_get_item.return_value = {
                 'UnprocessedKeys': {},
@@ -28,8 +28,8 @@ class TestImageBatch(TestCase):
                                 HASH_KEY: 'badcafe',
                                 'tags': '["evil", "nefarious", "cat"]'}],
                         'ConsumedCapacityUnits': 10.0}}}
-        mock_config.get_dynamodb.return_value = dynamo
-        Config.return_value = mock_config
+        mock_client.get_dynamodb.return_value = dynamo
+        Client.return_value = mock_client
         batch_list = Mock()
         BatchList.return_value = batch_list
 
@@ -41,14 +41,14 @@ class TestImageBatch(TestCase):
         eq_(images, self._standard_fixture_images())
 
 
-    @patch('catsnap.batch.image_batch.Config')
+    @patch('catsnap.batch.image_batch.Client')
     @patch('catsnap.batch.image_batch.BatchList')
     def test_get_images__checks_back_on_unprocessed_keys(self,
-            BatchList, Config):
-        mock_config = Mock()
+            BatchList, Client):
+        mock_client = Mock()
         table = Mock()
         table.name = 'thetablename'
-        mock_config.table.return_value = table
+        mock_client.table.return_value = table
         dynamo = Mock()
         first_getitem = {
                 'UnprocessedKeys': {
@@ -74,8 +74,8 @@ class TestImageBatch(TestCase):
                                 'tags': '["evil", "nefarious", "cat"]'}],
                         'ConsumedCapacityUnits': 10.0}}}
         dynamo.batch_get_item.side_effect = [first_getitem, second_getitem]
-        mock_config.get_dynamodb.return_value = dynamo
-        Config.return_value = mock_config
+        mock_client.get_dynamodb.return_value = dynamo
+        Client.return_value = mock_client
         batch_list = Mock()
         BatchList.return_value = batch_list
 

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from catsnap import Config, HASH_KEY
+from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchWriteList, BatchList
 from boto.dynamodb.item import Item
 import json
@@ -9,8 +9,8 @@ def get_tag_items(tag_names):
     if not tag_names:
         raise StopIteration
 
-    dynamo = Config().get_dynamodb()
-    table = Config().table('tag')
+    dynamo = Client().get_dynamodb()
+    table = Client().table('tag')
     batch_list = BatchList(dynamo)
     batch_list.add_batch(table, tag_names,
             attributes_to_get=['filenames', HASH_KEY])
@@ -39,7 +39,7 @@ def add_image_to_tags(filename, tag_names):
         filenames.append(filename)
         item['filenames'] = json.dumps(filenames)
 
-    table = Config().table('tag')
+    table = Client().table('tag')
     for new_tag in set(tag_names) - set(x[HASH_KEY] for x in items):
         items.append(table.new_item(hash_key = new_tag,
                 attrs={'filenames': json.dumps([filename])}))
@@ -47,7 +47,7 @@ def add_image_to_tags(filename, tag_names):
     _submit_items(table, items)
 
 def _submit_items(table, items):
-    dynamo = Config().get_dynamodb()
+    dynamo = Client().get_dynamodb()
     write_list = BatchWriteList(dynamo)
     write_list.add_batch(table, puts=items)
     response = write_list.submit()
