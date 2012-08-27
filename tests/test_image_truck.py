@@ -104,7 +104,7 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url(self, calculate_filename, MockMetaConfig):
-        config = Mock(bucket='tune-carrier')
+        config = Mock(bucket='tune-carrier', extension=False)
         MockMetaConfig.return_value = config
         calculate_filename.return_value = 'greensleeves'
 
@@ -127,7 +127,7 @@ class TestImageTruck(TestCase):
 
     @patch('catsnap.image_truck.MetaConfig')
     def test_url_for_filename(self, MockMetaConfig):
-        MockMetaConfig.return_value = Mock(bucket='greeble')
+        MockMetaConfig.return_value = Mock(bucket='greeble', extension=False)
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
 

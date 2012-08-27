@@ -67,8 +67,6 @@ class ImageTruck():
     def _url(cls, filename, bucket_name, extension=False):
         url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
                 'bucket': bucket_name, 'filename': filename}
-        # we're using `is True` here to distinguish from `is some Mock that a
-        # test author accidentally slipped in`
-        if extension is True:
+        if extension:
             url = url + '#.gif'
         return url
