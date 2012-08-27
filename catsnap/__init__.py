@@ -16,10 +16,6 @@ class Client(Singleton):
 
     _dynamo_connection = None
     _s3_connection = None
-    config = None
-
-    def __init__(self):
-        config = MetaConfig()
 
     def setup(self):
         created_tables = 0
