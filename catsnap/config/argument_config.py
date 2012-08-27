@@ -17,7 +17,11 @@ class ArgumentConfig(Config):
         parser.add_argument('--bucket', help="The S3 bucket you want catsnap "
                 "to use")
         parser.add_argument('-e', '--extension', action='store_true',
+                default=None,
                 help="Append #.gif to urls (i.e. for pasting in Campfire)")
+        parser.add_argument('--no-extension', action='store_false',
+                dest='extension', default=None,
+                help="Do no append #.gif to urls")
         parser.add_argument('arg', nargs='*')
 
         #We're manually grabbing sys.argv so the tests can easily mock it
@@ -40,5 +44,5 @@ class ArgumentConfig(Config):
             raise KeyError(item)
 
     def __contains__(self, item):
-        return hasattr(self._args, item) \
-                and getattr(self._args, item) is not None
+        return hasattr(self._args, item) and \
+                getattr(self._args, item) is not None

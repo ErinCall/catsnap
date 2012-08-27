@@ -32,16 +32,24 @@ class TestArgumentConfig(TestCase):
         assert_raises(KeyError, lambda: config['bucket'])
 
     @patch('catsnap.config.argument_config.sys')
-    def test_extension_is_always_present__and_defaults_to_false(self, sys):
+    def test_extension_is_not_present_if_not_provided(self, sys):
         sys.argv = ['catsnap']
         config = ArgumentConfig()
-        ok_('extension' in config)
-        eq_(config['extension'], False)
+        ok_('extension' not in config)
 
+    @patch('catsnap.config.argument_config.sys')
+    def test_extension_is_true_if_turned_on(self, sys):
         sys.argv = ['catsnap', '--extension']
         config = ArgumentConfig()
         ok_('extension' in config)
         eq_(config['extension'], True)
+
+    @patch('catsnap.config.argument_config.sys')
+    def test_extension_is_false_if_turned_off(self, sys):
+        sys.argv = ['catsnap', '--no-extension']
+        config = ArgumentConfig()
+        ok_('extension' in config)
+        eq_(config['extension'], False)
 
     @patch('catsnap.config.argument_config.sys')
     def test_contains(self, sys):
