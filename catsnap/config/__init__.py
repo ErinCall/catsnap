@@ -11,10 +11,11 @@ class MetaConfig(Singleton):
         self._argument_config = ArgumentConfig()
         self._file_config = FileConfig()
         self._env_config = EnvConfig()
+        self._defaults = {'extension': False}
 
     def __getitem__(self, item):
         for subconfig in (self._argument_config, self._file_config,
-                self._env_config):
+                self._env_config, self._defaults):
             if item in subconfig:
                 return subconfig[item]
 

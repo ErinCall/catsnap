@@ -43,3 +43,7 @@ class TestMetaConfig(TestCase):
         config = MetaConfig()
 
         assert_raises(AttributeError, lambda: config.number_5)
+
+    def test_noncompulsory_arguments_have_defaults(self):
+        config = MetaConfig()
+        eq_(config['extension'], False)
