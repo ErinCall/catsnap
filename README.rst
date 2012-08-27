@@ -41,6 +41,5 @@ How Catsnap interacts with your AWS account
 
 Catsnap requires `an S3 bucket <http://aws.amazon.com/s3/>`_ to host your images. You can use an existing bucket, or Catsnap can create one for you. The name of the bucket will be visible in your image urls if you send them to other people, so don't choose something embarassing!
 
-Catsnap also creates two dynamodb tables. Dynamodb doesn't offer namespaced tables, so the tables' names are prefixed with your bucket name. If you wish to use a different prefix, you can specify one by editing ``~/.catsnap``. However, the program doesn't offer any interface for changing this setting, in order to avoid accidentally creating a mismatch between the filenames stored in dynamodb and those which're actually available in your s3 bucket. In general, you shouldn't have to worry about what table prefix catsnap uses.
-
+Catsnap also creates two dynamodb tables. Dynamodb doesn't offer namespaced tables, so the tables' names are prefixed with your bucket name. This should prevent catsnap from conflicting with any of your other tables' names.
 
