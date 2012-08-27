@@ -27,7 +27,6 @@ def add(args):
     print truck.url()
 
 def find(args):
-    config = MetaConfig()
     filenames = set()
     tags = get_tags(args.tags)
     for tag in tags:
@@ -36,7 +35,7 @@ def find(args):
     for image in images:
         filename = image['filename']
         image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename, extension=config.extension)
+        url = ImageTruck.url_for_filename(filename)
         print '%s   |   %s' % (url, image_tags)
 
 def setup(args):

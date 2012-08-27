@@ -134,9 +134,9 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck._url')
     def test_url_for_filename__with_extension(self, _url, MockMetaConfig):
-        MockMetaConfig.return_value = Mock(bucket='greeble')
+        MockMetaConfig.return_value = Mock(bucket='greeble', extension=True)
 
-        ImageTruck.url_for_filename('CAFEBABE', extension=True)
+        ImageTruck.url_for_filename('CAFEBABE')
         _url.assert_called_once_with('CAFEBABE', 'greeble', extension=True)
 
     def test_calculate_url(self):

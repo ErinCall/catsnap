@@ -44,8 +44,9 @@ class ImageTruck():
             return cls.new_from_file(path)
 
     @classmethod
-    def url_for_filename(cls, filename, **kwargs):
-        return cls._url(filename, MetaConfig().bucket, **kwargs)
+    def url_for_filename(cls, filename):
+        return cls._url(filename, MetaConfig().bucket,
+                extension=MetaConfig().extension)
 
     def upload(self):
         key = Client().bucket().new_key(self.calculate_filename())
