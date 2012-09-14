@@ -8,8 +8,13 @@ from nose.tools import eq_, assert_raises
 from catsnap import Client
 
 class TestSetup(TestCase):
+    @patch('catsnap.MetaConfig')
     @patch('catsnap.Client.create_table')
-    def test_creates_tables(self, create_table):
+    @patch('catsnap.boto')
+    def test_creates_tables(self, mock_boto, create_table, MockMetaConfig):
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
+        MockMetaConfig.return_value = config
         client = Client()
         tables_created = client.setup()
         create_table.assert_has_calls([
@@ -17,8 +22,13 @@ class TestSetup(TestCase):
             call('image')])
         eq_(tables_created, 2)
 
+    @patch('catsnap.MetaConfig')
     @patch('catsnap.Client.create_table')
-    def test_returns_number_of_new_tables(self, create_table):
+    @patch('catsnap.boto')
+    def test_returns_number_of_new_tables(self, mock_boto, create_table, MockMetaConfig):
+        config = Mock(bucket='oodles', aws_access_key_id='foo',
+                aws_secret_access_key='bar')
+        MockMetaConfig.return_value = config
         error = boto.exception.DynamoDBResponseError(400, 'table exists')
         error.error_code = 'ResourceInUseException'
         def do_create_table(table_name):
