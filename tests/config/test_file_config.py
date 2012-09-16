@@ -156,6 +156,24 @@ extension = no
 
 """)
 
+    @patch('catsnap.config.file_config.sys')
+    @patch('catsnap.config.file_config._input')
+    def test_boolean_options_are_validated_on_input(self, _input, sys):
+        _input.side_effect = [ 'no thanks', "seriously, no!", '0' ]
+        config = FileConfig()
+
+        config._get_setting('extension')
+        #['1', 'on', 'false', '0', 'off', 'yes', 'no', 'true']
+        sys.stdout.write.assert_has_calls([
+                call("Sorry, I don't understand what you meant by 'no "
+                    "thanks'. Please enter a valid value: 0, 1, false, no, "
+                    "off, on, true, yes.\n"),
+                call("Sorry, I don't understand what you meant by 'seriously, "
+                    "no!'. Please enter a valid value: 0, 1, false, no, "
+                    "off, on, true, yes.\n"),
+        ])
+        eq_(config['extension'], 0)
+
     @patch('catsnap.config.file_config.os')
     @patch('catsnap.config.file_config.getpass')
     @patch('catsnap.config.file_config._input')
