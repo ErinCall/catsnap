@@ -202,6 +202,13 @@ class TestFileSetting(TestCase):
         eq_(setting.message, 'green')
         eq_(setting.override_message, 'greenish')
 
+    def test_defaults_section_to_catsnap(self):
+        setting = FileSetting(
+                name='red',
+                message='green',
+                override_message='greenish')
+        eq_(setting.section, 'catsnap')
+
     def test_invalid_args_cause_exception(self):
         def invalid_setting():
             FileSetting(extreme_ironing=True)
