@@ -95,7 +95,7 @@ class FileConfig(Config):
                 section='catsnap',
                 name='bucket',
                 message="Please name your bucket%s: ",
-                global_default='%s-%s' % (BUCKET_BASE, os.environ['USER']),
+                global_default='%s-%s' % (BUCKET_BASE, os.environ.get('USER')),
                 override_message=" (leave blank to use '%s')"),
             FileSetting(
                 section='catsnap',
