@@ -14,6 +14,7 @@ setup(name="catsnap",
                 'catsnap.batch'],
       scripts=['scripts/catsnap'],
       install_requires=[
+          "Flask==0.9",
           "boto==2.5.2",
           "requests==0.13.2",
           "argparse==1.2.1",
