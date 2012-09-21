@@ -15,6 +15,7 @@ setup(name="catsnap",
       scripts=['scripts/catsnap'],
       install_requires=[
           "Flask==0.9",
+          "gunicorn==0.14.6",
           "boto==2.5.2",
           "requests==0.13.2",
           "argparse==1.2.1",
