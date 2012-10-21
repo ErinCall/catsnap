@@ -97,7 +97,7 @@ class TestCollectSettings(FileConfigTester):
     @patch('catsnap.config.file_config.os')
     @patch('catsnap.config.file_config._input')
     def test_get_catsnap_config(self, _input, os):
-        os.environ.__getitem__.return_value = 'mcgee'
+        os.environ.get.return_value = 'mcgee'
         _input.return_value = ''
 
         config = FileConfig()

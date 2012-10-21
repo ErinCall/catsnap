@@ -3,7 +3,7 @@ from flask import Flask, render_template, g, session
 from flask_openid import OpenID
 
 app = Flask(__name__)
-app.secret_key = os.environ['CATSNAP_SECRET_KEY']
+app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
 
 @app.before_request
