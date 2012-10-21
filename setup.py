@@ -19,6 +19,7 @@ setup(name="catsnap",
           "boto==2.5.2",
           "requests==0.13.2",
           "argparse==1.2.1",
+          "flask-openid",
 
           "mock==0.8",
           "nose==1.1.2",
