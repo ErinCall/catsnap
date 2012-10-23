@@ -8,8 +8,8 @@ from catsnap import HASH_KEY
 from catsnap.batch.image_batch import get_images
 
 class TestImageBatch(TestCase):
-    @patch('catsnap.batch.image_batch.Client')
-    @patch('catsnap.batch.image_batch.BatchList')
+    @patch('catsnap.batch.Client')
+    @patch('catsnap.batch.BatchList')
     def test_get_images(self, BatchList, Client):
         mock_client = Mock()
         table = Mock()
@@ -41,8 +41,8 @@ class TestImageBatch(TestCase):
         eq_(images, self._standard_fixture_images())
 
 
-    @patch('catsnap.batch.image_batch.Client')
-    @patch('catsnap.batch.image_batch.BatchList')
+    @patch('catsnap.batch.Client')
+    @patch('catsnap.batch.BatchList')
     def test_get_images__checks_back_on_unprocessed_keys(self,
             BatchList, Client):
         mock_client = Mock()
@@ -85,7 +85,7 @@ class TestImageBatch(TestCase):
     def test_get_images__degenerate_case(self):
         eq_(list(get_images([])), [])
 
-    @patch('catsnap.batch.image_batch.Client')
+    @patch('catsnap.batch.Client')
     def test_get_get_images__batches_very_large_requests(self, MockClient):
         dynamo = Mock()
         dynamo.batch_get_item.return_value = MagicMock()
@@ -93,7 +93,7 @@ class TestImageBatch(TestCase):
         client.get_dynamodb.return_value = dynamo
         MockClient.return_value = client
 
-        with patch('catsnap.batch.image_batch.MAX_ITEMS_TO_REQUEST', 1):
+        with patch('catsnap.batch.MAX_ITEMS_TO_REQUEST', 1):
             list(get_images(set(['one', 'two'])))
         eq_(dynamo.batch_get_item.call_count, 2)
 
