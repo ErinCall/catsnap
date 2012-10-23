@@ -6,7 +6,7 @@ import json
 
 MAX_ITEMS_TO_REQUEST = 99
 
-def get_images(filenames):
+def get_image_items(filenames):
     if not filenames:
         raise StopIteration
     filenames = list(filenames)
@@ -20,9 +20,6 @@ def get_images(filenames):
             attributes_to_get=['tags', HASH_KEY])
     response = dynamo.batch_get_item(batch_list)
     items = response['Responses'][table.name]['Items']
-    for item in items:
-        item['filename'] = item.pop(HASH_KEY)
-        item['tags'] = json.loads(item['tags'])
     if response['UnprocessedKeys'] \
             and table.name in response['UnprocessedKeys']:
         for key in response['UnprocessedKeys'][table.name]['Keys']:
@@ -32,5 +29,10 @@ def get_images(filenames):
         yield item
     if not unprocessed_keys:
         raise StopIteration
-    for item in get_images(unprocessed_keys):
+    for item in get_image_items(unprocessed_keys):
         yield item
+
+def get_images(filenames):
+    for item in get_image_items(filenames):
+        yield {'filename': item[HASH_KEY],
+               'tags': json.loads(item['tags'])}
