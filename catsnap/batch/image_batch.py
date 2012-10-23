@@ -4,9 +4,15 @@ from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchList
 import json
 
+MAX_ITEMS_TO_REQUEST = 99
+
 def get_images(filenames):
     if not filenames:
         raise StopIteration
+    filenames = list(filenames)
+    unprocessed_keys = filenames[MAX_ITEMS_TO_REQUEST:]
+    filenames = filenames[:MAX_ITEMS_TO_REQUEST]
+
     dynamo = Client().get_dynamodb()
     table = Client().table('image')
     batch_list = BatchList(dynamo)
@@ -17,7 +23,6 @@ def get_images(filenames):
     for item in items:
         item['filename'] = item.pop(HASH_KEY)
         item['tags'] = json.loads(item['tags'])
-    unprocessed_keys = []
     if response['UnprocessedKeys'] \
             and table.name in response['UnprocessedKeys']:
         for key in response['UnprocessedKeys'][table.name]['Keys']:

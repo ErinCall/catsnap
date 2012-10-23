@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from nose.tools import eq_
 from tests import TestCase
 
@@ -84,6 +84,19 @@ class TestImageBatch(TestCase):
 
     def test_get_images__degenerate_case(self):
         eq_(list(get_images([])), [])
+
+    @patch('catsnap.batch.image_batch.Client')
+    def test_get_get_images__batches_very_large_requests(self, MockClient):
+        dynamo = Mock()
+        dynamo.batch_get_item.return_value = MagicMock()
+        client = Mock()
+        client.get_dynamodb.return_value = dynamo
+        MockClient.return_value = client
+
+        with patch('catsnap.batch.image_batch.MAX_ITEMS_TO_REQUEST', 1):
+            list(get_images(set(['one', 'two'])))
+        eq_(dynamo.batch_get_item.call_count, 2)
+
     def _standard_fixture_images(self):
         return [
             {
