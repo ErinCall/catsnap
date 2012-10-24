@@ -4,8 +4,34 @@
         <title>Catsnap</title>
     </head>
     <body>
-        <form method="get" action="{{ url_for('find') }}">
-            <input type="text" name="tags" id="tags" />
-        </form>
+        <article id="find">
+            <h2>Search for an image</h2>
+            <form method="get" action="{{ url_for('find') }}">
+                <label for="find_tags">Search: </label>
+                <input type="text" name="find_tags" id="find_tags" />
+                <input type="submit" name="find_button" id="find_button" value="Find" />
+            </form>
+        </article>
+        <article id="add">
+            {% if not user %}
+                <form method="post" action="{{ url_for('login') }}">
+                    <input type="submit" name="login" id="login" value="Log in to add images" />
+                </form>
+            {% else %}
+                <div>
+                    <h2>Add an image</h2>
+                    <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+                        <label for="url">Url: </label>
+                        <input type="text" name="url" id="url" />
+                        <label for="add_tags">Tags: </label>
+                        <input type="text" name="add_tags" id="add_tags" />
+                        <input type="submit" name="add_button" id="add_button" value="Add" />
+                    </form>
+                </div>
+                <div>
+                    or <a href="{{ url_for('logout') }}">Log Out</a>.
+                </div>
+            {% endif %}
+        </article>
     </body>
 </html>

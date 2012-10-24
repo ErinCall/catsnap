@@ -2,12 +2,11 @@ from flask import request, render_template
 from catsnap.batch.tag_batch import get_tags
 from catsnap.batch.image_batch import get_images
 from catsnap.image_truck import ImageTruck
-#from catsnap.controllers import Controller
 from catsnap.web import app
 
 @app.route('/find', methods=['GET'])
 def find():
-    tag_names = request.args['tags'].split(' ')
+    tag_names = request.args['find_tags'].split(' ')
     filenames = set()
     tags = get_tags(tag_names)
     for tag in tags:

@@ -14,7 +14,8 @@ def before_request():
 
 import catsnap.web.controllers.login
 import catsnap.web.controllers.find
+import catsnap.web.controllers.add
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', user=g.user)

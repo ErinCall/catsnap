@@ -20,3 +20,9 @@ def login_redirect(openid_response):
     g.user = 1
     session['openid'] = openid_response.identity_url
     return redirect('/')
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    if 'openid' in session:
+        session.pop('openid')
+    return redirect('/')
