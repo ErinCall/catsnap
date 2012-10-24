@@ -1,4 +1,4 @@
-from flask import g, redirect, render_template, request
+from flask import g, redirect, render_template, request, session
 from catsnap.web import app
 from catsnap.web import oid
 
@@ -17,4 +17,6 @@ def login():
 
 @oid.after_login
 def login_redirect(openid_response):
+    g.user = 1
+    session['openid'] = openid_response.identity_url
     return redirect('/')
