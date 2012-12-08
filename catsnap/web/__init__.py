@@ -2,11 +2,13 @@ import os
 from flask import Flask, render_template, g, session
 from flask_openid import OpenID
 from catsnap.web.middleware.exception_logger import ExceptionLogger
+from catsnap.web.middleware.exception_notifier import ExceptionNotifier
 
 app = Flask(__name__)
 
 if os.environ.get('CATSNAP_ENV', None) == 'production':
     app.wsgi_app = ExceptionLogger(app.wsgi_app)
+    app.wsgi_app = ExceptionNotifier(app.wsgi_app)
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
 
