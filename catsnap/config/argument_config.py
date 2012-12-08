@@ -22,6 +22,7 @@ class ArgumentConfig(Config):
         parser.add_argument('--no-extension', action='store_false',
                 dest='extension', default=None,
                 help="Do no append #.gif to urls")
+        parser.add_argument('--owner-id', help='openid url of the app owner')
         parser.add_argument('arg', nargs='*')
 
         #We're manually grabbing sys.argv so the tests can easily mock it

@@ -1,6 +1,7 @@
 from flask import g, redirect, render_template, request, session
 from catsnap.web import app
 from catsnap.web import oid
+from catsnap.config import MetaConfig
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
@@ -8,9 +9,8 @@ def login():
     if g.user is not None:
         return redirect(oid.get_next_url())
     if request.method == 'POST':
-        openid = request.form.get('openid')
-        if openid:
-            return oid.try_login(openid, ask_for=['email'])
+        return oid.try_login(MetaConfig().owner_id,
+                             ask_for=['email'])
 
     return render_template('login.html', next=oid.get_next_url(),
                            error=oid.fetch_error())

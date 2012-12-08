@@ -104,6 +104,11 @@ class FileConfig(Config):
                         'on urls%s? ',
                 override_message="(leave blank to keep using '%s')",
                 parser_getter='getboolean'),
+            FileSetting(
+                section='catsnap',
+                name='owner_id',
+                message='Enter your openid url%s: ',
+                override_message=" (leave blank to keep using '%s')"),
         )}
 
 
