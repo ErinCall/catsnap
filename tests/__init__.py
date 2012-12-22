@@ -23,8 +23,7 @@ class TestCase():
 
         catsnap.config.file_config.getpass = MagicMock()
 
-        temp_db_url = 'postgresql://localhost/%s' % db_info['temp_db_name']
-        Client()._engine = create_engine(temp_db_url)
+        Client()._engine = db_info['engine']
 
     def tearDown(self):
         catsnap.config.MetaConfig._instance = None
@@ -34,8 +33,11 @@ db_info = {}
 
 def setUpPackage():
     create_temp_database()
+    temp_db_url = 'postgresql://localhost/%s' % db_info['temp_db_name']
+    db_info['engine'] = create_engine(temp_db_url)
 
 def tearDownPackage():
+    db_info['engine'].dispose()
     drop_temp_database()
 
 def create_temp_database():
