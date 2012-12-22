@@ -4,6 +4,8 @@ from mock import MagicMock
 import tempfile
 from sqlalchemy import create_engine
 import time
+import subprocess
+import os.path
 
 import catsnap
 from catsnap import Client
@@ -35,6 +37,7 @@ def setUpPackage():
     create_temp_database()
     temp_db_url = 'postgresql://localhost/%s' % db_info['temp_db_name']
     db_info['engine'] = create_engine(temp_db_url)
+    apply_migrations(temp_db_url)
 
 def tearDownPackage():
     db_info['engine'].dispose()
@@ -51,4 +54,8 @@ def drop_temp_database():
     conn = db_info['master_engine'].connect()
     conn.execute('commit')
     conn.execute('drop database %s' % db_info['temp_db_name'])
+
+def apply_migrations(temp_db_url):
+    migrations_dir = os.path.join(os.path.dirname(__file__), '..', 'migrations')
+    subprocess.check_output(['yoyo-migrate', '-b', 'apply', migrations_dir, temp_db_url])
 
