@@ -116,7 +116,8 @@ class TestCollectSettings(FileConfigTester):
         _input.side_effect = [
                 '', # key id
                 'booya', # bucket
-                'no'] # extension
+                'no', # extension
+                'http://chareth.cutesto.ry']#openid url
 
         config = FileConfig()
         config.collect_settings(settings_to_get=[])
@@ -130,7 +131,10 @@ class TestCollectSettings(FileConfigTester):
         config = FileConfig()
         self._set_parser_defaults(config._parser)
 
-        _input.side_effect = [ 'hereiam', 'catsnap-giggity', 'no' ]
+        _input.side_effect = [ 'hereiam',
+                               'catsnap-giggity',
+                               'no',
+                               'example.com' ]
         getpass.getpass.return_value = 'pa55word'
 
         config.collect_settings()
@@ -153,6 +157,7 @@ aws_secret_access_key = pa55word
 [catsnap]
 bucket = catsnap-giggity
 extension = no
+owner_id = example.com
 
 """)
 

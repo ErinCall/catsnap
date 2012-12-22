@@ -8,11 +8,9 @@ from catsnap.config import MetaConfig
 
 class TestMetaConfig(TestCase):
     def test_getitem_delegates_to_subconfigs(self):
-        arg_config = {'number 5': 'is alive'}
-        env_config = {'number 5': 'is DEEEAAAADD'}
+        env_config = {'number 5': 'is alive'}
         file_config = {'number 7': 'I am'}
         config = MetaConfig()
-        config._argument_config = arg_config
         config._env_config = env_config
         config._file_config = file_config
         eq_(config['number 5'], 'is alive')
@@ -35,7 +33,7 @@ class TestMetaConfig(TestCase):
 
     def test_getattr_delegates_to_getitem(self):
         config = MetaConfig()
-        config._argument_config = {'aws_access_key_id': 'itsme'}
+        config._env_config = {'aws_access_key_id': 'itsme'}
 
         eq_(config.aws_access_key_id, 'itsme')
 
