@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 import boto
+import os
 
 from catsnap.config import MetaConfig
 from catsnap.singleton import Singleton
 from boto.exception import DynamoDBResponseError, S3CreateError
+from sqlalchemy import create_engine
 
 #This really oughtta be, like, the tablename or something, but I screwed up, so
 #now there're existing catsnap installs that use this schema. Sucks :(
@@ -16,17 +18,17 @@ class Client(Singleton):
 
     _dynamo_connection = None
     _s3_connection = None
+    _engine = None
 
     def setup(self):
-
         bucket_name = MetaConfig().bucket
         s3 = self.get_s3()
-        
-        try: 
+
+        try:
             s3.create_bucket(bucket_name)
         except S3CreateError:
             raise ValueError("It seems someone has already claimed your bucket name!"
-             " You'll have to pick a new one with `catsnap config bucket`." 
+             " You'll have to pick a new one with `catsnap config bucket`."
              " Sorry about this; there's nothing I can do.")
 
         created_tables = 0
@@ -87,4 +89,9 @@ class Client(Singleton):
                     aws_access_key_id=MetaConfig().aws_access_key_id,
                     aws_secret_access_key=MetaConfig().aws_secret_access_key)
         return self._s3_connection
+
+    def get_postgres(self):
+        if not self._engine:
+            self._engine = create_engine(os.environ['DATABASE_URL'])
+        return self._engine
 

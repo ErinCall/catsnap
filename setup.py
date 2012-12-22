@@ -20,6 +20,8 @@ setup(name="catsnap",
           "requests==0.13.2",
           "argparse==1.2.1",
           "flask-openid==1.1.1",
+          "psycopg2==2.4.6",
+          "sqlalchemy==0.8.0b2",
 
           "mock==0.8",
           "nose==1.1.2",
