@@ -38,10 +38,15 @@ def setUpPackage():
     create_temp_database()
     temp_db_url = 'postgresql://localhost/%s' % db_info['temp_db_name']
     db_info['engine'] = create_engine(temp_db_url)
+
     apply_migrations(temp_db_url)
 
 def tearDownPackage():
-    db_info['engine'].dispose()
+    db_info['master_engine'].execute("""
+        select pg_terminate_backend( procpid )
+        from pg_stat_activity
+        where datname = '%s'
+    """ % db_info['temp_db_name'])
     drop_temp_database()
 
 def create_temp_database():
