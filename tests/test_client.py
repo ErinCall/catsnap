@@ -199,8 +199,8 @@ class TestGetConnections(TestCase):
         eq_(boto.connect_s3.call_count, 1)
 
     def test_connect_to_postgres(self):
-        engine = Client().get_postgres()
-        engine2 = Client().get_postgres()
-        assert engine is engine2, 'multiple engines were created'
-        eq_(engine.execute('select 1').fetchall(), [(1, )])
+        session = Client().session()
+        session2 = Client().session()
+        assert session is session2, 'multiple engines were created'
+        eq_(session.execute('select 1').fetchall(), [(1, )])
 

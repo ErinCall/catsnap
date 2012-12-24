@@ -6,6 +6,7 @@ from catsnap.config import MetaConfig
 from catsnap.singleton import Singleton
 from boto.exception import DynamoDBResponseError, S3CreateError
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 #This really oughtta be, like, the tablename or something, but I screwed up, so
 #now there're existing catsnap installs that use this schema. Sucks :(
@@ -19,6 +20,7 @@ class Client(Singleton):
     _dynamo_connection = None
     _s3_connection = None
     _engine = None
+    _session = None
 
     def setup(self):
         bucket_name = MetaConfig().bucket
@@ -90,8 +92,10 @@ class Client(Singleton):
                     aws_secret_access_key=MetaConfig().aws_secret_access_key)
         return self._s3_connection
 
-    def get_postgres(self):
+    def session(self):
         if not self._engine:
             self._engine = create_engine(os.environ['DATABASE_URL'])
-        return self._engine
+        if not self._session:
+            self._session = sessionmaker(bind=self._engine)()
+        return self._session
 

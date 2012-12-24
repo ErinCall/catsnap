@@ -29,6 +29,7 @@ class TestCase():
 
     def tearDown(self):
         catsnap.config.MetaConfig._instance = None
+        Client().session().rollback()
         catsnap.Client._instance = None
 
 db_info = {}
