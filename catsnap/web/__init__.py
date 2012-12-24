@@ -3,6 +3,7 @@ from flask import Flask, render_template, g, session
 from flask_openid import OpenID
 from catsnap.web.middleware.exception_logger import ExceptionLogger
 from catsnap.web.middleware.exception_notifier import ExceptionNotifier
+from catsnap import Client
 
 app = Flask(__name__)
 
@@ -17,6 +18,11 @@ def before_request():
     g.user = None
     if 'openid' in session:
         g.user = 1
+
+@app.after_request
+def after_request(response):
+    Client().session().commit()
+    return response
 
 import catsnap.web.controllers.login
 import catsnap.web.controllers.find

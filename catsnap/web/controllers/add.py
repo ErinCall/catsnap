@@ -1,8 +1,8 @@
 from flask import request, render_template, redirect, g
 from catsnap.image_truck import ImageTruck
-from catsnap.document.image import Image
-from catsnap.batch.tag_batch import add_image_to_tags
+from catsnap.table.image import Image
 from catsnap.web import app
+from catsnap import Client
 
 @app.route('/add', methods=['POST'])
 def add():
@@ -13,8 +13,9 @@ def add():
 
     truck = ImageTruck.new_from_url(url)
     truck.upload()
-    image = Image(truck.calculate_filename(), url)
+    session = Client().session()
+    image = Image(filename=truck.calculate_filename(), source_url=url)
+    session.add(image)
     image.add_tags(tag_names)
-    add_image_to_tags(truck.calculate_filename(), tag_names)
 
     return render_template('added.html', url=truck.url())
