@@ -26,6 +26,7 @@ class TestCase():
         catsnap.config.file_config.getpass = MagicMock()
 
         catsnap.Client()._engine = db_info['engine']
+        catsnap.Client().session().commit = catsnap.Client().session().flush
 
         app.config['TESTING'] = True
         app.secret_key = 'super sekrit'
