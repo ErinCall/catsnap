@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 import time
 import subprocess
 import os.path
+from catsnap.web import app
 
 import catsnap
 
@@ -24,6 +25,9 @@ class TestCase():
         catsnap.config.file_config.getpass = MagicMock()
 
         catsnap.Client()._engine = db_info['engine']
+
+        app.config['TESTING'] = True
+        self.app = app.test_client()
 
     def tearDown(self):
         catsnap.config.MetaConfig._instance = None

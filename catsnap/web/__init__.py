@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os
 from flask import Flask, render_template, g, session
 from flask_openid import OpenID
