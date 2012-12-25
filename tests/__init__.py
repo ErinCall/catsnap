@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
-from mock import MagicMock
+from functools import wraps
+from mock import MagicMock, patch
 import tempfile
 from sqlalchemy import create_engine
 import time
@@ -27,6 +28,7 @@ class TestCase():
         catsnap.Client()._engine = db_info['engine']
 
         app.config['TESTING'] = True
+        app.secret_key = 'super sekrit'
         self.app = app.test_client()
 
     def tearDown(self):
@@ -66,4 +68,15 @@ def drop_temp_database():
 def apply_migrations(temp_db_url):
     migrations_dir = os.path.join(os.path.dirname(__file__), '..', 'migrations')
     subprocess.check_output(['yoyo-migrate', '-b', 'apply', migrations_dir, temp_db_url])
+
+def with_settings(**settings):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            with patch('catsnap.config.env_config.os.environ', {}) as env:
+                for key, value in settings.iteritems():
+                    env['CATSNAP_' + key.upper()] = value
+                fn(*args, **kwargs)
+        return wrapper
+    return decorator
 
