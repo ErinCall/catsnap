@@ -34,6 +34,11 @@ class TestFormattedRoute(TestCase):
         eq_(response.status_code, 400)
         eq_(response.data, "Unknown format 'chubbybunnies'")
 
+    def test_set_format_on_request_header(self):
+        response = self.app.get('/test/formatted/route',
+                                headers={'Accept':'application/json'})
+        eq_(response.data, 'JSON')
+
     @formatted_route('/test/fancy/formatted/route',
                      methods=['GET'],
                      defaults={'lizard': 'charmander'})
