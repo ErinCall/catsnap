@@ -8,8 +8,6 @@ import subprocess
 import os.path
 
 import catsnap
-from catsnap import Client
-import catsnap.config.file_config
 
 class TestCase():
     def setUp(self):
@@ -25,11 +23,11 @@ class TestCase():
 
         catsnap.config.file_config.getpass = MagicMock()
 
-        Client()._engine = db_info['engine']
+        catsnap.Client()._engine = db_info['engine']
 
     def tearDown(self):
         catsnap.config.MetaConfig._instance = None
-        Client().session().rollback()
+        catsnap.Client().session().rollback()
         catsnap.Client._instance = None
 
 db_info = {}
