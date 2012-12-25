@@ -28,6 +28,8 @@ class TestFormattedRoute(TestCase):
     def test_json_format(self):
         response = self.app.get('/test/formatted/route.json')
         eq_(response.data, 'JSON')
+        eq_(response.headers['Content-Type'],
+                'application/json')
 
     def test_invalid_format(self):
         response = self.app.get('/test/formatted/route.chubbybunnies')

@@ -17,6 +17,12 @@ def formatted_route(route, defaults={}, **kwargs):
             if request_format not in ['json', 'html']:
                 return make_response("Unknown format '%s'" % request_format,
                                      400)
-            return fn(request_format, *args, **kwargs)
+
+            response = fn(request_format, *args, **kwargs)
+            if request_format == 'json':
+                if not callable(response):
+                    response = make_response(response)
+                response.headers['Content-Type'] = 'application/json'
+            return response
         return wrapper
     return decorator
