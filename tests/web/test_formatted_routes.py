@@ -57,3 +57,14 @@ class TestFormattedRoute(TestCase):
         response = self.app.get('/test/fancy/formatted/route/komodo.json')
         body = json.loads(response.data)
         eq_(body, {'request_format': 'json', 'lizard': 'komodo'})
+
+    @formatted_route('/test/lazy/json/route')
+    def json_action_that_returns_an_object(request_format):
+        if request_format == 'json':
+            return {'current status': 'lazy'}
+        else:
+            raise NotImplementedError
+
+    def test_json_actions_can_return_objects(self):
+        response = self.app.get('/test/lazy/json/route.json')
+        eq_(response.data, '{"current status": "lazy"}')
