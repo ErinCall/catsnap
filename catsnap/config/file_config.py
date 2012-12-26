@@ -106,6 +106,11 @@ class FileConfig(Config):
                 parser_getter='getboolean'),
             FileSetting(
                 section='catsnap',
+                name='api_host',
+                message='Enter the host for your catsnap api%s: ',
+                override_message=" (leave blank to keep useing '%s'"),
+            FileSetting(
+                section='catsnap',
                 name='owner_id',
                 message='Enter your openid url%s: ',
                 override_message=" (leave blank to keep using '%s')"),

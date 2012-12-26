@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import json
 import sys
 import argparse
 import StringIO
+import requests
 
 import catsnap
 from catsnap import Client
@@ -28,16 +30,15 @@ def add(args):
     print truck.url()
 
 def find(args):
-    filenames = set()
-    tags = get_tags(args.tags)
-    for tag in tags:
-        filenames.update(tag['filenames'])
-    images = get_images(filenames)
-    for image in images:
-        filename = image['filename']
-        image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename)
-        print '%s   |   %s' % (url, image_tags)
+    api_host = Client().config().api_host
+    api_url = '%s/find.json' % api_host
+    response = requests.get(api_url, params={
+        'find_tags': ' '.join(args.tags)})
+    image_structs = json.loads(response.text)
+    for struct in image_structs:
+        url = struct['url']
+        tags = ' '.join(struct['tags'])
+        print '%s   |   %s' % (url, tags)
 
 def setup(args):
     update_config(args)

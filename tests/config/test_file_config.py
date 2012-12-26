@@ -117,7 +117,8 @@ class TestCollectSettings(FileConfigTester):
                 '', # key id
                 'booya', # bucket
                 'no', # extension
-                'http://chareth.cutesto.ry']#openid url
+                'http://chareth.cutesto.ry',#openid url
+                'http://catsnap.cutesto.ry']#api host
 
         config = FileConfig()
         config.collect_settings(settings_to_get=[])
@@ -134,6 +135,7 @@ class TestCollectSettings(FileConfigTester):
         _input.side_effect = [ 'hereiam',
                                'catsnap-giggity',
                                'no',
+                               'oid.example.com',
                                'example.com' ]
         getpass.getpass.return_value = 'pa55word'
 
@@ -157,7 +159,8 @@ aws_secret_access_key = pa55word
 [catsnap]
 bucket = catsnap-giggity
 extension = no
-owner_id = example.com
+owner_id = oid.example.com
+api_host = example.com
 
 """)
 

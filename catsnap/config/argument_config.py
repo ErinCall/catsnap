@@ -22,6 +22,8 @@ class ArgumentConfig(Config):
         parser.add_argument('--no-extension', action='store_false',
                 dest='extension', default=None,
                 help="Do no append #.gif to urls")
+        parser.add_argument('--api-host', help="The host where your catsnap "
+                "api can be found")
         parser.add_argument('--owner-id', help='openid url of the app owner')
         parser.add_argument('arg', nargs='*')
 
