@@ -4,7 +4,7 @@ import tempfile
 from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock, call
 from nose.tools import eq_, raises
-from tests import TestCase
+from tests import TestCase, with_settings
 
 from catsnap.image_truck import ImageTruck
 
@@ -101,23 +101,18 @@ class TestImageTruck(TestCase):
         ImageTruck.new_from_something('/Users/andrewlorente/.bashrc')
         new_from_file.assert_called_with('/Users/andrewlorente/.bashrc')
 
-    @patch('catsnap.image_truck.MetaConfig')
+    @with_settings(bucket='tune-carrier', extension=False)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url(self, calculate_filename, MockMetaConfig):
-        config = Mock(bucket='tune-carrier', extension=False)
-        MockMetaConfig.return_value = config
+    def test_url(self, calculate_filename):
         calculate_filename.return_value = 'greensleeves'
 
         truck = ImageTruck('greensleeves', None, None)
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
+    @with_settings(bucket='tune-carrier', extension=True)
     @patch('catsnap.image_truck.ImageTruck._url')
-    @patch('catsnap.image_truck.MetaConfig')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url__with_extension(self, calculate_filename,
-                                 MockMetaConfig, _url):
-        MockMetaConfig.return_value = Mock(bucket='tune-carrier',
-                extension=True)
+    def test_url__with_extension(self, calculate_filename, _url):
         calculate_filename.return_value = 'greensleeves'
         truck = ImageTruck('greensleeves', None, None)
 
@@ -125,17 +120,14 @@ class TestImageTruck(TestCase):
         _url.assert_called_once_with('greensleeves', 'tune-carrier',
                 extension=True)
 
-    @patch('catsnap.image_truck.MetaConfig')
-    def test_url_for_filename(self, MockMetaConfig):
-        MockMetaConfig.return_value = Mock(bucket='greeble', extension=False)
+    @with_settings(bucket='greeble', extension=False)
+    def test_url_for_filename(self):
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
 
-    @patch('catsnap.image_truck.MetaConfig')
+    @with_settings(bucket='greeble', extension=True)
     @patch('catsnap.image_truck.ImageTruck._url')
-    def test_url_for_filename__with_extension(self, _url, MockMetaConfig):
-        MockMetaConfig.return_value = Mock(bucket='greeble', extension=True)
-
+    def test_url_for_filename__with_extension(self, _url):
         ImageTruck.url_for_filename('CAFEBABE')
         _url.assert_called_once_with('CAFEBABE', 'greeble', extension=True)
 

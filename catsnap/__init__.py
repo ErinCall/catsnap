@@ -3,6 +3,8 @@ import boto
 import os
 
 from catsnap.config import MetaConfig
+from catsnap.config.file_config import FileConfig
+from catsnap.config.env_config import EnvConfig
 from catsnap.singleton import Singleton
 from boto.exception import DynamoDBResponseError, S3CreateError
 from sqlalchemy import create_engine
@@ -16,6 +18,7 @@ HASH_KEY = 'tag'
 class Client(Singleton):
     _tables = {}
     _bucket = None
+    _config = None
 
     _dynamo_connection = None
     _s3_connection = None
@@ -23,7 +26,7 @@ class Client(Singleton):
     _session = None
 
     def setup(self):
-        bucket_name = MetaConfig().bucket
+        bucket_name = self.config().bucket
         s3 = self.get_s3()
 
         try:
@@ -49,16 +52,23 @@ class Client(Singleton):
 
         return created_tables
 
+    def config(self, new_config=None):
+        if new_config is not None:
+            self._config = new_config
+        if self._config is None:
+            self._config = MetaConfig(FileConfig, EnvConfig)
+        return self._config
+
     def bucket(self):
         if not self._bucket:
             s3 = self.get_s3()
-            bucket_name = MetaConfig().bucket
+            bucket_name = self.config().bucket
             self._bucket = s3.get_bucket(bucket_name)
         return self._bucket
 
 
     def create_table(self, table_name):
-        table_prefix = MetaConfig().bucket
+        table_prefix = self.config().bucket
         table_name = '%s-%s' % (table_prefix, table_name)
 
         dynamo = self.get_dynamodb()
@@ -70,7 +80,7 @@ class Client(Singleton):
                 write_units=5)
 
     def table(self, table_name):
-        table_prefix = MetaConfig().bucket
+        table_prefix = self.config().bucket
         table_name = '%s-%s' % (table_prefix, table_name)
 
         if table_name not in self._tables:
@@ -81,15 +91,15 @@ class Client(Singleton):
     def get_dynamodb(self):
         if not self._dynamo_connection:
             self._dynamo_connection = boto.connect_dynamodb(
-                    aws_access_key_id=MetaConfig().aws_access_key_id,
-                    aws_secret_access_key=MetaConfig().aws_secret_access_key)
+                    aws_access_key_id=self.config().aws_access_key_id,
+                    aws_secret_access_key=self.config().aws_secret_access_key)
         return self._dynamo_connection
 
     def get_s3(self):
         if not self._s3_connection:
             self._s3_connection = boto.connect_s3(
-                    aws_access_key_id=MetaConfig().aws_access_key_id,
-                    aws_secret_access_key=MetaConfig().aws_secret_access_key)
+                    aws_access_key_id=self.config().aws_access_key_id,
+                    aws_secret_access_key=self.config().aws_secret_access_key)
         return self._s3_connection
 
     def session(self):

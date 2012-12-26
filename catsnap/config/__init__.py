@@ -6,14 +6,27 @@ from catsnap.config.argument_config import ArgumentConfig
 from catsnap.config.env_config import EnvConfig
 from catsnap.config.file_config import FileConfig
 
-class MetaConfig(Singleton):
-    def __init__(self):
-        self._file_config = FileConfig()
-        self._env_config = EnvConfig()
-        self._defaults = {'extension': False}
+class MetaConfig(object):
+    _file_config = {}
+    _env_config = {}
+    _argument_config = {}
+    _defaults = {'extension': False}
+
+    def __init__(self, *config_classes):
+        # this looks ridiculous but I think it is right
+        for config_class in config_classes:
+            if config_class == FileConfig:
+                self._file_config = FileConfig()
+            elif config_class == EnvConfig:
+                self._env_config = EnvConfig()
+            elif config_class == ArgumentConfig:
+                self._argument_config = ArgumentConfig()
 
     def __getitem__(self, item):
-        for subconfig in (self._file_config, self._env_config, self._defaults):
+        for subconfig in (self._argument_config,
+                          self._file_config,
+                          self._env_config,
+                          self._defaults):
             if item in subconfig:
                 return subconfig[item]
 

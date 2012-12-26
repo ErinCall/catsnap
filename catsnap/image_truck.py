@@ -8,7 +8,6 @@ import subprocess
 import re
 
 from catsnap import Client
-from catsnap.config import MetaConfig
 
 class ImageTruck():
     def __init__(self, contents, content_type, source_url):
@@ -45,8 +44,8 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename):
-        return cls._url(filename, MetaConfig().bucket,
-                extension=MetaConfig().extension)
+        return cls._url(filename, Client().config().bucket,
+                extension=Client().config().extension)
 
     def upload(self):
         key = Client().bucket().new_key(self.calculate_filename())
@@ -60,8 +59,8 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename(), MetaConfig().bucket,
-                extension=MetaConfig().extension)
+        return self._url(self.calculate_filename(), Client().config().bucket,
+                extension=Client().config().extension)
 
     @classmethod
     def _url(cls, filename, bucket_name, extension=False):
