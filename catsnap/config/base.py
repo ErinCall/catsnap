@@ -7,6 +7,7 @@ class Config(object):
                                           'owner_id',
                                           'api_host',
                                           'api_key')
+    CLIENT_SETTINGS = ('extension', 'api_host', 'api_key')
 
     def __getitem__(self, item): raise NotImplementedError
     def __contains__(self, item): raise NotImplementedError

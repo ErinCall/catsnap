@@ -42,15 +42,6 @@ def find(args):
         tags = ' '.join(struct['tags'])
         print '%s   |   %s' % (url, tags)
 
-def setup(args):
-    update_config(args)
-    created_tables = Client().setup()
-    if created_tables:
-        sys.stdout.write("""
-I've created image and tag tables. Dynamodb tables take some time after being
-created before they're available for use--please wait a minute to add an image.
-""")
-
 def update_config(args):
     config = FileConfig()
     if 'settings' in args:
@@ -68,6 +59,7 @@ def main():
     except SystemExit:
         #the argparse inside the ArgumentConfig will print to
         #stdout and then throw a SYSTEM GODDAMN EXIT.
+        config = None
         error = stdout_capture.getvalue()
     finally:
         sys.stdout = orig_stdout
@@ -85,9 +77,6 @@ def main():
     find_command = subparsers.add_parser('find', help='find an image')
     find_command.add_argument('tags', nargs='+', help='tags to find')
     find_command.set_defaults(func=find)
-
-    setup_command = subparsers.add_parser('setup', help='do first-time setup')
-    setup_command.set_defaults(func=setup)
 
     config_command = subparsers.add_parser('config',
             help='update configuration')
@@ -113,7 +102,6 @@ def main():
     parsers = {
             'add': add_command,
             'find': find_command,
-            'setup': setup_command,
             'help': help_command,
             'config': config_command}
     help_command.add_argument('command', nargs=1,
@@ -129,20 +117,4 @@ def main():
     args = parser.parse_args(config['arg'])
     args.func(args)
 
-try:
-    main()
-except DynamoDBResponseError, e:
-    if e.status == 400 and e.error_code == u'ResourceNotFoundException':
-        sys.stderr.write("""
-######
-I caught a ResourceNotFoundException while trying to interact with DynamoDB.
-This may mean that you need to run `catsnap setup`. This can also happen
-sometimes right after creating a new DB table--it takes a while before the
-table is ready for queries. If you've run setup recently, please wait a bit
-and try again...
-######
-""")
-        sys.exit(1)
-    else:
-        raise
-
+main()

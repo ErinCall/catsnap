@@ -13,14 +13,14 @@ class TestArgumentConfig(TestCase):
         def _raise(message):
             raise Exception(message)
         error.side_effect = _raise
-        sys.argv = ['catsnap', '--aws-access-key-id', 'itsme',
-                '--bucket', 'robots', '--aws-secret-access-key', 'letmein',
+        sys.argv = ['catsnap', '-e',
+                '--api-host', 'http://catsnap.mydomain.com',
+                '--api-key', 'letmein',
                 'add', 'http://example.com/image.jpg', 'tag1', 'tag2']
 
         config = ArgumentConfig()
-        eq_(config['bucket'], 'robots')
-        eq_(config['aws_access_key_id'], 'itsme')
-        eq_(config['aws_secret_access_key'], 'letmein')
+        eq_(config['api_host'], 'http://catsnap.mydomain.com')
+        eq_(config['api_key'], 'letmein')
         eq_(config['arg'], ['add', 'http://example.com/image.jpg',
             'tag1', 'tag2'])
         assert_raises(KeyError, lambda: config['ripley <3 Jonesy'])
@@ -53,12 +53,12 @@ class TestArgumentConfig(TestCase):
 
     @patch('catsnap.config.argument_config.sys')
     def test_contains(self, sys):
-        sys.argv = ['catsnap', '--bucket', 'robots']
+        sys.argv = ['catsnap', '--api-host', 'robots']
         config = ArgumentConfig()
-        ok_('bucket' in config)
-        ok_('aws_access_key_id' not in config)
+        ok_('api_host' in config)
+        ok_('api_key' not in config)
         ok_('brezhnev' not in config)
 
-    def test_fails_if_it_does_not_know_about_a_setting_in_all_settings(self):
-        with patch('catsnap.config.base.Config.ALL_SETTINGS', ['brofulness']):
+    def test_fails_if_it_does_not_know_about_a_client_setting(self):
+        with patch('catsnap.config.base.Config.CLIENT_SETTINGS', ['brofulness']):
             assert_raises(AttributeError, ArgumentConfig)
