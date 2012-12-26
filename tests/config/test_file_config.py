@@ -118,7 +118,8 @@ class TestCollectSettings(FileConfigTester):
                 'booya', # bucket
                 'no', # extension
                 'http://chareth.cutesto.ry',#openid url
-                'http://catsnap.cutesto.ry']#api host
+                'http://catsnap.cutesto.ry',#api host
+                'secretkey',]#api_key
 
         config = FileConfig()
         config.collect_settings(settings_to_get=[])
@@ -146,8 +147,10 @@ class TestCollectSettings(FileConfigTester):
                 call("Please name your bucket (leave blank to use "
                         "'mypics'): "),
                 call("Would you like to print a fake file extension on urls? ")])
-        getpass.getpass.assert_called_once_with('Enter your secret access key '
-                '(leave blank to keep using what you had before): ')
+        getpass.getpass.assert_has_calls([
+                call('Enter your secret access key (leave blank to '
+                     'keep using what you had before): '),
+                call('Enter your catsnap api key: ')])
         eq_(config._parser.get('Credentials', 'aws_access_key_id'), 'hereiam')
         eq_(config._parser.get('Credentials', 'aws_secret_access_key'), 'pa55word')
         eq_(config._parser.get('catsnap', 'bucket'), 'catsnap-giggity')
@@ -161,6 +164,7 @@ bucket = catsnap-giggity
 extension = no
 owner_id = oid.example.com
 api_host = example.com
+api_key = pa55word
 
 """)
 

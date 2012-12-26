@@ -5,7 +5,8 @@ class Config(object):
     ALL_SETTINGS = CREDENTIAL_SETTINGS + ('bucket',
                                           'extension',
                                           'owner_id',
-                                          'api_host')
+                                          'api_host',
+                                          'api_key')
 
     def __getitem__(self, item): raise NotImplementedError
     def __contains__(self, item): raise NotImplementedError

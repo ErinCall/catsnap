@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 
+import base64
 import os
-from flask import Flask, render_template, g, session
+from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
 from catsnap.web.middleware.exception_logger import ExceptionLogger
 from catsnap.web.middleware.exception_notifier import ExceptionNotifier
@@ -20,6 +21,10 @@ def before_request():
     g.user = None
     if 'openid' in session:
         g.user = 1
+    elif 'Authorization' in request.headers:
+        encoded_key = request.headers['Authorization'][len('Basic '):]
+        if base64.b64decode(encoded_key) == Client().config().api_key:
+            g.user = 1
 
 @app.after_request
 def after_request(response):

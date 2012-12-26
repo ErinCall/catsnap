@@ -108,7 +108,14 @@ class FileConfig(Config):
                 section='catsnap',
                 name='api_host',
                 message='Enter the host for your catsnap api%s: ',
-                override_message=" (leave blank to keep useing '%s'"),
+                override_message=" (leave blank to keep using '%s'"),
+            FileSetting(
+                section='catsnap',
+                name='api_key',
+                message='Enter your catsnap api key%s: ',
+                override_message=" (leave blank to keep using "
+                                 "what you had before)",
+                read_method=getpass.getpass),
             FileSetting(
                 section='catsnap',
                 name='owner_id',

@@ -5,6 +5,7 @@ import sys
 import argparse
 import StringIO
 import requests
+import base64
 
 import catsnap
 from catsnap import Client
@@ -21,13 +22,14 @@ from catsnap.batch.tag_batch import get_tags, add_image_to_tags
 from boto.exception import DynamoDBResponseError
 
 def add(args):
-    truck = ImageTruck.new_from_something(args.path)
-    truck.upload()
-    image = Image(truck.calculate_filename(), truck.source_url)
-    image.add_tags(args.tags)
-    add_image_to_tags(truck.calculate_filename(), args.tags)
-
-    print truck.url()
+    api_host = Client().config().api_host
+    api_key = Client().config().api_key
+    api_url = '%s/add.json' % api_host
+    response = requests.post(api_url,
+            data={'url': args.path, 'add_tags': ' '.join(args.tags)},
+            headers={'Authorization': ' Basic %s' % base64.b64encode(api_key)})
+    body = json.loads(response.text)
+    print body['url']
 
 def find(args):
     api_host = Client().config().api_host
