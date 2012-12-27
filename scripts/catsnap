@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
+import json
 import sys
-import time
 import argparse
 import StringIO
+import requests
+import base64
 
 import catsnap
 from catsnap import Client
-import catsnap.config.file_config
 from catsnap.config.base import Config
+from catsnap.config.argument_config import ArgumentConfig
+from catsnap.config.env_config import EnvConfig
+from catsnap.config.file_config import FileConfig
 from catsnap.config import MetaConfig
 from catsnap.image_truck import ImageTruck
 from catsnap.document.image import Image
@@ -18,37 +22,28 @@ from catsnap.batch.tag_batch import get_tags, add_image_to_tags
 from boto.exception import DynamoDBResponseError
 
 def add(args):
-    truck = ImageTruck.new_from_something(args.path)
-    truck.upload()
-    image = Image(truck.calculate_filename(), truck.source_url)
-    image.add_tags(args.tags)
-    add_image_to_tags(truck.calculate_filename(), args.tags)
-
-    print truck.url()
+    api_host = Client().config().api_host
+    api_key = Client().config().api_key
+    api_url = '%s/add.json' % api_host
+    response = requests.post(api_url,
+            data={'url': args.path, 'add_tags': ' '.join(args.tags)},
+            headers={'Authorization': ' Basic %s' % base64.b64encode(api_key)})
+    body = json.loads(response.text)
+    print body['url']
 
 def find(args):
-    filenames = set()
-    tags = get_tags(args.tags)
-    for tag in tags:
-        filenames.update(tag['filenames'])
-    images = get_images(filenames)
-    for image in images:
-        filename = image['filename']
-        image_tags = ' '.join(image['tags'])
-        url = ImageTruck.url_for_filename(filename)
-        print '%s   |   %s' % (url, image_tags)
-
-def setup(args):
-    update_config(args)
-    created_tables = Client().setup()
-    if created_tables:
-        sys.stdout.write("""
-I've created image and tag tables. Dynamodb tables take some time after being
-created before they're available for use--please wait a minute to add an image.
-""")
+    api_host = Client().config().api_host
+    api_url = '%s/find.json' % api_host
+    response = requests.get(api_url, params={
+        'find_tags': ' '.join(args.tags)})
+    image_structs = json.loads(response.text)
+    for struct in image_structs:
+        url = struct['url']
+        tags = ' '.join(struct['tags'])
+        print '%s   |   %s' % (url, tags)
 
 def update_config(args):
-    config = catsnap.config.file_config.FileConfig()
+    config = FileConfig()
     if 'settings' in args:
         config.collect_settings(settings_to_get=args.settings)
     else:
@@ -60,13 +55,15 @@ def main():
     sys.stdout = stdout_capture
     error = None
     try:
-        config = MetaConfig()
+        config = MetaConfig(ArgumentConfig, EnvConfig, FileConfig)
     except SystemExit:
         #the argparse inside the ArgumentConfig will print to
         #stdout and then throw a SYSTEM GODDAMN EXIT.
+        config = None
         error = stdout_capture.getvalue()
     finally:
         sys.stdout = orig_stdout
+    Client().config(config)
     parser = argparse.ArgumentParser(
             usage='',
             description='Store and search for images by tag.')
@@ -80,9 +77,6 @@ def main():
     find_command = subparsers.add_parser('find', help='find an image')
     find_command.add_argument('tags', nargs='+', help='tags to find')
     find_command.set_defaults(func=find)
-
-    setup_command = subparsers.add_parser('setup', help='do first-time setup')
-    setup_command.set_defaults(func=setup)
 
     config_command = subparsers.add_parser('config',
             help='update configuration')
@@ -108,7 +102,6 @@ def main():
     parsers = {
             'add': add_command,
             'find': find_command,
-            'setup': setup_command,
             'help': help_command,
             'config': config_command}
     help_command.add_argument('command', nargs=1,
@@ -124,20 +117,4 @@ def main():
     args = parser.parse_args(config['arg'])
     args.func(args)
 
-try:
-    main()
-except DynamoDBResponseError, e:
-    if e.status == 400 and e.error_code == u'ResourceNotFoundException':
-        sys.stderr.write("""
-######
-I caught a ResourceNotFoundException while trying to interact with DynamoDB.
-This may mean that you need to run `catsnap setup`. This can also happen
-sometimes right after creating a new DB table--it takes a while before the
-table is ready for queries. If you've run setup recently, please wait a bit
-and try again...
-######
-""")
-        sys.exit(1)
-    else:
-        raise
-
+main()

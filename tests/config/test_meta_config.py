@@ -5,13 +5,16 @@ from nose.tools import eq_, assert_raises
 from tests import TestCase
 
 from catsnap.config import MetaConfig
+from catsnap.config.argument_config import ArgumentConfig
+from catsnap.config.env_config import EnvConfig
+from catsnap.config.file_config import FileConfig
 
 class TestMetaConfig(TestCase):
     def test_getitem_delegates_to_subconfigs(self):
         arg_config = {'number 5': 'is alive'}
         env_config = {'number 5': 'is DEEEAAAADD'}
         file_config = {'number 7': 'I am'}
-        config = MetaConfig()
+        config = MetaConfig(ArgumentConfig, EnvConfig, FileConfig)
         config._argument_config = arg_config
         config._env_config = env_config
         config._file_config = file_config
@@ -19,7 +22,7 @@ class TestMetaConfig(TestCase):
         eq_(config['number 7'], 'I am')
 
     def test_nonexistent_items_cause_an_error(self):
-        config = MetaConfig()
+        config = MetaConfig([])
         config._argument_config = {}
         config._env_config = {}
         config._file_config = {}

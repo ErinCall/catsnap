@@ -95,7 +95,7 @@ class FileConfig(Config):
                 section='catsnap',
                 name='bucket',
                 message="Please name your bucket%s: ",
-                global_default='%s-%s' % (BUCKET_BASE, os.environ['USER']),
+                global_default='%s-%s' % (BUCKET_BASE, os.environ.get('USER')),
                 override_message=" (leave blank to use '%s')"),
             FileSetting(
                 section='catsnap',
@@ -104,6 +104,23 @@ class FileConfig(Config):
                         'on urls%s? ',
                 override_message="(leave blank to keep using '%s')",
                 parser_getter='getboolean'),
+            FileSetting(
+                section='catsnap',
+                name='api_host',
+                message='Enter the host for your catsnap api%s: ',
+                override_message=" (leave blank to keep using '%s'"),
+            FileSetting(
+                section='catsnap',
+                name='api_key',
+                message='Enter your catsnap api key%s: ',
+                override_message=" (leave blank to keep using "
+                                 "what you had before)",
+                read_method=getpass.getpass),
+            FileSetting(
+                section='catsnap',
+                name='owner_id',
+                message='Enter your openid url%s: ',
+                override_message=" (leave blank to keep using '%s')"),
         )}
 
 

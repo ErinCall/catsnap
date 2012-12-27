@@ -97,7 +97,7 @@ class TestCollectSettings(FileConfigTester):
     @patch('catsnap.config.file_config.os')
     @patch('catsnap.config.file_config._input')
     def test_get_catsnap_config(self, _input, os):
-        os.environ.__getitem__.return_value = 'mcgee'
+        os.environ.get.return_value = 'mcgee'
         _input.return_value = ''
 
         config = FileConfig()
@@ -116,7 +116,10 @@ class TestCollectSettings(FileConfigTester):
         _input.side_effect = [
                 '', # key id
                 'booya', # bucket
-                'no'] # extension
+                'no', # extension
+                'http://chareth.cutesto.ry',#openid url
+                'http://catsnap.cutesto.ry',#api host
+                'secretkey',]#api_key
 
         config = FileConfig()
         config.collect_settings(settings_to_get=[])
@@ -130,7 +133,11 @@ class TestCollectSettings(FileConfigTester):
         config = FileConfig()
         self._set_parser_defaults(config._parser)
 
-        _input.side_effect = [ 'hereiam', 'catsnap-giggity', 'no' ]
+        _input.side_effect = [ 'hereiam',
+                               'catsnap-giggity',
+                               'no',
+                               'oid.example.com',
+                               'example.com' ]
         getpass.getpass.return_value = 'pa55word'
 
         config.collect_settings()
@@ -140,8 +147,10 @@ class TestCollectSettings(FileConfigTester):
                 call("Please name your bucket (leave blank to use "
                         "'mypics'): "),
                 call("Would you like to print a fake file extension on urls? ")])
-        getpass.getpass.assert_called_once_with('Enter your secret access key '
-                '(leave blank to keep using what you had before): ')
+        getpass.getpass.assert_has_calls([
+                call('Enter your secret access key (leave blank to '
+                     'keep using what you had before): '),
+                call('Enter your catsnap api key: ')])
         eq_(config._parser.get('Credentials', 'aws_access_key_id'), 'hereiam')
         eq_(config._parser.get('Credentials', 'aws_secret_access_key'), 'pa55word')
         eq_(config._parser.get('catsnap', 'bucket'), 'catsnap-giggity')
@@ -153,6 +162,9 @@ aws_secret_access_key = pa55word
 [catsnap]
 bucket = catsnap-giggity
 extension = no
+owner_id = oid.example.com
+api_host = example.com
+api_key = pa55word
 
 """)
 
