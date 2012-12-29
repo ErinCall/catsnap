@@ -5,6 +5,7 @@ class Config(object):
     ALL_SETTINGS = CREDENTIAL_SETTINGS + ('bucket',
                                           'extension',
                                           'owner_id',
+                                          'owner_email',
                                           'api_host',
                                           'api_key')
     CLIENT_SETTINGS = ('extension', 'api_host', 'api_key')

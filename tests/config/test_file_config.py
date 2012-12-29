@@ -137,6 +137,7 @@ class TestCollectSettings(FileConfigTester):
                                'catsnap-giggity',
                                'no',
                                'oid.example.com',
+                               '',
                                'example.com' ]
         getpass.getpass.return_value = 'pa55word'
 
@@ -163,6 +164,7 @@ aws_secret_access_key = pa55word
 bucket = catsnap-giggity
 extension = no
 owner_id = oid.example.com
+owner_email = None
 api_host = example.com
 api_key = pa55word
 

@@ -34,6 +34,12 @@ class MetaConfig(object):
                 "to supply it in some way--try `catsnap config`, or see the "
                 "docs for other ways to supply a setting." % item)
 
+    def __contains__(self, item):
+        return any(map(lambda x: item in x, [self._argument_config,
+                                             self._file_config,
+                                             self._env_config,
+                                             self._defaults]))
+
     def __getattr__(self, item):
         if item not in Config.ALL_SETTINGS:
             raise AttributeError(item)

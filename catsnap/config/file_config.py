@@ -121,6 +121,11 @@ class FileConfig(Config):
                 name='owner_id',
                 message='Enter your openid url%s: ',
                 override_message=" (leave blank to keep using '%s')"),
+            FileSetting(
+                section='catsnap',
+                name='owner_email',
+                message='Enter your email address%s: ',
+                override_message=" (leave blank to keep using '%s')"),
         )}
 
 
