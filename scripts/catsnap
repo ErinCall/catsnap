@@ -83,7 +83,7 @@ def main():
     #we have to manually add a "no choice" option because of what appears to
     #be an argparse bug: choices=[...] requires some choice even though
     #nargs='*' says "no choice is required."
-    choices = map(str, Config.ALL_SETTINGS)
+    choices = map(str, Config.CLIENT_SETTINGS)
     choices.append([])
     config_command.add_argument('settings', nargs='*', help='settings to '
             'update (or leave blank, to loop through all available settings)',

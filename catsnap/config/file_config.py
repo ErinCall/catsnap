@@ -43,10 +43,7 @@ class FileConfig(Config):
 
     def collect_settings(self, settings_to_get=None):
         if not settings_to_get:
-            settings_to_get = self.ALL_SETTINGS
-
-        sys.stdout.write("Find your credentials at https://portal.aws.amazon.com/"
-                         "gp/aws/securityCredentials\n")
+            settings_to_get = self.CLIENT_SETTINGS
 
         for setting in settings_to_get:
             self._get_setting(setting)

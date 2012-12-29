@@ -80,18 +80,15 @@ extension = no
 class TestCollectSettings(FileConfigTester):
     @patch('catsnap.config.file_config._input')
     @patch('catsnap.config.file_config.getpass')
-    @patch('catsnap.config.file_config.sys')
-    def test_get_credentials(self, sys, getpass, _input):
+    def test_get_credentials(self, getpass, _input):
         getpass.getpass.return_value = 'secret access key'
         _input.return_value = 'access key id'
 
         config = FileConfig()
         config.collect_settings()
-        sys.stdout.write.assert_called_with("Find your credentials at "
-                "https://portal.aws.amazon.com/gp/aws/securityCredentials\n")
-        eq_(config._parser.get('Credentials', 'aws_access_key_id'),
+        eq_(config._parser.get('catsnap', 'api_host'),
                 'access key id')
-        eq_(config._parser.get('Credentials', 'aws_secret_access_key'),
+        eq_(config._parser.get('catsnap', 'api_key'),
                 'secret access key')
 
     @patch('catsnap.config.file_config.os')
@@ -103,26 +100,17 @@ class TestCollectSettings(FileConfigTester):
         config = FileConfig()
         config.collect_settings()
         _input.assert_has_calls([
-            call('Enter your access key id: '),
-            call("Please name your bucket (leave "
-                "blank to use 'catsnap-mcgee'): "),
             call("Would you like to print a fake file extension on urls? ")])
-        eq_(config._parser.get('catsnap', 'bucket'), 'catsnap-mcgee')
+        eq_(config._parser.get('catsnap', 'extension'), None)
 
     @patch('catsnap.config.file_config.os')
     @patch('catsnap.config.file_config._input')
     def test_set_custom_bucket_name(self, _input, os):
-        os.environ.__getitem__.return_value = 'mcgee'
-        _input.side_effect = [
-                '', # key id
-                'booya', # bucket
-                'no', # extension
-                'http://chareth.cutesto.ry',#openid url
-                'http://catsnap.cutesto.ry',#api host
-                'secretkey',]#api_key
+        os.environ.get.return_value = 'mcgee'
+        _input.return_value = 'booya'
 
         config = FileConfig()
-        config.collect_settings(settings_to_get=[])
+        config.collect_settings(settings_to_get=['bucket'])
         eq_(config._parser.get('catsnap', 'bucket'), 'booya')
 
     @patch('catsnap.config.file_config.os')
@@ -131,40 +119,21 @@ class TestCollectSettings(FileConfigTester):
     def test_change_config(self, _input, getpass, os):
         os.environ.__getitem__.return_value = 'mcgee'
         config = FileConfig()
-        self._set_parser_defaults(config._parser)
 
-        _input.side_effect = [ 'hereiam',
-                               'catsnap-giggity',
-                               'no',
-                               'oid.example.com',
-                               '',
+        _input.side_effect = [ 'no',
                                'example.com' ]
         getpass.getpass.return_value = 'pa55word'
 
         config.collect_settings()
         _input.assert_has_calls([
-                call("Enter your access key id (leave blank to keep using "
-                        "'itsme'): "),
-                call("Please name your bucket (leave blank to use "
-                        "'mypics'): "),
-                call("Would you like to print a fake file extension on urls? ")])
+                call("Would you like to print a fake file extension on urls? "),
+                call("Enter the host for your catsnap api: ")])
         getpass.getpass.assert_has_calls([
-                call('Enter your secret access key (leave blank to '
-                     'keep using what you had before): '),
                 call('Enter your catsnap api key: ')])
-        eq_(config._parser.get('Credentials', 'aws_access_key_id'), 'hereiam')
-        eq_(config._parser.get('Credentials', 'aws_secret_access_key'), 'pa55word')
-        eq_(config._parser.get('catsnap', 'bucket'), 'catsnap-giggity')
+        eq_(config._parser.get('catsnap', 'api_host'), 'example.com')
         with open(self.config_tempfile, 'r') as config_file:
-            eq_(config_file.read(), """[Credentials]
-aws_access_key_id = hereiam
-aws_secret_access_key = pa55word
-
-[catsnap]
-bucket = catsnap-giggity
+            eq_(config_file.read(), """[catsnap]
 extension = no
-owner_id = oid.example.com
-owner_email = None
 api_host = example.com
 api_key = pa55word
 
