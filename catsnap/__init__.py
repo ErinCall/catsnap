@@ -29,7 +29,7 @@ class Client(Singleton):
         if new_config is not None:
             self._config = new_config
         if self._config is None:
-            self._config = MetaConfig(FileConfig, EnvConfig)
+            self._config = MetaConfig()
         return self._config
 
     def bucket(self):

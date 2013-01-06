@@ -12,15 +12,11 @@ class MetaConfig(object):
     _argument_config = {}
     _defaults = {'extension': False}
 
-    def __init__(self, *config_classes):
-        # this looks ridiculous but I think it is right
-        for config_class in config_classes:
-            if config_class == FileConfig:
-                self._file_config = FileConfig()
-            elif config_class == EnvConfig:
-                self._env_config = EnvConfig()
-            elif config_class == ArgumentConfig:
-                self._argument_config = ArgumentConfig()
+    def __init__(self, include_arg_config=False):
+        self._file_config = FileConfig()
+        self._env_config = EnvConfig()
+        if include_arg_config:
+            self._argument_config = ArgumentConfig()
 
     def __getitem__(self, item):
         for subconfig in (self._argument_config,
