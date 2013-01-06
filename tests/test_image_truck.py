@@ -109,32 +109,30 @@ class TestImageTruck(TestCase):
         truck = ImageTruck('greensleeves', None, None)
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
-    @with_settings(bucket='tune-carrier', extension=True)
-    @patch('catsnap.image_truck.ImageTruck._url')
+    @with_settings(bucket='tune', extension=True)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url__with_extension(self, calculate_filename, _url):
+    def test_url__with_extension(self, calculate_filename):
         calculate_filename.return_value = 'greensleeves'
         truck = ImageTruck('greensleeves', None, None)
 
-        truck.url()
-        _url.assert_called_once_with('greensleeves', 'tune-carrier',
-                extension=True)
+        url = truck.url()
+        eq_(url, 'https://s3.amazonaws.com/tune/greensleeves#.gif')
 
     @with_settings(bucket='greeble', extension=False)
     def test_url_for_filename(self):
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
 
-    @with_settings(bucket='greeble', extension=True)
-    @patch('catsnap.image_truck.ImageTruck._url')
-    def test_url_for_filename__with_extension(self, _url):
-        ImageTruck.url_for_filename('CAFEBABE')
-        _url.assert_called_once_with('CAFEBABE', 'greeble', extension=True)
+    @with_settings(extension=True)
+    def test_extensioned_url(self):
+        image_path = ImageTruck.extensioned('example.com/image')
+        eq_(image_path, 'example.com/image#.gif')
 
     def test_calculate_url(self):
         url = ImageTruck._url('deadbeef', 'tuneholder')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef')
 
+    @with_settings(extension=True)
     def test_calculate_url__with_extension(self):
-        url = ImageTruck._url('deadbeef', 'tuneholder', extension=True)
+        url = ImageTruck._url('deadbeef', 'tuneholder')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')

@@ -44,8 +44,7 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename):
-        return cls._url(filename, Client().config().bucket,
-                extension=Client().config().extension)
+        return cls._url(filename, Client().config().bucket)
 
     def upload(self):
         key = Client().bucket().new_key(self.calculate_filename())
@@ -59,13 +58,16 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename(), Client().config().bucket,
-                extension=Client().config().extension)
+        return self._url(self.calculate_filename(), Client().config().bucket)
 
     @classmethod
-    def _url(cls, filename, bucket_name, extension=False):
+    def _url(cls, filename, bucket_name):
         url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
                 'bucket': bucket_name, 'filename': filename}
-        if extension:
-            url = url + '#.gif'
+        return cls.extensioned(url)
+
+    @classmethod
+    def extensioned(cls, url):
+        if Client().config().extension:
+            url += '#.gif'
         return url
