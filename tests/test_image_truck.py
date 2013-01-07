@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import StringIO
 import tempfile
 from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock, call
@@ -82,6 +83,14 @@ class TestImageTruck(TestCase):
             eq_(type(e), TypeError)
         else:
             raise AssertionError('expected an error')
+
+    def test_new_from_stream(self):
+        stream = StringIO.StringIO()
+        stream.write('encoded jpg file')
+        stream.seek(0)
+        truck = ImageTruck.new_from_stream(stream, 'image/jpg')
+        eq_(truck.contents, 'encoded jpg file')
+        eq_(truck.content_type, 'image/jpg')
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')

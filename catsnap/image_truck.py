@@ -35,6 +35,11 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
+    def new_from_stream(cls, stream, content_type):
+        contents = stream.read()
+        return cls(contents, content_type, None)
+
+    @classmethod
     def new_from_something(cls, path):
         url = requests.utils.urlparse(path)
         if url.scheme:

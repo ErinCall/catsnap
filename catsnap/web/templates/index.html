@@ -23,6 +23,9 @@
                     <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
                         <label for="url">Url: </label>
                         <input type="text" name="url" id="url" />
+                        or
+                        <label for="image_file">from file:</label>
+                        <input type="file" name="image_file" id="image_file" />
                         <label for="add_tags">Tags: </label>
                         <input type="text" name="add_tags" id="add_tags" />
                         <input type="submit" name="add_button" id="add_button" value="Add" />

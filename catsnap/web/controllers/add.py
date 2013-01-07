@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from flask import request, render_template, redirect, g
+from flask import request, render_template, redirect, g, abort
 from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image
 from catsnap.web.formatted_routes import formatted_route
@@ -13,7 +13,13 @@ def add(request_format):
     tag_names = request.form['add_tags'].split(' ')
     url = request.form['url']
 
-    truck = ImageTruck.new_from_url(url)
+    if url:
+        truck = ImageTruck.new_from_url(url)
+    elif request.files['image_file']:
+        image = request.files['image_file']
+        truck = ImageTruck.new_from_stream(image.stream, image.mimetype)
+    else:
+        abort(400)
     truck.upload()
     session = Client().session()
     image = Image(filename=truck.calculate_filename(), source_url=url)
