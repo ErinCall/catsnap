@@ -64,3 +64,15 @@ The last thing you'll need to do is configure Catsnap for your personal use. Con
 Now your catsnap server is all set up! Navigate to the url for your Heroku app and you're ready to start adding images.
 
 Setting up the catsnap command-line client takes very little time. CD into your catsnap directory and run ``python setup.py install`` to install the client. Then run ``catsnap config`` and follow the prompts to configure the client.
+
+Using Catsnap
+-------------
+
+It is very straightforward to use the web interface. Search in the search box to find images you've previously stored. Use the upload or upload-by-url inputs to add new images.
+
+The command-line client is similarly simple. There are two main commands you'll run: ``catsnap add`` and ``catsnap find``.
+
+``catsnap add`` takes as its arguments an image by url or filename and a series of tags to associate with that image.
+
+``catsnap find`` takes as its arguments one or more tags to find, and finds all images that match any of those tags.
+
