@@ -1,5 +1,5 @@
 Catsnap
-======
+=======
 
 Catsnap is a tool for managing your pictures. Never again will you find yourself without the perfect cat gif or image macro to express your feelings!
 
@@ -53,7 +53,7 @@ Have Catsnap set the database up with the tables you need, and your database is 
 
 The last thing you'll need to do is configure Catsnap for your personal use. Configure all of the following environment variables with ``heroku config:set VARIABLE_NAME value``
     * CATSNAP_API_KEY is a secret key the client and server share for authentication. It can be any string of characters. You should keep it secret!
-    * CATSNAP_AWS_ACCESS_KEY_ID and CATSNAP_AWS_SECRET_ACCESS_KEY: find the values for these two variables `on your AWS accout page <https://portal.aws.amazon.com/gp/aws/securityCredentials#access_credentials>`_.
+    * CATSNAP_AWS_ACCESS_KEY_ID and CATSNAP_AWS_SECRET_ACCESS_KEY: find the values for these two variables `on your AWS account page <https://portal.aws.amazon.com/gp/aws/securityCredentials#access_credentials>`_.
     * CATSNAP_BUCKET: the S3 bucket that you set up earlier.
     * CATSNAP_SECRET_KEY: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters.
     * CATSNAP_OWNER_ID: an OpenID provider that identifies you as the owner of this catsnap installation. I recommend using your Google account, in which case you would set this to ``https://www.google.com/accounts/o8/id``.
