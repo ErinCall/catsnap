@@ -10,6 +10,8 @@ Catsnap uses Amazon S3 and a PostgreSQL database to store and organize your imag
 
 Once you store an image, you can look it up by its tags. Easy!
 
+If you like, you can `check out my catsnap instance <http://catsnap.andrewlorente.com>`_ to see what it looks like once running.
+
 Setting up Catsnap
 ------------------
 
