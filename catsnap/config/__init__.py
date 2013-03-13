@@ -12,15 +12,11 @@ class MetaConfig(object):
     _argument_config = {}
     _defaults = {'extension': False}
 
-    def __init__(self, *config_classes):
-        # this looks ridiculous but I think it is right
-        for config_class in config_classes:
-            if config_class == FileConfig:
-                self._file_config = FileConfig()
-            elif config_class == EnvConfig:
-                self._env_config = EnvConfig()
-            elif config_class == ArgumentConfig:
-                self._argument_config = ArgumentConfig()
+    def __init__(self, include_arg_config=False):
+        self._file_config = FileConfig()
+        self._env_config = EnvConfig()
+        if include_arg_config:
+            self._argument_config = ArgumentConfig()
 
     def __getitem__(self, item):
         for subconfig in (self._argument_config,
@@ -33,6 +29,12 @@ class MetaConfig(object):
         raise KeyError("Couldn't find any setting at all for '%s'. You'll need "
                 "to supply it in some way--try `catsnap config`, or see the "
                 "docs for other ways to supply a setting." % item)
+
+    def __contains__(self, item):
+        return any(map(lambda x: item in x, [self._argument_config,
+                                             self._file_config,
+                                             self._env_config,
+                                             self._defaults]))
 
     def __getattr__(self, item):
         if item not in Config.ALL_SETTINGS:

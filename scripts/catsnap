@@ -38,7 +38,7 @@ def find(args):
         'find_tags': ' '.join(args.tags)})
     image_structs = json.loads(response.text)
     for struct in image_structs:
-        url = struct['url']
+        url = ImageTruck.extensioned(struct['url'])
         tags = ' '.join(struct['tags'])
         print '%s   |   %s' % (url, tags)
 
@@ -55,7 +55,7 @@ def main():
     sys.stdout = stdout_capture
     error = None
     try:
-        config = MetaConfig(ArgumentConfig, EnvConfig, FileConfig)
+        config = MetaConfig(include_arg_config=True)
     except SystemExit:
         #the argparse inside the ArgumentConfig will print to
         #stdout and then throw a SYSTEM GODDAMN EXIT.
@@ -83,7 +83,7 @@ def main():
     #we have to manually add a "no choice" option because of what appears to
     #be an argparse bug: choices=[...] requires some choice even though
     #nargs='*' says "no choice is required."
-    choices = map(str, Config.ALL_SETTINGS)
+    choices = map(str, Config.CLIENT_SETTINGS)
     choices.append([])
     config_command.add_argument('settings', nargs='*', help='settings to '
             'update (or leave blank, to loop through all available settings)',

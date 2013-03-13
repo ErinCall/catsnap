@@ -14,7 +14,7 @@ class TestMetaConfig(TestCase):
         arg_config = {'number 5': 'is alive'}
         env_config = {'number 5': 'is DEEEAAAADD'}
         file_config = {'number 7': 'I am'}
-        config = MetaConfig(ArgumentConfig, EnvConfig, FileConfig)
+        config = MetaConfig(include_arg_config=True)
         config._argument_config = arg_config
         config._env_config = env_config
         config._file_config = file_config

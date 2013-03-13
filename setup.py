@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="3.0.0b1",
+      version="3.0.0",
       description="catalog and store funny pictures",
       author="Andrew Lorente",
       author_email="andrew.lorente@gmail.com",

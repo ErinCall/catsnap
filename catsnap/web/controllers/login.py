@@ -17,8 +17,10 @@ def login():
 
 @oid.after_login
 def login_redirect(openid_response):
-    g.user = 1
-    session['openid'] = openid_response.identity_url
+    if 'owner_email' not in Client().config() or \
+            openid_response.email == Client().config().owner_email:
+        g.user = 1
+        session['openid'] = openid_response.identity_url
     return redirect('/')
 
 @app.route('/logout', methods=['GET', 'POST'])
