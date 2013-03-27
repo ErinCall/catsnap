@@ -1,14 +1,16 @@
 from __future__ import unicode_literals
 
-from sqlalchemy import Column, Integer, String, func
+from sqlalchemy import Column, Integer, String, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
+from catsnap.table.album import Album
 
 class Image(Base):
     __tablename__ = 'image'
 
     image_id = Column(Integer, primary_key=True)
+    album_id = Column(Integer, ForeignKey(Album.album_id))
     filename = Column(String)
     source_url = Column(String)
 
