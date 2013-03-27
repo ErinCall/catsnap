@@ -8,11 +8,15 @@ from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
 
-class TestIndex(TestCase):
-    def test_requires_login(self):
+class TestAdd(TestCase):
+    def test_adding_requires_login(self):
         response = self.app.post('/add', data={})
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'], 'http://localhost/')
+
+    def test_get_the_add_page(self):
+        response = self.app.get('/add')
+        eq_(response.status_code, 200)
 
     @patch('catsnap.web.controllers.add.g')
     @patch('catsnap.web.controllers.add.ImageTruck')
@@ -23,6 +27,7 @@ class TestIndex(TestCase):
         truck.url.return_value = 'ess three'
 
         response = self.app.post('/add', data={
+                'album': '',
                 'tags': 'pet cool',
                 'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)
@@ -41,6 +46,7 @@ class TestIndex(TestCase):
         truck.url.return_value = 'ess three'
 
         response = self.app.post('/add', data={
+                'album': '',
                 'tags': 'pet cool',
                 'url': '',
                 'file': (StringIO('booya'), 'img.jpg')})
@@ -57,11 +63,9 @@ class TestIndex(TestCase):
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
-        response = self.app.post('/add', data={
-                'tags': 'pet cool',
-                'url': 'imgur.com/cool_cat.gif'})
 
         response = self.app.post('/add.json', data={
+            'album': '',
             'tags': 'pet cool',
             'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)

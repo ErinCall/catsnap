@@ -3,15 +3,18 @@ from __future__ import unicode_literals
 from flask import request, render_template, redirect, g, abort
 from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image
+from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
 from catsnap import Client
 
 @formatted_route('/add', methods=['GET'])
 def show_add(request_format):
+    session = Client().session()
+    albums = session.query(Album).all()
     if request_format == 'html':
-        return render_template('add.html', user=g.user)
+        return render_template('add.html', user=g.user, albums=albums)
     elif request_format == 'json':
-        return {}
+        return {'albums': albums}
 
 @formatted_route('/add', methods=['POST'])
 def add(request_format):
@@ -30,6 +33,9 @@ def add(request_format):
     truck.upload()
     session = Client().session()
     image = Image(filename=truck.calculate_filename(), source_url=url)
+    album_id = request.form['album']
+    if album_id:
+        image.album_id = album_id
     session.add(image)
     image.add_tags(tag_names)
 

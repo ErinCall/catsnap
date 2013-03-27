@@ -13,14 +13,30 @@
                 <div>
                     <h2>Add an image</h2>
                     <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
-                        <label for="url">Url: </label>
-                        <input type="text" name="url" id="url" />
-                        or
-                        <label for="file">from file:</label>
-                        <input type="file" name="file" id="file" />
-                        <label for="tags">Tags: </label>
-                        <input type="text" name="tags" id="tags" />
-                        <input type="submit" name="add_button" id="add_button" value="Add" />
+                        <div>
+                            <label for="url">Url: </label>
+                            <input type="text" name="url" id="url" />
+                            or
+                            <label for="file">from file:</label>
+                            <input type="file" name="file" id="file" />
+                        </div>
+                        <div>
+                            <label for="tags">Tags: </label>
+                            <input type="text" name="tags" id="tags" />
+                        </div>
+                        <div>
+                            <label for="album">Album: </label>
+                            <select name="album" id="album">
+                                <option value="">(none)</option>
+                                {% for album in albums %}
+                                <option value="{{ album.album_id }}">{{ album.name }}</option>
+                                {% endfor %}
+                            </select>
+                            or <a href="{{ url_for('new_album') }}">create a new album</a>
+                        </div>
+                        <div>
+                            <input type="submit" name="add_button" id="add_button" value="Add" />
+                        </div>
                     </form>
                 </div>
                 <div>

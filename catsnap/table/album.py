@@ -17,9 +17,10 @@ class Album(Base):
         super(Album, self).__init__(*args, **kwargs)
         self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
-    def images(self):
+    @classmethod
+    def images_for_album_id(cls, album_id):
         from catsnap.table.image import Image
         session = Client().session()
         return session.query(Image).\
-                filter(Image.album_id == self.album_id).\
+                filter(Image.album_id == album_id).\
                 all()

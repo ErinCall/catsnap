@@ -31,6 +31,6 @@ class TestAlbums(TestCase):
         session.add(Image(album_id = album.album_id, filename='badcafe'))
         session.add(Image(album_id = None, filename='cafebabe'))
 
-        images = album.images()
+        images = Album.images_for_album_id(album.album_id)
         eq_(['deadbeef', 'badcafe'],
                 map(lambda x: x.filename, images))
