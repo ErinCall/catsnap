@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Catsnap - add</title>
+    </head>
+    <body>
+        <article id="add">
+            {% if not user %}
+                <form method="post" action="{{ url_for('login') }}">
+                    <input type="submit" name="login" id="login" value="Log in to add images" />
+                </form>
+            {% else %}
+                <div>
+                    <h2>Add an image</h2>
+                    <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+                        <label for="url">Url: </label>
+                        <input type="text" name="url" id="url" />
+                        or
+                        <label for="file">from file:</label>
+                        <input type="file" name="file" id="file" />
+                        <label for="tags">Tags: </label>
+                        <input type="text" name="tags" id="tags" />
+                        <input type="submit" name="add_button" id="add_button" value="Add" />
+                    </form>
+                </div>
+                <div>
+                    or <a href="{{ url_for('logout') }}">Log Out</a>.
+                </div>
+            {% endif %}
+        </article>
+    </body>
+</html>

@@ -11,7 +11,7 @@ class TestIndex(TestCase):
     def test_find_a_tag(self, Tag):
         Tag.get_image_data.return_value = [ ('CA7', ['pet', 'cool']),
                                             ('D06', ['pet']        )]
-        response = self.app.get('/find?find_tags=pet')
+        response = self.app.get('/find?tags=pet')
         eq_(response.status_code, 200, response.data)
         link = '<a href="https://s3.amazonaws.com/cattysnap/%s">%s</a>'
         cat_link = link % ('CA7', 'pet cool')
@@ -25,7 +25,7 @@ class TestIndex(TestCase):
         image_structs = [ ('CA7', ['pet', 'cool']),
                           ('D06', ['pet']        )]
         Tag.get_image_data.return_value = image_structs
-        response = self.app.get('/find.json?find_tags=pet')
+        response = self.app.get('/find.json?tags=pet')
         eq_(response.status_code, 200, response.data)
         eq_(json.loads(response.data), [
             {'url': 'https://s3.amazonaws.com/cattysnap/CA7',

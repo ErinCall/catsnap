@@ -23,7 +23,7 @@ class TestIndex(TestCase):
         truck.url.return_value = 'ess three'
 
         response = self.app.post('/add', data={
-                'add_tags': 'pet cool',
+                'tags': 'pet cool',
                 'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)
         assert '<a href="ess three">ess three</a>' in response.data, response.data
@@ -41,9 +41,9 @@ class TestIndex(TestCase):
         truck.url.return_value = 'ess three'
 
         response = self.app.post('/add', data={
-                'add_tags': 'pet cool',
+                'tags': 'pet cool',
                 'url': '',
-                'image_file': (StringIO('booya'), 'img.jpg')})
+                'file': (StringIO('booya'), 'img.jpg')})
         eq_(response.status_code, 200)
 
         session = Client().session()
@@ -58,11 +58,11 @@ class TestIndex(TestCase):
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
         response = self.app.post('/add', data={
-                'add_tags': 'pet cool',
+                'tags': 'pet cool',
                 'url': 'imgur.com/cool_cat.gif'})
 
         response = self.app.post('/add.json', data={
-            'add_tags': 'pet cool',
+            'tags': 'pet cool',
             'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)
         body = json.loads(response.data)
@@ -73,5 +73,5 @@ class TestIndex(TestCase):
         response = self.app.post('/add', data={
             'url': '',
             'image_file': (StringIO(), ''),
-            'add_tags': 'pet cool'})
+            'tags': 'pet cool'})
         eq_(response.status_code, 400)
