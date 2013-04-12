@@ -5,6 +5,7 @@ from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image
 from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
+from catsnap.web.utils import login_required
 from catsnap import Client
 
 @formatted_route('/add', methods=['GET'])
@@ -17,9 +18,8 @@ def show_add(request_format):
         return {'albums': albums}
 
 @formatted_route('/add', methods=['POST'])
+@login_required
 def add(request_format):
-    if not g.user:
-        return redirect('/')
     tag_names = request.form['tags'].split(' ')
     url = request.form['url']
 

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import json
 from StringIO import StringIO
 from mock import patch, Mock
-from tests import TestCase, with_settings
+from tests import TestCase, with_settings, logged_in
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
@@ -18,9 +18,9 @@ class TestAdd(TestCase):
         response = self.app.get('/add')
         eq_(response.status_code, 200)
 
-    @patch('catsnap.web.controllers.add.g')
+    @logged_in
     @patch('catsnap.web.controllers.add.ImageTruck')
-    def test_add_a_tag(self, ImageTruck, g):
+    def test_add_a_tag(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -37,9 +37,9 @@ class TestAdd(TestCase):
         images = session.query(Image.filename, Image.source_url).all()
         eq_(images, [('CA7', 'imgur.com/cool_cat.gif')])
 
-    @patch('catsnap.web.controllers.add.g')
+    @logged_in
     @patch('catsnap.web.controllers.add.ImageTruck')
-    def test_upload_an_image(self, ImageTruck, g):
+    def test_upload_an_image(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -56,9 +56,9 @@ class TestAdd(TestCase):
         images = session.query(Image.filename, Image.source_url).all()
         eq_(images, [('CA7', '')])
 
-    @patch('catsnap.web.controllers.add.g')
+    @logged_in
     @patch('catsnap.web.controllers.add.ImageTruck')
-    def test_with_json_format(self, ImageTruck, g):
+    def test_with_json_format(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -72,8 +72,8 @@ class TestAdd(TestCase):
         body = json.loads(response.data)
         eq_(body, {'url': 'ess three'})
 
-    @patch('catsnap.web.controllers.add.g')
-    def test_returns_bad_request_if_no_image_provided(self, g):
+    @logged_in
+    def test_returns_bad_request_if_no_image_provided(self):
         response = self.app.post('/add', data={
             'url': '',
             'image_file': (StringIO(), ''),

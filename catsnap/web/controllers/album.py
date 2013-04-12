@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from catsnap.web.formatted_routes import formatted_route
+from catsnap.web.utils import login_required
 from flask import request, render_template, redirect, g, url_for
 from catsnap import Client
 from catsnap.table.album import Album
@@ -14,9 +15,8 @@ def new_album(request_format):
         return {}
 
 @formatted_route('/new_album', methods=['POST'])
+@login_required
 def create_album(request_format):
-    if not g.user:
-        return redirect('/')
     session = Client().session()
     album = Album(name=request.form['name'])
     session.add(album)

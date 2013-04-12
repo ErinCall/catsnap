@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from functools import wraps
-from mock import MagicMock, patch
+from mock import Mock, MagicMock, patch
 import tempfile
 from sqlalchemy import create_engine
 import time
@@ -80,4 +80,11 @@ def with_settings(**settings):
                 fn(*args, **kwargs)
         return wrapper
     return decorator
+
+def logged_in(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        with patch('catsnap.web.utils.g', Mock()) as mock_g:
+            fn(*args, **kwargs)
+    return wrapper
 
