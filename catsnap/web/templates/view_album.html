@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Catsnap - view album</title>
+    </head>
+    <body>
+        <div>
+            {% for image in images %}
+                <a href="{{ image['url'] }}">{{image.filename }}</a>
+            {% endfor %}
+        </div>
+    </body>
+</html>

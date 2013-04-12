@@ -7,6 +7,7 @@ from tests import TestCase, with_settings
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.album import Album
+from catsnap.table.image import Image
 
 class TestAlbum(TestCase):
     def test_new_album_requires_login(self):
@@ -35,3 +36,23 @@ class TestAlbum(TestCase):
         body = json.loads(response.data)
         assert 'album_id' in body, body
 
+    @with_settings(bucket='cattysnap')
+    def test_view_an_album(self):
+        session = Client().session()
+        album = Album(name='my pix')
+        session.add(album)
+        session.flush()
+        cat = Image(album_id=album.album_id, filename='CA7')
+        session.add(cat)
+        dog = Image(album_id=album.album_id, filename='D06')
+        session.add(dog)
+        not_in_album = Image(album_id=None, filename='deadbeef')
+        session.add(not_in_album)
+        session.flush()
+
+        response = self.app.get('/album/%d' % album.album_id)
+        link = '<a href="https://s3.amazonaws.com/cattysnap/%s">'
+        cat_link = link % 'CA7'
+        dog_link = link % 'D06'
+        assert cat_link in response.data, response.data
+        assert dog_link in response.data, response.data
