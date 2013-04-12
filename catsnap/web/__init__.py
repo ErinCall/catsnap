@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 
 import base64
 import os
+import sha
+import datetime
+import time
 from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
 from catsnap.web.middleware.exception_logger import ExceptionLogger
@@ -21,9 +24,18 @@ def before_request():
     g.user = None
     if 'openid' in session:
         g.user = 1
-    elif 'Authorization' in request.headers:
-        encoded_key = request.headers['Authorization'][len('Basic '):]
-        if base64.b64decode(encoded_key) == Client().config().api_key:
+    elif 'X-Catsnap-Signature' in request.headers:
+        passed_signature = request.headers['X-Catsnap-Signature']
+        date = request.headers['X-Catsnap-Signature-Date']
+        string_to_sign = "%s\n%s" % (date, Client().config().api_key)
+        generated_signature = sha.sha(string_to_sign).hexdigest()
+
+        date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
+        now = datetime.datetime.utcnow()
+        skew = abs(date - now)
+        if generated_signature == passed_signature \
+                and skew.days == 0 \
+                and skew.seconds <= (5*60):
             g.user = 1
 
 @app.after_request

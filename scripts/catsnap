@@ -6,6 +6,8 @@ import argparse
 import StringIO
 import requests
 import base64
+import datetime
+import sha
 
 import catsnap
 from catsnap import Client
@@ -25,9 +27,14 @@ def add(args):
     api_host = Client().config().api_host
     api_key = Client().config().api_key
     api_url = '%s/add.json' % api_host
+    now = str(datetime.datetime.utcnow())
+    string_to_sign = "%s\n%s" % (now, api_key)
+    signature = sha.sha(string_to_sign).hexdigest()
+
     response = requests.post(api_url,
             data={'url': args.path, 'tags': ' '.join(args.tags)},
-            headers={'Authorization': ' Basic %s' % base64.b64encode(api_key)})
+            headers={'X-Catsnap-Signature': signature,
+                     'X-Catsnap-Signature-Date': now})
     body = json.loads(response.text)
     print body['url']
 
