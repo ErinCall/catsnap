@@ -9,6 +9,7 @@ from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
 from catsnap.web.middleware.exception_logger import ExceptionLogger
 from catsnap.web.middleware.exception_notifier import ExceptionNotifier
+from catsnap.table.album import Album
 from catsnap import Client
 
 app = Flask(__name__)
@@ -50,4 +51,5 @@ import catsnap.web.controllers.album
 
 @app.route('/')
 def index():
-    return render_template('index.html', user=g.user)
+    albums = Client().session().query(Album).all()
+    return render_template('index.html', user=g.user, albums=albums)

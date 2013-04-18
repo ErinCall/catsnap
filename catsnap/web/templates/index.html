@@ -15,5 +15,16 @@
         <article id="add">
             <a href="{{ url_for('show_add') }}">Add images</a>
         </article>
+        <article>
+            Or view an album:
+            <ul>
+            {% for album in albums %}
+                <li>
+                    <a href="{{ url_for('view_album', album_id=album.album_id) }}">
+                        {{album.name}}
+                    </a>
+                </li>
+            {% endfor %}
+        </article>
     </body>
 </html>
