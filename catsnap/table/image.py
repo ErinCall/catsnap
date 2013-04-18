@@ -13,6 +13,8 @@ class Image(Base):
     album_id = Column(Integer, ForeignKey(Album.album_id))
     filename = Column(String)
     source_url = Column(String)
+    title = Column(String)
+    description = Column(String)
 
     def __new__(cls, *args, **kwargs):
         filename = None

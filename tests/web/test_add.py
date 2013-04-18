@@ -49,12 +49,20 @@ class TestAdd(TestCase):
                 'album': '',
                 'tags': 'pet cool',
                 'url': '',
+                'title': 'My cat being awesome',
+                'description': 'my cat is awesome. You can see how awesome.',
                 'file': (StringIO('booya'), 'img.jpg')})
         eq_(response.status_code, 200)
 
         session = Client().session()
-        images = session.query(Image.filename, Image.source_url).all()
-        eq_(images, [('CA7', '')])
+        images = session.query(Image.filename,
+                               Image.source_url,
+                               Image.title,
+                               Image.description).all()
+        eq_(images, [('CA7',
+                      '',
+                      'My cat being awesome',
+                      'my cat is awesome. You can see how awesome.')])
 
     @logged_in
     @patch('catsnap.web.controllers.add.ImageTruck')

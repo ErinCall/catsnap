@@ -35,6 +35,14 @@
                             or <a href="{{ url_for('new_album') }}">create a new album</a>
                         </div>
                         <div>
+                            <label for="title">Title:</label>
+                            <input type="text" name="title" id="title" />
+                        </div>
+                        <div>
+                            <label for="description">Description:</label>
+                            <textarea name="description" id="description" ></textarea>
+                        </div>
+                        <div>
                             <input type="submit" name="add_button" id="add_button" value="Add" />
                         </div>
                     </form>

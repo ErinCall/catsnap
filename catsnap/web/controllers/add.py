@@ -32,7 +32,10 @@ def add(request_format):
         abort(400)
     truck.upload()
     session = Client().session()
-    image = Image(filename=truck.calculate_filename(), source_url=url)
+    image = Image(filename=truck.calculate_filename(),
+                  source_url=url,
+                  description=request.form.get('description'),
+                  title=request.form.get('title'))
     album_id = request.form['album']
     if album_id:
         image.album_id = album_id
