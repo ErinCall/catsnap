@@ -78,3 +78,25 @@ class TestImages(TestCase):
 
         image = Image.find_by_filename('DEADBEEF')
         eq_(image.source_url, 'example.com/foo')
+
+    def test_caption__defaults_to_title(self):
+        session = Client().session()
+        image = Image(title='the title', filename='')
+        session.add(image)
+        image.add_tags(['cat', 'awesome'])
+
+        eq_(image.caption(), 'the title')
+
+    def test_caption__falls_back_to_tags(self):
+        session = Client().session()
+        image = Image(title='', filename='')
+        session.add(image)
+        image.add_tags(['cat', 'awesome'])
+
+        eq_(image.caption(), 'awesome cat')
+
+    def test_caption__falls_back_to_filename(self):
+        session = Client().session()
+        image = Image(title='', filename='the filename')
+
+        eq_(image.caption(), 'the filename')

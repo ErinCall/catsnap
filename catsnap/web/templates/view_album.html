@@ -6,7 +6,7 @@
     <body>
         <div>
             {% for image in images %}
-                <a href="{{ image['url'] }}">{{image.filename }}</a>
+                <a href="{{ image['url'] }}">{{ image['caption'] }}</a>
             {% endfor %}
         </div>
     </body>

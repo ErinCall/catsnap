@@ -68,3 +68,13 @@ class Image(Base):
 
         for tag in tags:
             session.add(ImageTag(tag_id=tag.tag_id, image_id=self.image_id))
+
+    def caption(self):
+        if self.title:
+            return self.title
+
+        tags = list(self.get_tags())
+        if tags:
+            return ' '.join(tags)
+
+        return self.filename

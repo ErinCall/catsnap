@@ -31,7 +31,7 @@ class TestAdd(TestCase):
                 'tags': 'pet cool',
                 'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)
-        assert '<a href="ess three">ess three</a>' in response.data, response.data
+        assert '<a href="ess three">pet cool</a>' in response.data, response.data
 
         session = Client().session()
         images = session.query(Image.filename, Image.source_url).all()

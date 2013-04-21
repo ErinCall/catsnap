@@ -43,6 +43,6 @@ def add(request_format):
     image.add_tags(tag_names)
 
     if request_format == 'html':
-        return render_template('added.html', url=truck.url())
+        return render_template('added.html', url=truck.url(), caption=image.caption())
     elif request_format == 'json':
         return {'url': truck.url()}

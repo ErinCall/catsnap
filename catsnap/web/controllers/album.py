@@ -34,6 +34,7 @@ def view_album(request_format, album_id):
         return {
             'url': ImageTruck.url_for_filename(image.filename),
             'filename': image.filename,
+            'caption': image.caption(),
         }
     image_structs = map(struct_from_image, images)
 
