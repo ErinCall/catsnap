@@ -46,7 +46,7 @@ def after_request(response):
 
 import catsnap.web.controllers.login
 import catsnap.web.controllers.find
-import catsnap.web.controllers.add
+import catsnap.web.controllers.image
 import catsnap.web.controllers.album
 
 @app.route('/')

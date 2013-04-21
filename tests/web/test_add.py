@@ -19,7 +19,7 @@ class TestAdd(TestCase):
         eq_(response.status_code, 200)
 
     @logged_in
-    @patch('catsnap.web.controllers.add.ImageTruck')
+    @patch('catsnap.web.controllers.image.ImageTruck')
     def test_add_a_tag(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
@@ -38,7 +38,7 @@ class TestAdd(TestCase):
         eq_(images, [('CA7', 'imgur.com/cool_cat.gif')])
 
     @logged_in
-    @patch('catsnap.web.controllers.add.ImageTruck')
+    @patch('catsnap.web.controllers.image.ImageTruck')
     def test_upload_an_image(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
@@ -65,7 +65,7 @@ class TestAdd(TestCase):
                       'my cat is awesome. You can see how awesome.')])
 
     @logged_in
-    @patch('catsnap.web.controllers.add.ImageTruck')
+    @patch('catsnap.web.controllers.image.ImageTruck')
     def test_with_json_format(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck

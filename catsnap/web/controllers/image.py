@@ -46,3 +46,22 @@ def add(request_format):
         return render_template('added.html', url=truck.url(), caption=image.caption())
     elif request_format == 'json':
         return {'url': truck.url()}
+
+@formatted_route('/image/<image_id>', methods=['GET'])
+def show_image(request_format, image_id):
+    session = Client().session()
+    image = session.query(Image).\
+            filter(Image.image_id==image_id).\
+            first()
+    url = ImageTruck.url_for_filename(image.filename)
+    tags = image.get_tags()
+    if request_format == 'html':
+        return render_template('image.html', image=image, url=url, tags=tags)
+    elif request_format == 'json':
+        return {
+            'description': image.description,
+            'title': image.title,
+            'album_id': image.album_id,
+            'tags': list(tags),
+            'source_url': url,
+                }

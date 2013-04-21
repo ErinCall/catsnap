@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{ image.caption() }} - Catsnap</title>
+    </head>
+    <body>
+        <article id="image">
+            <div>
+                <a href="{{ url }}">
+                    <img src="{{ url }}"
+                        title="{{ image.caption() }}"
+                        alt="{{ image.caption() }}" />
+                </a>
+            </div>
+            {% if image.title %}
+                <div>
+                    <span>{{ image.title }}</span>
+                </div>
+            {% endif %}
+            {% if image.description %}
+                <div>
+                    {{image.description}}
+                </div>
+            {% endif %}
+        </article>
+        {% if tags %}
+            <article id="tags">
+                Tags:
+                <ul>
+                    {% for tag in tags %}
+                        <li><a href="{{ url_for('find', tags=tag)}}">{{tag}}</a></li>
+                    {% endfor %}
+                </ul>
+            </article>
+        {% endif %}
+    </body>
+</html>

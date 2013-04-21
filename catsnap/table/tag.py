@@ -28,6 +28,7 @@ class Tag(Base):
         from catsnap.table.image_tag import ImageTag
         session = Client().session()
         image_data = session.query(func.max(Image.filename),
+                                   Image.image_id,
                                    func.array_agg(Tag.name)).\
                 join(ImageTag).\
                 filter(ImageTag.image_id == Image.image_id).\

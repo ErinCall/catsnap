@@ -51,8 +51,8 @@ class TestAlbum(TestCase):
         session.flush()
 
         response = self.app.get('/album/%d' % album.album_id)
-        link = '<a href="https://s3.amazonaws.com/cattysnap/%s">'
-        cat_link = link % 'CA7'
-        dog_link = link % 'D06'
+        link = '<a href="/image/%d">'
+        cat_link = link % cat.image_id
+        dog_link = link % dog.image_id
         assert cat_link in response.data, response.data
         assert dog_link in response.data, response.data

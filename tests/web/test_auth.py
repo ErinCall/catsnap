@@ -12,7 +12,7 @@ from catsnap.table.image import Image
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
-    @patch('catsnap.web.controllers.add.ImageTruck')
+    @patch('catsnap.web.controllers.image.ImageTruck')
     def test_hmac_auth(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
