@@ -6,6 +6,7 @@ import tempfile
 from sqlalchemy import create_engine
 import time
 import subprocess
+import os
 import os.path
 from catsnap.web import app
 
@@ -13,10 +14,12 @@ import catsnap
 
 class TestCase():
     def setUp(self):
-        (_, creds) = tempfile.mkstemp()
+        (creds_fd, creds) = tempfile.mkstemp()
         self.creds_tempfile = creds
-        (_, config) = tempfile.mkstemp()
+        self.creds_temp_fd = creds_fd
+        (config_fd, config) = tempfile.mkstemp()
         self.config_tempfile = config
+        self.config_temp_fd = config_fd
         catsnap.config.file_config._input = MagicMock()
         catsnap.config.file_config.CONFIG_FILE = config
         catsnap.config.file_config.LEGACY_CREDENTIALS_FILE = creds
@@ -33,6 +36,8 @@ class TestCase():
         self.app = app.test_client()
 
     def tearDown(self):
+        os.close(self.creds_temp_fd)
+        os.close(self.config_temp_fd)
         catsnap.config.MetaConfig._instance = None
         catsnap.Client().session().rollback()
         catsnap.Client._instance = None
