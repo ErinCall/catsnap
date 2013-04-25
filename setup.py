@@ -23,6 +23,7 @@ setup(name="catsnap",
           "psycopg2==2.4.6",
           "sqlalchemy==0.8.0b2",
           "yoyo-migrations==4.1.6",
+          "PIL==1.1.7",
 
           "mock==0.8",
           "nose==1.1.2",

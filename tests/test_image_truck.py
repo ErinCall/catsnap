@@ -92,6 +92,14 @@ class TestImageTruck(TestCase):
         eq_(truck.contents, 'encoded jpg file')
         eq_(truck.content_type, 'image/jpg')
 
+    def test_new_from_stream_with_a_suffix(self):
+        stream = StringIO.StringIO()
+        stream.write('encoded jpg file')
+        stream.seek(0)
+        truck = ImageTruck.new_from_stream(stream, 'image/jpg', suffix='large')
+        eq_(truck.calculate_filename(),
+                '9e3e6d828e3b9fcf03266ff6679ba74e9be80e6a_large')
+
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')
     def test_new_from_something__delegates_to_new_from_url(self,
@@ -145,3 +153,29 @@ class TestImageTruck(TestCase):
     def test_calculate_url__with_extension(self):
         url = ImageTruck._url('deadbeef', 'tuneholder')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')
+
+    @patch('catsnap.image_truck.Client')
+    def test_get_contents_of_filename(self, MockClient):
+        key = Mock()
+        key.get_contents_as_string.return_value = 'cow innards'
+        bucket = Mock()
+        bucket.get_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+
+        contents = ImageTruck.contents_of_filename('deadbeef')
+        eq_(contents, 'cow innards')
+
+        bucket.get_key.assert_called_with('deadbeef')
+
+    @raises(KeyError)
+    @patch('catsnap.image_truck.Client')
+    def test_get_contents_of_nonexistent_filename(self, MockClient):
+        bucket = Mock()
+        bucket.get_key.return_value = None
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+
+        ImageTruck.contents_of_filename('x')

@@ -10,10 +10,11 @@ import re
 from catsnap import Client
 
 class ImageTruck():
-    def __init__(self, contents, content_type, source_url):
+    def __init__(self, contents, content_type, source_url, suffix=None):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
+        self.suffix = suffix
 
     @classmethod
     def new_from_url(cls, url):
@@ -35,9 +36,9 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type):
+    def new_from_stream(cls, stream, content_type, suffix=None):
         contents = stream.read()
-        return cls(contents, content_type, None)
+        return cls(contents, content_type, None, suffix=suffix)
 
     @classmethod
     def new_from_something(cls, path):
@@ -60,7 +61,10 @@ class ImageTruck():
         filename = self.calculate_filename()
 
     def calculate_filename(self):
-        return hashlib.sha1(self.contents).hexdigest()
+        raw_filename = hashlib.sha1(self.contents).hexdigest()
+        if self.suffix is None:
+            return raw_filename
+        return '%s_%s' % (raw_filename, self.suffix)
 
     def url(self, **kwargs):
         return self._url(self.calculate_filename(), Client().config().bucket)
@@ -76,3 +80,10 @@ class ImageTruck():
         if Client().config().extension:
             url += '#.gif'
         return url
+
+    @classmethod
+    def contents_of_filename(cls, filename):
+        key = Client().bucket().get_key(filename)
+        if key is None:
+            raise KeyError(filename)
+        return key.get_contents_as_string()

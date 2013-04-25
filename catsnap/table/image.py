@@ -78,3 +78,11 @@ class Image(Base):
             return ' '.join(tags)
 
         return self.filename
+
+class ImageResize(Base):
+    __tablename__ = 'image_resize'
+
+    image_id = Column(Integer, ForeignKey(Image.image_id), primary_key=True)
+    width    = Column(Integer, primary_key=True)
+    height   = Column(Integer, primary_key=True)
+    suffix   = Column(String, nullable=False)
