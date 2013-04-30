@@ -26,7 +26,7 @@ class TestAuth(TestCase):
                 headers=[
                     ('X-Catsnap-Signature', signature),
                     ('X-Catsnap-Signature-Date', now)],
-                data={'tags': 'pet cool',
+                data={'add_tags': 'pet cool',
                     'album': '',
                     'url': 'http://imgur.com/cat.gif'})
         eq_(response.status_code, 200, response.data)
