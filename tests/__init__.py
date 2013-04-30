@@ -4,6 +4,7 @@ from functools import wraps
 from mock import MagicMock, patch
 import tempfile
 from sqlalchemy import create_engine
+import sqlalchemy.exc
 import time
 import subprocess
 import os.path
@@ -47,11 +48,25 @@ def setUpPackage():
     apply_migrations(temp_db_url)
 
 def tearDownPackage():
-    db_info['master_engine'].execute("""
-        select pg_terminate_backend( procpid )
+    terminate_query = """
+        select pg_terminate_backend( %(pid_column)s )
         from pg_stat_activity
-        where datname = '%s'
-    """ % db_info['temp_db_name'])
+        where datname = '%(db_name)s'
+    """
+    try:
+        db_info['master_engine'].execute(terminate_query % {
+            'pid_column': 'procpid',
+            'db_name': db_info['temp_db_name'],
+        })
+    except sqlalchemy.exc.ProgrammingError as e:
+        if '"procpid" does not exist' in str(e):
+            #postgres 9.2 changed pg_stat_activity.procpid to just .pid
+            db_info['master_engine'].execute(terminate_query % {
+                'pid_column': 'pid',
+                'db_name': db_info['temp_db_name'],
+            })
+        else:
+            raise
     drop_temp_database()
 
 def create_temp_database():
