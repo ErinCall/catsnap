@@ -10,11 +10,17 @@ import re
 from catsnap import Client
 
 class ImageTruck():
-    def __init__(self, contents, content_type, source_url, suffix=None):
+    def __init__(self,
+                 contents,
+                 content_type,
+                 source_url,
+                 suffix=None,
+                 filename=None):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
         self.suffix = suffix
+        self.forced_filename = filename
 
     @classmethod
     def new_from_url(cls, url):
@@ -36,9 +42,13 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type, suffix=None):
+    def new_from_stream(cls, stream, content_type, suffix=None, filename=None):
         contents = stream.read()
-        return cls(contents, content_type, None, suffix=suffix)
+        return cls(contents,
+                   content_type,
+                   None,
+                   suffix=suffix,
+                   filename=filename)
 
     @classmethod
     def new_from_something(cls, path):
@@ -61,7 +71,10 @@ class ImageTruck():
         filename = self.calculate_filename()
 
     def calculate_filename(self):
-        raw_filename = hashlib.sha1(self.contents).hexdigest()
+        if self.forced_filename is not None:
+            raw_filename = self.forced_filename
+        else:
+            raw_filename = hashlib.sha1(self.contents).hexdigest()
         if self.suffix is None:
             return raw_filename
         return '%s_%s' % (raw_filename, self.suffix)

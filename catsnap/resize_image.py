@@ -50,7 +50,8 @@ class ResizeImage(object):
                 truck = ImageTruck.new_from_stream(
                         contents,
                         cls._content_type_from_format(image_handler.format),
-                        suffix=size)
+                        suffix=size,
+                        filename=image.filename)
                 truck.upload()
         finally:
             os.unlink(contents_file)

@@ -39,6 +39,10 @@ class TestImageTruck(TestCase):
         eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
 
+    def test_calculate_filename_with_a_suffix_and_a_forced_name(self):
+        truck = ImageTruck('rzrs', None, None, suffix='small', filename='bab')
+        eq_(truck.calculate_filename(), 'bab_small')
+
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
         response = Mock()
@@ -92,13 +96,15 @@ class TestImageTruck(TestCase):
         eq_(truck.contents, 'encoded jpg file')
         eq_(truck.content_type, 'image/jpg')
 
-    def test_new_from_stream_with_a_suffix(self):
+    def test_new_from_stream_with_a_suffix_and_forced_filename(self):
         stream = StringIO.StringIO()
         stream.write('encoded jpg file')
         stream.seek(0)
-        truck = ImageTruck.new_from_stream(stream, 'image/jpg', suffix='large')
-        eq_(truck.calculate_filename(),
-                '9e3e6d828e3b9fcf03266ff6679ba74e9be80e6a_large')
+        truck = ImageTruck.new_from_stream(stream,
+                'image/jpg',
+                suffix='large',
+                filename='f0ced')
+        eq_(truck.calculate_filename(), 'f0ced_large')
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')

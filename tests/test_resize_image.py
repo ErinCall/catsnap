@@ -36,6 +36,9 @@ class TestResizeImage(TestCase):
         eq_(resizes[0].suffix, 'medium')
 
         eq_(MockImageTruck.new_from_stream.call_count, 1)
+        MockImageTruck.new_from_stream.assert_called_once()
+        (args, kwargs) = MockImageTruck.new_from_stream.call_args
+        eq_(kwargs['filename'], 'badcafe')
         truck.upload.assert_called_once_with()
 
     @patch('catsnap.resize_image.ImageHandler')
