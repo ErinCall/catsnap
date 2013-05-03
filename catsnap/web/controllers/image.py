@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from flask import request, render_template, redirect, g, abort
 from catsnap.image_truck import ImageTruck
+from catsnap.resize_image import ResizeImage
 from catsnap.table.image import Image
 from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
@@ -41,6 +42,8 @@ def add(request_format):
         image.album_id = album_id
     session.add(image)
     image.add_tags(tag_names)
+
+    ResizeImage.make_resizes(image)
 
     if request_format == 'html':
         return render_template('added.html', url=truck.url(), caption=image.caption())

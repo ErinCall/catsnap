@@ -12,8 +12,9 @@ from catsnap.table.image import Image
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
+    @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_hmac_auth(self, ImageTruck):
+    def test_hmac_auth(self, ImageTruck, ResizeImage):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'

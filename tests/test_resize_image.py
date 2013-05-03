@@ -75,7 +75,7 @@ class TestResizeImage(TestCase):
         image_handler.size = (3648, 2736)
         MockImage.open.return_value = image_handler
 
-        ResizeImage.make_resizes(image.image_id)
+        ResizeImage.make_resizes(image)
 
         resize_image_method.assert_has_calls([
             call(image, image_handler, 'thumbnail'),
@@ -100,7 +100,7 @@ class TestResizeImage(TestCase):
         session.add(image)
         session.flush()
 
-        ResizeImage.make_resizes(image.image_id)
+        ResizeImage.make_resizes(image)
 
         resize_image_method.assert_has_calls([
             call(image, image_handler, 'thumbnail'),

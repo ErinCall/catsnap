@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import json
+from sqlalchemy import func
 from StringIO import StringIO
 from mock import patch, Mock
 from tests import TestCase, with_settings, logged_in
@@ -19,8 +20,9 @@ class TestAdd(TestCase):
         eq_(response.status_code, 200)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_add_a_tag(self, ImageTruck):
+    def test_add_a_tag(self, ImageTruck, ResizeImage):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -38,8 +40,9 @@ class TestAdd(TestCase):
         eq_(images, [('CA7', 'imgur.com/cool_cat.gif')])
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image(self, ImageTruck):
+    def test_upload_an_image(self, ImageTruck, ResizeImage):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -55,18 +58,20 @@ class TestAdd(TestCase):
         eq_(response.status_code, 200)
 
         session = Client().session()
-        images = session.query(Image.filename,
-                               Image.source_url,
-                               Image.title,
-                               Image.description).all()
-        eq_(images, [('CA7',
-                      '',
-                      'My cat being awesome',
-                      'my cat is awesome. You can see how awesome.')])
+        image_count = session.query(func.count(Image.image_id)).one()
+        eq_(image_count, (1,))
+        image = session.query(Image).one()
+        eq_(image.filename, 'CA7')
+        eq_(image.source_url, '')
+        eq_(image.title, 'My cat being awesome')
+        eq_(image.description, 'my cat is awesome. You can see how awesome.')
+
+        ResizeImage.make_resizes.assert_called_with(image)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_with_json_format(self, ImageTruck):
+    def test_with_json_format(self, ImageTruck, ResizeImage):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'

@@ -18,12 +18,7 @@ RESIZES = {
 
 class ResizeImage(object):
     @classmethod
-    def make_resizes(cls, image_id):
-        session = Client().session()
-        image = session.query(ImageTable).\
-                filter(ImageTable.image_id==image_id).\
-                one()
-
+    def make_resizes(cls, image):
         contents = ImageTruck.contents_of_filename(image.filename)
         image_handler = ImageHandler.open(StringIO(contents))
         long_side = max(image_handler.size)
