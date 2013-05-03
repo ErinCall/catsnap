@@ -45,7 +45,7 @@ def add(request_format):
     session.add(image)
     image.add_tags(tag_names)
 
-    ResizeImage.make_resizes(image)
+    ResizeImage.make_resizes(image, truck)
 
     if request_format == 'html':
         return render_template('added.html', url=truck.url(), caption=image.caption())

@@ -10,17 +10,10 @@ import re
 from catsnap import Client
 
 class ImageTruck():
-    def __init__(self,
-                 contents,
-                 content_type,
-                 source_url,
-                 suffix=None,
-                 filename=None):
+    def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
-        self.suffix = suffix
-        self.forced_filename = filename
 
     @classmethod
     def new_from_url(cls, url):
@@ -42,13 +35,9 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type, suffix=None, filename=None):
+    def new_from_stream(cls, stream, content_type):
         contents = stream.read()
-        return cls(contents,
-                   content_type,
-                   None,
-                   suffix=suffix,
-                   filename=filename)
+        return cls(contents, content_type, None)
 
     @classmethod
     def new_from_something(cls, path):
@@ -68,16 +57,15 @@ class ImageTruck():
         key.set_contents_from_string(self.contents)
         key.make_public()
 
-        filename = self.calculate_filename()
+    def upload_resize(self, resized_contents, suffix):
+        filename = '%s_%s' % (self.calculate_filename(), suffix)
+        key = Client().bucket().new_key(filename)
+        key.set_metadata('Content-Type', self.content_type)
+        key.set_contents_from_string(resized_contents)
+        key.make_public()
 
     def calculate_filename(self):
-        if self.forced_filename is not None:
-            raw_filename = self.forced_filename
-        else:
-            raw_filename = hashlib.sha1(self.contents).hexdigest()
-        if self.suffix is None:
-            return raw_filename
-        return '%s_%s' % (raw_filename, self.suffix)
+        return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
         return self._url(self.calculate_filename(), Client().config().bucket)

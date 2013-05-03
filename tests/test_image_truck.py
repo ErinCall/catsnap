@@ -30,6 +30,25 @@ class TestImageTruck(TestCase):
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_with()
 
+    @patch('catsnap.image_truck.Client')
+    @patch('catsnap.image_truck.ImageTruck.calculate_filename')
+    def test_upload_resize(self, calculate_filename, MockClient):
+        bucket = Mock()
+        key = Mock()
+        bucket.new_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+        calculate_filename.return_value = 'faceb00c'
+
+        truck = ImageTruck('contentsoffile', 'image/gif', None)
+        truck.upload_resize('resizedcontents', 'small')
+
+        bucket.new_key.assert_called_with('faceb00c_small')
+        key.set_contents_from_string.assert_called_with('resizedcontents')
+        key.set_metadata.assert_called_with('Content-Type', 'image/gif')
+        key.make_public.assert_called_once()
+
     @patch('catsnap.image_truck.hashlib')
     def test_calculate_filename(self, hashlib):
         sha = Mock()
@@ -38,10 +57,6 @@ class TestImageTruck(TestCase):
         truck = ImageTruck('razors', None, None)
         eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
-
-    def test_calculate_filename_with_a_suffix_and_a_forced_name(self):
-        truck = ImageTruck('rzrs', None, None, suffix='small', filename='bab')
-        eq_(truck.calculate_filename(), 'bab_small')
 
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
@@ -95,16 +110,6 @@ class TestImageTruck(TestCase):
         truck = ImageTruck.new_from_stream(stream, 'image/jpg')
         eq_(truck.contents, 'encoded jpg file')
         eq_(truck.content_type, 'image/jpg')
-
-    def test_new_from_stream_with_a_suffix_and_forced_filename(self):
-        stream = StringIO.StringIO()
-        stream.write('encoded jpg file')
-        stream.seek(0)
-        truck = ImageTruck.new_from_stream(stream,
-                'image/jpg',
-                suffix='large',
-                filename='f0ced')
-        eq_(truck.calculate_filename(), 'f0ced_large')
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')

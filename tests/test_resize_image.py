@@ -11,23 +11,22 @@ from nose.plugins.skip import SkipTest
 from tests import TestCase, with_settings
 
 from catsnap import Client
+from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image as ImageTable, ImageResize
 from catsnap.resize_image import ResizeImage
 
 class TestResizeImage(TestCase):
-    @patch('catsnap.resize_image.ImageTruck')
-    def test_resize_an_image(self, MockImageTruck):
+    def test_resize_an_image(self):
         test_file = os.path.join(os.path.dirname(__file__),
                                  'test_image_640x427.jpg')
         image_handler = ImageHandler.open(test_file)
         truck = Mock()
-        MockImageTruck.new_from_stream.return_value = truck
         session = Client().session()
         image = ImageTable(filename='badcafe')
         session.add(image)
         session.flush()
 
-        ResizeImage._resize_image(image, image_handler, 'medium')
+        ResizeImage._resize_image(image, image_handler, truck, 'medium')
 
         resizes = session.query(ImageResize).all()
         eq_(len(resizes), 1)
@@ -35,15 +34,11 @@ class TestResizeImage(TestCase):
         eq_(resizes[0].height, 333)
         eq_(resizes[0].suffix, 'medium')
 
-        eq_(MockImageTruck.new_from_stream.call_count, 1)
-        MockImageTruck.new_from_stream.assert_called_once()
-        (args, kwargs) = MockImageTruck.new_from_stream.call_args
-        eq_(kwargs['filename'], 'badcafe')
-        truck.upload.assert_called_once_with()
+        (args, kwargs) = truck.upload_resize.call_args
+        eq_(args[1], 'medium')
 
     @patch('catsnap.resize_image.ImageHandler')
-    @patch('catsnap.resize_image.ImageTruck')
-    def test_resize_a_portrait_image(self, MockImageTruck, MockImage):
+    def test_resize_a_portrait_image(self, MockImage):
         session = Client().session()
         image_handler = Mock()
         image_handler.size = (427, 640)
@@ -52,43 +47,39 @@ class TestResizeImage(TestCase):
         session.add(image)
         session.flush()
 
-        ResizeImage._resize_image(image, image_handler, 'medium')
+        ResizeImage._resize_image(image, image_handler, Mock(), 'medium')
 
         resizes = session.query(ImageResize).all()
         eq_(len(resizes), 1)
         eq_(resizes[0].height, 500)
         eq_(resizes[0].width, 333)
 
-    @patch('catsnap.resize_image.ImageTruck')
     @patch('catsnap.resize_image.ImageHandler')
     @patch('catsnap.resize_image.ResizeImage._resize_image')
-    def test_creates_various_resizes(self,
-                                     resize_image_method,
-                                     MockImage,
-                                     MockImageTruck):
+    def test_creates_various_resizes(self, resize_image_method, MockImage):
         session = Client().session()
         image = ImageTable(filename='faded')
         session.add(image)
         session.flush()
 
+        truck = ImageTruck('contents', None, None)
+
         image_handler = Mock()
         image_handler.size = (3648, 2736)
         MockImage.open.return_value = image_handler
 
-        ResizeImage.make_resizes(image)
+        ResizeImage.make_resizes(image, truck)
 
         resize_image_method.assert_has_calls([
-            call(image, image_handler, 'thumbnail'),
-            call(image, image_handler, 'small'),
-            call(image, image_handler, 'medium'),
-            call(image, image_handler, 'large'),
+            call(image, image_handler, truck, 'thumbnail'),
+            call(image, image_handler, truck, 'small'),
+            call(image, image_handler, truck, 'medium'),
+            call(image, image_handler, truck, 'large'),
             ], any_order=True)
 
     @patch('catsnap.resize_image.ImageHandler')
     @patch('catsnap.resize_image.ResizeImage._resize_image')
-    @patch('catsnap.resize_image.ImageTruck')
     def test_only_scales_images_down_not_up(self,
-                                            MockImageTruck,
                                             resize_image_method,
                                             MockImage):
         image_handler = Mock()
@@ -100,11 +91,12 @@ class TestResizeImage(TestCase):
         session.add(image)
         session.flush()
 
-        ResizeImage.make_resizes(image)
+        truck = Mock()
+        ResizeImage.make_resizes(image, truck)
 
         resize_image_method.assert_has_calls([
-            call(image, image_handler, 'thumbnail'),
-            call(image, image_handler, 'small'),
+            call(image, image_handler, truck, 'thumbnail'),
+            call(image, image_handler, truck, 'small'),
             ], any_order=True)
 
     @patch('catsnap.Client.bucket')
@@ -140,12 +132,14 @@ class TestResizeImage(TestCase):
         bucket.new_key.return_value = new_key
         test_file = os.path.join(os.path.dirname(__file__), test_file_name)
         image_handler = ImageHandler.open(test_file)
+        with open(test_file, 'r') as fh:
+            truck = ImageTruck.new_from_stream(fh, content_type)
         session = Client().session()
         image = ImageTable(filename='badcafe')
         session.add(image)
         session.flush()
 
-        ResizeImage._resize_image(image, image_handler, 'thumbnail')
+        ResizeImage._resize_image(image, image_handler, truck, 'thumbnail')
 
         new_key.set_metadata.assert_called_with('Content-Type', content_type)
         resized_contents = new_key.set_contents_from_string.call_args[0][0]

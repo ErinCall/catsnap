@@ -66,7 +66,7 @@ class TestAdd(TestCase):
         eq_(image.title, 'My cat being awesome')
         eq_(image.description, 'my cat is awesome. You can see how awesome.')
 
-        ResizeImage.make_resizes.assert_called_with(image)
+        ResizeImage.make_resizes.assert_called_with(image, truck)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ResizeImage')
