@@ -25,12 +25,14 @@ def add(request_format):
     url = request.form['url']
 
     if url:
+        print 'fetching from remote url'
         truck = ImageTruck.new_from_url(url)
     elif request.files['file']:
         image = request.files['file']
         truck = ImageTruck.new_from_stream(image.stream, image.mimetype)
     else:
         abort(400)
+    print 'uploading to s3'
     truck.upload()
     session = Client().session()
     image = Image(filename=truck.calculate_filename(),

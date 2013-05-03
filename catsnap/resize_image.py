@@ -36,6 +36,7 @@ class ResizeImage(object):
                                                       height,
                                                       RESIZES[size])
 
+        print 'resizing to %s' % size
         resized = image_handler.resize((new_width, new_height),
                                        ImageHandler.ANTIALIAS)
         (_, contents_file) = tempfile.mkstemp()
@@ -47,6 +48,7 @@ class ResizeImage(object):
                         cls._content_type_from_format(image_handler.format),
                         suffix=size,
                         filename=image.filename)
+                print 'uploading resized image'
                 truck.upload()
         finally:
             os.unlink(contents_file)
