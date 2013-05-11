@@ -51,7 +51,7 @@ class ResizeImage(object):
         resize = ImageResize(image_id=image.image_id,
                              width=new_width,
                              height=new_height,
-                             suffix='medium')
+                             suffix=size)
         session.add(resize)
         session.flush()
 

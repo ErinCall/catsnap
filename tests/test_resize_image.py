@@ -26,16 +26,16 @@ class TestResizeImage(TestCase):
         session.add(image)
         session.flush()
 
-        ResizeImage._resize_image(image, image_handler, truck, 'medium')
+        ResizeImage._resize_image(image, image_handler, truck, 'thumbnail')
 
         resizes = session.query(ImageResize).all()
         eq_(len(resizes), 1)
-        eq_(resizes[0].width, 500)
-        eq_(resizes[0].height, 333)
-        eq_(resizes[0].suffix, 'medium')
+        eq_(resizes[0].width, 100)
+        eq_(resizes[0].height, 66)
+        eq_(resizes[0].suffix, 'thumbnail')
 
         (args, kwargs) = truck.upload_resize.call_args
-        eq_(args[1], 'medium')
+        eq_(args[1], 'thumbnail')
 
     @patch('catsnap.resize_image.ImageHandler')
     def test_resize_a_portrait_image(self, MockImage):
