@@ -29,7 +29,8 @@ class TestAuth(TestCase):
                     ('X-Catsnap-Signature-Date', now)],
                 data={'tags': 'pet cool',
                     'album': '',
-                    'url': 'http://imgur.com/cat.gif'})
+                    'url': 'http://imgur.com/cat.gif'},
+                follow_redirects=True)
         eq_(response.status_code, 200, response.data)
 
     @with_settings(api_key='supersekrit')

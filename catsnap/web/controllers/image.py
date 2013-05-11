@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from flask import request, render_template, redirect, g, abort
+from flask import request, render_template, redirect, g, abort, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
 from catsnap.table.image import Image
@@ -48,7 +48,7 @@ def add(request_format):
     ResizeImage.make_resizes(image, truck)
 
     if request_format == 'html':
-        return render_template('added.html', url=truck.url(), caption=image.caption())
+        return redirect(url_for('show_image', image_id=image.image_id))
     elif request_format == 'json':
         return {'url': truck.url()}
 

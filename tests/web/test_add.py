@@ -32,12 +32,15 @@ class TestAdd(TestCase):
                 'album': '',
                 'tags': 'pet cool',
                 'url': 'imgur.com/cool_cat.gif'})
-        eq_(response.status_code, 200, response.data)
-        assert '<a href="ess three">pet cool</a>' in response.data, response.data
 
         session = Client().session()
-        images = session.query(Image.filename, Image.source_url).all()
-        eq_(images, [('CA7', 'imgur.com/cool_cat.gif')])
+        image = session.query(Image).one()
+        eq_(image.filename, 'CA7')
+        eq_(image.source_url, 'imgur.com/cool_cat.gif')
+
+        eq_(response.status_code, 302, response.data)
+        eq_(response.headers['Location'],
+                'http://localhost/image/%d' % image.image_id)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ResizeImage')
@@ -55,18 +58,20 @@ class TestAdd(TestCase):
                 'title': 'My cat being awesome',
                 'description': 'my cat is awesome. You can see how awesome.',
                 'file': (StringIO('booya'), 'img.jpg')})
-        eq_(response.status_code, 200)
 
         session = Client().session()
-        image_count = session.query(func.count(Image.image_id)).one()
-        eq_(image_count, (1,))
         image = session.query(Image).one()
+
         eq_(image.filename, 'CA7')
         eq_(image.source_url, '')
         eq_(image.title, 'My cat being awesome')
         eq_(image.description, 'my cat is awesome. You can see how awesome.')
 
         ResizeImage.make_resizes.assert_called_with(image, truck)
+
+        eq_(response.status_code, 302, response.data)
+        eq_(response.headers['Location'],
+                'http://localhost/image/%d' % image.image_id)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ResizeImage')
