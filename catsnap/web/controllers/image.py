@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from flask import request, render_template, redirect, g, abort, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
-from catsnap.table.image import Image
+from catsnap.table.image import Image, ImageResize
 from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
 from catsnap.web.utils import login_required
@@ -52,16 +52,31 @@ def add(request_format):
     elif request_format == 'json':
         return {'url': truck.url()}
 
-@formatted_route('/image/<image_id>', methods=['GET'])
-def show_image(request_format, image_id):
+@formatted_route(
+        '/image/<image_id>', methods=['GET'], defaults={'size': 'medium'})
+@formatted_route('/image/<image_id>/<size>', methods=['GET'])
+def show_image(request_format, image_id, size):
     session = Client().session()
     image = session.query(Image).\
             filter(Image.image_id==image_id).\
-            first()
+            one()
+    resizes = session.query(ImageResize).\
+            filter(ImageResize.image_id == image_id).\
+            order_by(ImageResize.width.asc()).\
+            all()
     url = ImageTruck.url_for_filename(image.filename)
+    if resizes and size != 'original':
+        if size not in map(lambda r: r.suffix, resizes):
+            size = resizes[0].suffix
+        url = '%s_%s' % (url, size)
     tags = image.get_tags()
     if request_format == 'html':
-        return render_template('image.html', image=image, url=url, tags=tags)
+        return render_template('image.html',
+                               image=image,
+                               url=url,
+                               tags=tags,
+                               resizes=resizes,
+                               size=size)
     elif request_format == 'json':
         return {
             'description': image.description,
