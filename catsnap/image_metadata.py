@@ -10,7 +10,7 @@ class ImageMetadata(object):
     @classmethod
     def image_metadata(cls, contents):
         handler = ImageHandler.open(StringIO(contents))
-        exif = handler._getexif()
+        exif = getattr(handler, '_getexif', lambda: None)()
         if exif is None:
             return {}
         decoded_exif = {ExifTags.TAGS.get(tag, tag): value
