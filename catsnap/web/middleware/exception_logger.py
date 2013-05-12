@@ -13,5 +13,5 @@ class ExceptionLogger(object):
             traceback.print_exception(exc_type,
                                       exc_value,
                                       trace,
-                                      sys.stdout)
+                                      file=sys.stdout)
             raise
