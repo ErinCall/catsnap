@@ -30,6 +30,25 @@ class TestImageTruck(TestCase):
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_with()
 
+    @patch('catsnap.image_truck.Client')
+    @patch('catsnap.image_truck.ImageTruck.calculate_filename')
+    def test_upload_resize(self, calculate_filename, MockClient):
+        bucket = Mock()
+        key = Mock()
+        bucket.new_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+        calculate_filename.return_value = 'faceb00c'
+
+        truck = ImageTruck('contentsoffile', 'image/gif', None)
+        truck.upload_resize('resizedcontents', 'small')
+
+        bucket.new_key.assert_called_with('faceb00c_small')
+        key.set_contents_from_string.assert_called_with('resizedcontents')
+        key.set_metadata.assert_called_with('Content-Type', 'image/gif')
+        key.make_public.assert_called_once()
+
     @patch('catsnap.image_truck.hashlib')
     def test_calculate_filename(self, hashlib):
         sha = Mock()
@@ -145,3 +164,29 @@ class TestImageTruck(TestCase):
     def test_calculate_url__with_extension(self):
         url = ImageTruck._url('deadbeef', 'tuneholder')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')
+
+    @patch('catsnap.image_truck.Client')
+    def test_get_contents_of_filename(self, MockClient):
+        key = Mock()
+        key.get_contents_as_string.return_value = 'cow innards'
+        bucket = Mock()
+        bucket.get_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+
+        contents = ImageTruck.contents_of_filename('deadbeef')
+        eq_(contents, 'cow innards')
+
+        bucket.get_key.assert_called_with('deadbeef')
+
+    @raises(KeyError)
+    @patch('catsnap.image_truck.Client')
+    def test_get_contents_of_nonexistent_filename(self, MockClient):
+        bucket = Mock()
+        bucket.get_key.return_value = None
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+
+        ImageTruck.contents_of_filename('x')

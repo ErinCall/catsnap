@@ -12,8 +12,10 @@ from catsnap.table.image import Image
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
-    @patch('catsnap.web.controllers.add.ImageTruck')
-    def test_hmac_auth(self, ImageTruck):
+    @patch('catsnap.web.controllers.image.ImageMetadata')
+    @patch('catsnap.web.controllers.image.ResizeImage')
+    @patch('catsnap.web.controllers.image.ImageTruck')
+    def test_hmac_auth(self, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -26,9 +28,10 @@ class TestAuth(TestCase):
                 headers=[
                     ('X-Catsnap-Signature', signature),
                     ('X-Catsnap-Signature-Date', now)],
-                data={'add_tags': 'pet cool',
+                data={'tags': 'pet cool',
                     'album': '',
-                    'url': 'http://imgur.com/cat.gif'})
+                    'url': 'http://imgur.com/cat.gif'},
+                follow_redirects=True)
         eq_(response.status_code, 200, response.data)
 
     @with_settings(api_key='supersekrit')

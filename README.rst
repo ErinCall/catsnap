@@ -1,21 +1,21 @@
 Catsnap
 =======
 
-Catsnap is a tool for managing your pictures. Never again will you find yourself without the perfect cat gif or image macro to express your feelings!
+Catsnap is a tool for managing your pictures. Never again will you lose your collection to a faulty hard drive. Never again will you run into upload limits, bandwidth maximums, or service closures.
 
 How it works
 ------------
 
-Catsnap uses Amazon S3 and a PostgreSQL database to store and organize your images. Images are hosted for public access on S3, and each image can have one or more tags associated with it.
+Catsnap uses Amazon S3 and a PostgreSQL database to store and organize your images. Images are hosted for public access on S3, and each image can have one or more tags associated with it. Images can also be in an album, to organize sets of related images.
 
-Once you store an image, you can look it up by its tags. Easy!
+Once you store an image, you can look it up by its tags or album. Easy!
 
 If you like, you can `check out my catsnap instance <http://catsnap.andrewlorente.com>`_ to see what it looks like once running.
 
 Setting up Catsnap
 ------------------
 
-Catsnap has two pieces that work together: a webserver and a command-line client. You can use the webserver by itself, or use both. You cannot use just the command-line client, because it needs to interact with the services the webserver provides.
+Catsnap uses a web service to provide you access to your images. Let's walk through the process of getting it set up.
 
 First, you'll need to create `an Amazon WebServices account <https://aws.amazon.com/>`_, if you don't already have one. This may take a bit of time, so be patient. Amazon will require a credit card, but the cost of running catsnap will be tiny--a few cents a month, at most.
 
@@ -51,7 +51,7 @@ Promote that database to production (replace "COLOR" with the correct color from
 
 Have Catsnap set the database up with the tables you need, and your database is ready to go:
 
-    ``heroku run yoyo-migrate apply migrations '$DATABASE_URL'``
+    ``heroku run yoyo-migrate -b apply migrations '$DATABASE_URL'``
 
 The last thing you'll need to do is configure Catsnap for your personal use. Configure all of the following environment variables with ``heroku config:set VARIABLE_NAME value``
     * CATSNAP_API_KEY is a secret key the client and server share for authentication. It can be any string of characters. You should keep it secret!
@@ -63,16 +63,8 @@ The last thing you'll need to do is configure Catsnap for your personal use. Con
 
 Now your catsnap server is all set up! Navigate to the url for your Heroku app and you're ready to start adding images.
 
-Setting up the catsnap command-line client takes very little time. CD into your catsnap directory and run ``python setup.py install`` to install the client. Then run ``catsnap config`` and follow the prompts to configure the client.
-
 Using Catsnap
 -------------
 
 It is very straightforward to use the web interface. Search in the search box to find images you've previously stored. Use the upload or upload-by-url inputs to add new images.
-
-The command-line client is similarly simple. There are two main commands you'll run: ``catsnap add`` and ``catsnap find``.
-
-``catsnap add`` takes as its arguments an image by url or filename and a series of tags to associate with that image.
-
-``catsnap find`` takes as its arguments one or more tags to find, and finds all images that match any of those tags.
 

@@ -32,7 +32,7 @@ def add(args):
     signature = sha.sha(string_to_sign).hexdigest()
 
     response = requests.post(api_url,
-            data={'url': args.path, 'add_tags': ' '.join(args.tags)},
+            data={'url': args.path, 'tags': ' '.join(args.tags)},
             headers={'X-Catsnap-Signature': signature,
                      'X-Catsnap-Signature-Date': now})
     body = json.loads(response.text)
@@ -42,7 +42,7 @@ def find(args):
     api_host = Client().config().api_host
     api_url = '%s/find.json' % api_host
     response = requests.get(api_url, params={
-        'find_tags': ' '.join(args.tags)})
+        'tags': ' '.join(args.tags)})
     image_structs = json.loads(response.text)
     for struct in image_structs:
         url = ImageTruck.extensioned(struct['url'])

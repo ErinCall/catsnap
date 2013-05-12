@@ -57,7 +57,12 @@ class ImageTruck():
         key.set_contents_from_string(self.contents)
         key.make_public()
 
-        filename = self.calculate_filename()
+    def upload_resize(self, resized_contents, suffix):
+        filename = '%s_%s' % (self.calculate_filename(), suffix)
+        key = Client().bucket().new_key(filename)
+        key.set_metadata('Content-Type', self.content_type)
+        key.set_contents_from_string(resized_contents)
+        key.make_public()
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
@@ -76,3 +81,10 @@ class ImageTruck():
         if Client().config().extension:
             url += '#.gif'
         return url
+
+    @classmethod
+    def contents_of_filename(cls, filename):
+        key = Client().bucket().get_key(filename)
+        if key is None:
+            raise KeyError(filename)
+        return key.get_contents_as_string()

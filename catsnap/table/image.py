@@ -1,16 +1,28 @@
 from __future__ import unicode_literals
 
-from sqlalchemy import Column, Integer, String, func
+import time
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
+from catsnap.table.album import Album
 
 class Image(Base):
     __tablename__ = 'image'
 
     image_id = Column(Integer, primary_key=True)
+    album_id = Column(Integer, ForeignKey(Album.album_id))
     filename = Column(String)
     source_url = Column(String)
+    title = Column(String)
+    description = Column(String)
+    created_at = Column(DateTime)
+    photographed_at = Column(DateTime)
+    aperture = Column(String)
+    shutter_speed = Column(String)
+    iso = Column(Integer)
+    focal_length = Column(Integer)
+    camera = Column(String)
 
     def __new__(cls, *args, **kwargs):
         filename = None
@@ -28,6 +40,10 @@ class Image(Base):
                 return existing_image
 
         return super(Image, cls).__new__(cls, *args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        super(Image, self).__init__(*args, **kwargs)
+        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
     @classmethod
     def find_by_filename(cls, filename):
@@ -64,3 +80,21 @@ class Image(Base):
 
         for tag in tags:
             session.add(ImageTag(tag_id=tag.tag_id, image_id=self.image_id))
+
+    def caption(self):
+        if self.title:
+            return self.title
+
+        tags = list(self.get_tags())
+        if tags:
+            return ' '.join(tags)
+
+        return self.filename
+
+class ImageResize(Base):
+    __tablename__ = 'image_resize'
+
+    image_id = Column(Integer, ForeignKey(Image.image_id), primary_key=True)
+    width    = Column(Integer, primary_key=True)
+    height   = Column(Integer, primary_key=True)
+    suffix   = Column(String, nullable=False)

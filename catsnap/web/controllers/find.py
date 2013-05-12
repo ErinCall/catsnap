@@ -1,18 +1,19 @@
 from __future__ import unicode_literals
 
-from flask import request, render_template, make_response
+from flask import request, render_template, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.table.tag import Tag
 from catsnap.web.formatted_routes import formatted_route
 
 @formatted_route('/find', methods=['GET'])
 def find(request_format):
-    tag_names = request.args['find_tags'].split(' ')
+    tag_names = request.args['tags'].split(' ')
     image_structs = []
     image_data = Tag.get_image_data(tag_names)
-    for filename, image_tags in image_data:
+    for filename, image_id, image_tags in image_data:
         image_structs.append({
-            'url': ImageTruck.url_for_filename(filename),
+            'source_url': ImageTruck.url_for_filename(filename),
+            'url': url_for('show_image', image_id=image_id),
             'tags': image_tags
         })
     if request_format == 'html':
