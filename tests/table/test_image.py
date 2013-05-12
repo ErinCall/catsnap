@@ -1,8 +1,10 @@
 from __future__ import unicode_literals
 
+import time
 from tests import TestCase
 from catsnap import Client
 from nose.tools import eq_
+from mock import patch
 
 from catsnap.table.image import Image
 from catsnap.table.tag import Tag
@@ -62,6 +64,14 @@ class TestImages(TestCase):
         tags = image.get_tags()
         eq_(list(tags), ['mustache', 'gif'])
 
+    @patch('catsnap.table.image.time')
+    def test_created_at_is_set_on_creation(self, mock_time):
+        now = time.strptime('2011-05-09 13:01:01', '%Y-%m-%d %H:%M:%S')
+        mock_time.strftime = time.strftime
+        mock_time.gmtime.return_value = now
+        session = Client().session()
+        image = Image(filename='face')
+        eq_(image.created_at, time.strftime('%Y-%m-%d %H:%M:%S', now))
 
     def test_find_by_filename(self):
         session = Client().session()

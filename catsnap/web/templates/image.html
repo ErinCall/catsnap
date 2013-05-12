@@ -41,5 +41,33 @@
                 </ul>
             </article>
         {% endif %}
+        <article id="metadata">
+            <dl>
+                {% if image.camera %}
+                    <dt>Camera</dt>
+                    <dd>{{ image.camera }}</dd>
+                {% endif %}
+                {% if image.photographed_at %}
+                    <dt>Taken at</dt>
+                    <dd>{{ image.photographed_at }}</dd>
+                {% endif %}
+                {% if image.focal_length %}
+                    <dt>Focal Length</dt>
+                    <dd>{{ image.focal_length}}</dd>
+                {% endif %}
+                {% if image.aperture %}
+                    <dt>Aperture</dt>
+                    <dd>{{ image.aperture }}</dd>
+                {% endif %}
+                {% if image.shutter_speed %}
+                    <dt>Shutter Speed</dt>
+                    <dd>{{ image.shutter_speed }}</dd>
+                {% endif %}
+                {% if image.iso %}
+                    <dt>ISO</dt>
+                    <dd>{{ image.iso }}</dd>
+                {% endif %}
+            </dl>
+        </article>
     </body>
 </html>

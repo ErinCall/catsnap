@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from flask import request, render_template, redirect, g, abort, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
+from catsnap.image_metadata import ImageMetadata
 from catsnap.table.image import Image, ImageResize
 from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
@@ -32,13 +33,15 @@ def add(request_format):
         truck = ImageTruck.new_from_stream(image.stream, image.mimetype)
     else:
         abort(400)
+    metadata = ImageMetadata.image_metadata(truck.contents)
     print 'uploading to s3'
     truck.upload()
     session = Client().session()
     image = Image(filename=truck.calculate_filename(),
                   source_url=url,
                   description=request.form.get('description'),
-                  title=request.form.get('title'))
+                  title=request.form.get('title'),
+                  **metadata)
     album_id = request.form['album']
     if album_id:
         image.album_id = album_id
@@ -81,6 +84,12 @@ def show_image(request_format, image_id, size):
         return {
             'description': image.description,
             'title': image.title,
+            'camera': image.camera,
+            'photographed_at': image.photographed_at,
+            'focal_length': image.focal_length,
+            'aperture': image.aperture,
+            'shutter_speed': image.shutter_speed,
+            'iso': image.iso,
             'album_id': image.album_id,
             'tags': list(tags),
             'source_url': url,

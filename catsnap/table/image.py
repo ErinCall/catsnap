@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
-from sqlalchemy import Column, Integer, String, func, ForeignKey
+import time
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
@@ -15,6 +16,13 @@ class Image(Base):
     source_url = Column(String)
     title = Column(String)
     description = Column(String)
+    created_at = Column(DateTime)
+    photographed_at = Column(DateTime)
+    aperture = Column(String)
+    shutter_speed = Column(String)
+    iso = Column(Integer)
+    focal_length = Column(Integer)
+    camera = Column(String)
 
     def __new__(cls, *args, **kwargs):
         filename = None
@@ -32,6 +40,10 @@ class Image(Base):
                 return existing_image
 
         return super(Image, cls).__new__(cls, *args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        super(Image, self).__init__(*args, **kwargs)
+        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
     @classmethod
     def find_by_filename(cls, filename):

@@ -47,4 +47,10 @@ class TestShowImage(TestCase):
             'album_id': album.album_id,
             'tags': [ 'cow', 'dead', ],
             'source_url': 'https://s3.amazonaws.com/snapcats/deadbeef',
+            'camera': None,
+            'photographed_at': None,
+            'focal_length': None,
+            'aperture': None,
+            'shutter_speed': None,
+            'iso': None,
             })

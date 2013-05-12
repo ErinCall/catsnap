@@ -20,9 +20,10 @@ class TestAdd(TestCase):
         eq_(response.status_code, 200)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_add_a_tag(self, ImageTruck, ResizeImage):
+    def test_add_a_tag(self, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -43,13 +44,21 @@ class TestAdd(TestCase):
                 'http://localhost/image/%d' % image.image_id)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image(self, ImageTruck, ResizeImage):
+    def test_upload_an_image(self, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        ImageMetadata.image_metadata.return_value = {
+                'camera': 'Samsung NX210',
+                'photographed_at': '2013-05-09 12:00:00',
+                'focal_length': 30,
+                'aperture': '1/1.8',
+                'shutter_speed': 5,
+                'iso': '400'}
 
         response = self.app.post('/add', data={
                 'album': '',
@@ -74,13 +83,15 @@ class TestAdd(TestCase):
                 'http://localhost/image/%d' % image.image_id)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_with_json_format(self, ImageTruck, ResizeImage):
+    def test_with_json_format(self, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        ImageMetadata.image_metadata.return_value = {}
 
         response = self.app.post('/add.json', data={
             'album': '',
