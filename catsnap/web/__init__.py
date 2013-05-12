@@ -15,8 +15,9 @@ from catsnap import Client
 app = Flask(__name__)
 
 if os.environ.get('CATSNAP_ENV', None) == 'production':
-    app.wsgi_app = ExceptionLogger(app.wsgi_app)
     app.wsgi_app = ExceptionNotifier(app.wsgi_app)
+app.wsgi_app = ExceptionLogger(app.wsgi_app)
+
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
 
