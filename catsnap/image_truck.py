@@ -49,7 +49,7 @@ class ImageTruck():
 
     @classmethod
     def url_for_filename(cls, filename):
-        return cls._url(filename, Client().config().bucket)
+        return cls._url(filename)
 
     def upload(self):
         key = Client().bucket().new_key(self.calculate_filename())
@@ -68,12 +68,17 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename(), Client().config().bucket)
+        return self._url(self.calculate_filename())
 
     @classmethod
-    def _url(cls, filename, bucket_name):
-        url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
-                'bucket': bucket_name, 'filename': filename}
+    def _url(cls, filename):
+        config = Client().config()
+        if 'cloudfront_url' in  config:
+            url = '%(host)s/%(filename)s' % {
+                    'host': config.cloudfront_url, 'filename': filename}
+        else:
+            url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
+                    'bucket': config.bucket, 'filename': filename}
         return cls.extensioned(url)
 
     @classmethod
