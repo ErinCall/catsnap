@@ -137,6 +137,15 @@ class TestImageTruck(TestCase):
         truck = ImageTruck('greensleeves', None, None)
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
+    @with_settings(cloudfront_url='https://ggaaghlhaagl.cloudfront.net')
+    @patch('catsnap.image_truck.ImageTruck.calculate_filename')
+    def test_url__with_cloudfront_url(self, calculate_filename):
+        calculate_filename.return_value = 'chumbawamba'
+        truck = ImageTruck('tubthumper', None, None)
+
+        url = truck.url()
+        eq_(url, 'https://ggaaghlhaagl.cloudfront.net/chumbawamba')
+
     @with_settings(bucket='tune', extension=True)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url__with_extension(self, calculate_filename):
@@ -156,13 +165,14 @@ class TestImageTruck(TestCase):
         image_path = ImageTruck.extensioned('example.com/image')
         eq_(image_path, 'example.com/image#.gif')
 
+    @with_settings(bucket='tuneholder')
     def test_calculate_url(self):
-        url = ImageTruck._url('deadbeef', 'tuneholder')
+        url = ImageTruck._url('deadbeef')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef')
 
-    @with_settings(extension=True)
+    @with_settings(extension=True, bucket='tuneholder')
     def test_calculate_url__with_extension(self):
-        url = ImageTruck._url('deadbeef', 'tuneholder')
+        url = ImageTruck._url('deadbeef')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')
 
     @patch('catsnap.image_truck.Client')

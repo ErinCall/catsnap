@@ -7,6 +7,7 @@ class Config(object):
                                           'owner_id',
                                           'owner_email',
                                           'api_host',
+                                          'cloudfront_url',
                                           'api_key')
     CLIENT_SETTINGS = ('extension', 'api_host', 'api_key')
 
