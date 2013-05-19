@@ -4,10 +4,12 @@
         <title>Catsnap - view album</title>
     </head>
     <body>
-        <div>
-            {% for image in images %}
-                <a href="{{ image['url'] }}">{{ image['caption'] }}</a>
-            {% endfor %}
-        </div>
+        <article>
+            <ul>
+                {% for image in images %}
+                    <li><a href="{{ image['url'] }}">{{ image['caption'] }}</a></li>
+                {% endfor %}
+            </ul>
+        </article>
     </body>
 </html>
