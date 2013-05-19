@@ -10,7 +10,7 @@ from catsnap.image_truck import ImageTruck
 @formatted_route('/new_album', methods=['GET'])
 def new_album(request_format):
     if request_format == 'html':
-        return render_template('new_album.html', user=g.user)
+        return render_template('new_album.html.jinja', user=g.user)
     else:
         return {}
 
@@ -39,7 +39,7 @@ def view_album(request_format, album_id):
     image_structs = map(struct_from_image, images)
 
     if request_format == 'html':
-        return render_template('view_album.html', images = image_structs)
+        return render_template('view_album.html.jinja', images = image_structs)
     else:
         return images
 

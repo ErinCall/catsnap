@@ -19,6 +19,6 @@ def find(request_format):
     if request_format == 'html':
         for struct in image_structs:
             struct['tags'] = ' '.join(struct['tags'])
-        return render_template('find.html', images=image_structs)
+        return render_template('find.html.jinja', images=image_structs)
     elif request_format == 'json':
         return image_structs

@@ -53,4 +53,4 @@ import catsnap.web.controllers.album
 @app.route('/')
 def index():
     albums = Client().session().query(Album).all()
-    return render_template('index.html', user=g.user, albums=albums)
+    return render_template('index.html.jinja', user=g.user, albums=albums)
