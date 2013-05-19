@@ -1,30 +1,29 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Catsnap</title>
-    </head>
-    <body>
-        <article id="find">
-            <h2>Search for an image</h2>
-            <form method="get" action="{{ url_for('find') }}">
-                <label for="tags">Search: </label>
-                <input type="text" name="tags" id="tags" />
-                <input type="submit" name="find_button" id="find_button" value="Find" />
-            </form>
-        </article>
-        <article id="add">
-            <a href="{{ url_for('show_add') }}">Add images</a>
-        </article>
-        <article>
-            Or view an album:
-            <ul>
-            {% for album in albums %}
-                <li>
-                    <a href="{{ url_for('view_album', album_id=album.album_id) }}">
-                        {{album.name}}
-                    </a>
-                </li>
-            {% endfor %}
-        </article>
-    </body>
-</html>
+{% extends "layout.html" %}
+{% block title %}
+    Search
+{% endblock title %}
+{% block content %}
+    <article>
+        <h2>Search for an image</h2>
+        <form method="get" action="{{ url_for('find') }}">
+            <label for="tags">Search: </label>
+            <input type="text" name="tags" id="tags" />
+            <input type="submit" name="find_button" id="find_button" value="Find" />
+        </form>
+    </article>
+    <article id="add">
+        <a href="{{ url_for('show_add') }}">Add images</a>
+    </article>
+    <article>
+        Or view an album:
+        <ul>
+        {% for album in albums %}
+            <li>
+                <a href="{{ url_for('view_album', album_id=album.album_id) }}">
+                    {{album.name}}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    </article>
+{% endblock content %}

@@ -1,15 +1,13 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Catsnap - view album</title>
-    </head>
-    <body>
-        <article>
-            <ul>
-                {% for image in images %}
-                    <li><a href="{{ image['url'] }}">{{ image['caption'] }}</a></li>
-                {% endfor %}
-            </ul>
-        </article>
+{% extends 'layout.html' %}
+{% block title %}view album{% endblock title %}
+{% block content %}
+    <article>
+        <ul>
+            {% for image in images %}
+                <li><a href="{{ image['url'] }}">{{ image['caption'] }}</a></li>
+            {% endfor %}
+        </ul>
+    </article>
+{% endblock content %}
     </body>
 </html>

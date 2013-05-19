@@ -1,15 +1,13 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Catsnap - New Album</title>
-    </head>
-    <body>
-        <article>
-            <form method="post" action=" {{url_for('create_album')}}">
-                <label for="name">Name: </label>
-                <input type="text" name="name" id="name" />
-                <input type="submit" name="add_button" value="Add" />
-            </form>
-        </article>
-    </body>
-</html>
+{% extends "layout.html" %}
+{% block title %}
+	New Album
+{% endblock title %}
+{% block content %}
+    <article>
+        <form method="post" action=" {{url_for('create_album')}}">
+            <label for="name">Name: </label>
+            <input type="text" name="name" id="name" />
+            <input type="submit" name="add_button" value="Add" />
+        </form>
+    </article>
+{% endblock content %}

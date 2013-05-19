@@ -1,73 +1,71 @@
-<!doctype html>
-<html>
-    <head>
-        <title>{{ image.caption() }} - Catsnap</title>
-    </head>
-    <body>
-        <article id="image">
+{% extends 'layout.html' %}
+{% block title %}
+    {{ image.caption() }}
+{% endblock title %}
+{% block content %}
+    <article id="image">
+        <div>
+            <a href="{{ url }}">
+                <img src="{{ url }}"
+                    title="{{ image.caption() }}"
+                    alt="{{ image.caption() }}" />
+            </a>
+        </div>
+        {% if image.title %}
             <div>
-                <a href="{{ url }}">
-                    <img src="{{ url }}"
-                        title="{{ image.caption() }}"
-                        alt="{{ image.caption() }}" />
-                </a>
+                <span>{{ image.title }}</span>
             </div>
-            {% if image.title %}
-                <div>
-                    <span>{{ image.title }}</span>
-                </div>
-            {% endif %}
-            {% if image.description %}
-                <div>
-                    {{image.description}}
-                </div>
-            {% endif %}
-            {% if resizes %}
-                <ul>
-                    {% for resize in resizes %}
-                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
-                    {% endfor %}
-                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
-                </ul>
-            {% endif %}
-        </article>
-        {% if tags %}
-            <article id="tags">
-                Tags:
-                <ul>
-                    {% for tag in tags %}
-                        <li><a href="{{ url_for('find', tags=tag)}}">{{tag}}</a></li>
-                    {% endfor %}
-                </ul>
-            </article>
         {% endif %}
-        <article id="metadata">
-            <dl>
-                {% if image.camera %}
-                    <dt>Camera</dt>
-                    <dd>{{ image.camera }}</dd>
-                {% endif %}
-                {% if image.photographed_at %}
-                    <dt>Taken at</dt>
-                    <dd>{{ image.photographed_at }}</dd>
-                {% endif %}
-                {% if image.focal_length %}
-                    <dt>Focal Length</dt>
-                    <dd>{{ image.focal_length}}</dd>
-                {% endif %}
-                {% if image.aperture %}
-                    <dt>Aperture</dt>
-                    <dd>{{ image.aperture }}</dd>
-                {% endif %}
-                {% if image.shutter_speed %}
-                    <dt>Shutter Speed</dt>
-                    <dd>{{ image.shutter_speed }}</dd>
-                {% endif %}
-                {% if image.iso %}
-                    <dt>ISO</dt>
-                    <dd>{{ image.iso }}</dd>
-                {% endif %}
-            </dl>
+        {% if image.description %}
+            <div>
+                {{image.description}}
+            </div>
+        {% endif %}
+        {% if resizes %}
+            <ul>
+                {% for resize in resizes %}
+                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
+                {% endfor %}
+                <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
+            </ul>
+        {% endif %}
+    </article>
+    {% if tags %}
+        <article id="tags">
+            Tags:
+            <ul>
+                {% for tag in tags %}
+                    <li><a href="{{ url_for('find', tags=tag)}}">{{tag}}</a></li>
+                {% endfor %}
+            </ul>
         </article>
-    </body>
-</html>
+    {% endif %}
+    <article id="metadata">
+        <dl>
+            {% if image.camera %}
+                <dt>Camera</dt>
+                <dd>{{ image.camera }}</dd>
+            {% endif %}
+            {% if image.photographed_at %}
+                <dt>Taken at</dt>
+                <dd>{{ image.photographed_at }}</dd>
+            {% endif %}
+            {% if image.focal_length %}
+                <dt>Focal Length</dt>
+                <dd>{{ image.focal_length}}</dd>
+            {% endif %}
+            {% if image.aperture %}
+                <dt>Aperture</dt>
+                <dd>{{ image.aperture }}</dd>
+            {% endif %}
+            {% if image.shutter_speed %}
+                <dt>Shutter Speed</dt>
+                <dd>{{ image.shutter_speed }}</dd>
+            {% endif %}
+            {% if image.iso %}
+                <dt>ISO</dt>
+                <dd>{{ image.iso }}</dd>
+            {% endif %}
+        </dl>
+    </article>
+{% endblock content %}
