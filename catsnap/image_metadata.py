@@ -27,8 +27,8 @@ class ImageMetadata(object):
 
         photographed_at = decoded_exif.get('DateTime')
         if photographed_at is not None:
-            photographed_at = time.strftime('%Y-%d-%m %H:%M:%S', time.strptime(
-                    photographed_at, '%Y:%d:%m %H:%M:%S'))
+            photographed_at = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
+                    photographed_at, '%Y:%m:%d %H:%M:%S'))
 
         make = decoded_exif.get('Make')
         model = decoded_exif.get('Model')
