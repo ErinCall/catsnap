@@ -29,6 +29,9 @@ def create_album(request_format):
 
 @formatted_route('/album/<int:album_id>', methods=['GET'])
 def view_album(request_format, album_id):
+    album = Client().session().query(Album).\
+            filter(Album.album_id == album_id).\
+            one()
     images = Album.images_for_album_id(album_id)
     def struct_from_image(image):
         return {
@@ -39,7 +42,9 @@ def view_album(request_format, album_id):
     image_structs = map(struct_from_image, images)
 
     if request_format == 'html':
-        return render_template('view_album.html.jinja', images = image_structs)
+        return render_template('view_album.html.jinja',
+                images = image_structs,
+                album=album)
     else:
         return images
 
