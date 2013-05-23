@@ -1,9 +1,8 @@
 {% extends 'layout.html.jinja' %}
 {% block title %}
-    {{ image.caption() }}
+    {{ image.caption() |e}}
 {% endblock title %}
 {% block content %}
-    <h1>{{ image.caption() |e }}</h1>
     <article id="image">
         <div class="image-container">
             <a href="{{ url }}">
