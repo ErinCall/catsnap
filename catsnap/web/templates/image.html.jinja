@@ -3,31 +3,29 @@
     {{ image.caption() }}
 {% endblock title %}
 {% block content %}
+    <h1>{{ image.caption() |e }}</h1>
     <article id="image">
-        <div>
+        <div class="image-container">
             <a href="{{ url }}">
                 <img src="{{ url }}"
                     title="{{ image.caption() }}"
                     alt="{{ image.caption() }}" />
             </a>
         </div>
-        {% if image.title %}
+        {% if resizes %}
             <div>
-                <span>{{ image.title }}</span>
+                <ul>
+                    {% for resize in resizes %}
+                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
+                    {% endfor %}
+                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
+                </ul>
             </div>
         {% endif %}
         {% if image.description %}
             <div>
                 {{image.description}}
             </div>
-        {% endif %}
-        {% if resizes %}
-            <ul>
-                {% for resize in resizes %}
-                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
-                {% endfor %}
-                <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
-            </ul>
         {% endif %}
     </article>
     {% if tags %}

@@ -7,4 +7,14 @@ a {
 }
 a:hover {
 	color: #2277a2;
-};
+}
+
+.image-container {
+	float:left;
+	margin-right: 5%;
+	margin-bottom: 5%;
+}
+
+article {
+	clear:left;
+}
