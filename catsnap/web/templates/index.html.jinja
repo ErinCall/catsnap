@@ -1,10 +1,9 @@
 {% extends "layout.html.jinja" %}
 {% block title %}
-    Search
+    Search For An Image
 {% endblock title %}
 {% block content %}
     <article>
-        <h2>Search for an image</h2>
         <form method="get" action="{{ url_for('find') }}">
             <label for="tags">Search: </label>
             <input type="text" name="tags" id="tags" />
