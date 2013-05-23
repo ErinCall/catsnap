@@ -21,6 +21,8 @@ First, you'll need to create `an Amazon WebServices account <https://aws.amazon.
 
 Once you have an AWS account, you can `create a bucket <https://console.aws.amazon.com/s3/home>`_ in S3 where your images will be stored. Pick a name that makes sense to you--I use "catsnap-andrewlorente".
 
+Optionally, you may wish to `create a cloudfront distribution <https://console.aws.amazon.com/cloudfront/home>`_ so people can download your images lightning-fast.
+
 Now that you've got your S3 bucket set up, you'll want a catsnap server. Catsnap is a snap to set up on Heroku, and this guide assumes you'll do that. You can also run it on your own server, if you prefer.
 
 To run catsnap on Heroku, you'll first need to sign up. Like Amazon, Heroku will want your credit card information, but you'll be able to run catsnap on their free tier.  Heroku has `an excellent getting-started guide <https://devcenter.heroku.com/articles/quickstart>`_. Go ahead and follow the first few steps of that, until you can successfully run ``heroku login``.
@@ -60,6 +62,7 @@ The last thing you'll need to do is configure Catsnap for your personal use. Con
     * CATSNAP_SECRET_KEY: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters.
     * CATSNAP_OWNER_ID: an OpenID provider that identifies you as the owner of this catsnap installation. I recommend using your Google account, in which case you would set this to ``https://www.google.com/accounts/o8/id``.
     * CATSNAP_OWNER_EMAIL: the email address associated with your OpenID url.
+    * CATSNAP_CLOUDFRONT_URL: (optional) the host for your cloudfront distribution, if you made one. Note this should be a full url, including "https://".
 
 Now your catsnap server is all set up! Navigate to the url for your Heroku app and you're ready to start adding images.
 
