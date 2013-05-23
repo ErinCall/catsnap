@@ -1,0 +1,13 @@
+{% extends 'layout.html.jinja' %}
+{% block title %}{{ album.name }}{% endblock title %}
+{% block content %}
+    <article>
+        <ul>
+            {% for image in images %}
+                <li><a href="{{ image['url'] }}">{{ image['caption'] }}</a></li>
+            {% endfor %}
+        </ul>
+    </article>
+{% endblock content %}
+    </body>
+</html>

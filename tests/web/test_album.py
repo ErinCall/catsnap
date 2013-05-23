@@ -56,3 +56,5 @@ class TestAlbum(TestCase):
         dog_link = link % dog.image_id
         assert cat_link in response.data, response.data
         assert dog_link in response.data, response.data
+        assert 'my pix' in response.data, response.data
+

@@ -12,7 +12,9 @@ from catsnap.web.middleware.exception_notifier import ExceptionNotifier
 from catsnap.table.album import Album
 from catsnap import Client
 
-app = Flask(__name__)
+PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
+app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
+        static_url_path='/public')
 
 if os.environ.get('CATSNAP_ENV', None) == 'production':
     app.wsgi_app = ExceptionNotifier(app.wsgi_app)
@@ -53,4 +55,4 @@ import catsnap.web.controllers.album
 @app.route('/')
 def index():
     albums = Client().session().query(Album).all()
-    return render_template('index.html', user=g.user, albums=albums)
+    return render_template('index.html.jinja', user=g.user, albums=albums)

@@ -12,7 +12,7 @@ def login():
         return oid.try_login(Client().config().owner_id,
                              ask_for=['email'])
 
-    return render_template('login.html', next=oid.get_next_url(),
+    return render_template('login.html.jinja', next=oid.get_next_url(),
                            error=oid.fetch_error())
 
 @oid.after_login
