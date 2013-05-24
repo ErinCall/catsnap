@@ -29,6 +29,7 @@ class Tag(Base):
         session = Client().session()
         image_data = session.query(func.max(Image.filename),
                                    Image.image_id,
+                                   func.max(Image.title),
                                    func.array_agg(Tag.name)).\
                 join(ImageTag).\
                 filter(ImageTag.image_id == Image.image_id).\
@@ -42,4 +43,7 @@ class Tag(Base):
                 order_by(Image.filename)
 
         for image_struct in image_data:
-            yield image_struct
+            caption = Image.make_caption(title=image_struct[2],
+                filename=image_struct[0],
+                tags=image_struct[3])
+            yield (image_struct[0], image_struct[1], caption)
