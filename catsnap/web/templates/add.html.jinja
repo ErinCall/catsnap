@@ -27,7 +27,7 @@
                         <select name="album" id="album">
                             <option value="">(none)</option>
                             {% for album in albums %}
-                            <option value="{{ album.album_id }}">{{ album.name }}</option>
+                            <option value="{{ album.album_id }}">{{ album.name |e}}</option>
                             {% endfor %}
                         </select>
                         or <a href="{{ url_for('new_album') }}">create a new album</a>

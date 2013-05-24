@@ -7,15 +7,17 @@
         <div class="image-container">
             <a href="{{ url }}">
                 <img src="{{ url }}"
-                    title="{{ image.caption() }}"
-                    alt="{{ image.caption() }}" />
+                    title="{{ image.caption() |e}}"
+                    alt="{{ image.caption() |e}}" />
             </a>
         </div>
         {% if resizes %}
             <div>
                 <ul>
                     {% for resize in resizes %}
-                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
+                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">
+                            {{resize.suffix |e}} {{resize.width |e}}x{{resize.height |e}}
+                        </a></li>
                     {% endfor %}
                     <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
                 </ul>
@@ -23,7 +25,7 @@
         {% endif %}
         {% if image.description %}
             <div>
-                {{image.description}}
+                {{image.description |e}}
             </div>
         {% endif %}
     </article>
@@ -32,7 +34,7 @@
             Tags:
             <ul>
                 {% for tag in tags %}
-                    <li><a href="{{ url_for('find', tags=tag)}}">{{tag}}</a></li>
+                    <li><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></li>
                 {% endfor %}
             </ul>
         </article>
@@ -41,27 +43,27 @@
         <dl>
             {% if image.camera %}
                 <dt>Camera</dt>
-                <dd>{{ image.camera }}</dd>
+                <dd>{{ image.camera |e}}</dd>
             {% endif %}
             {% if image.photographed_at %}
                 <dt>Taken at</dt>
-                <dd>{{ image.photographed_at }}</dd>
+                <dd>{{ image.photographed_at |e}}</dd>
             {% endif %}
             {% if image.focal_length %}
                 <dt>Focal Length</dt>
-                <dd>{{ image.focal_length}}</dd>
+                <dd>{{ image.focal_length |e}}</dd>
             {% endif %}
             {% if image.aperture %}
                 <dt>Aperture</dt>
-                <dd>{{ image.aperture }}</dd>
+                <dd>{{ image.aperture |e}}</dd>
             {% endif %}
             {% if image.shutter_speed %}
                 <dt>Shutter Speed</dt>
-                <dd>{{ image.shutter_speed }}</dd>
+                <dd>{{ image.shutter_speed |e}}</dd>
             {% endif %}
             {% if image.iso %}
                 <dt>ISO</dt>
-                <dd>{{ image.iso }}</dd>
+                <dd>{{ image.iso |e}}</dd>
             {% endif %}
         </dl>
     </article>
