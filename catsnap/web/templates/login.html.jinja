@@ -6,7 +6,7 @@
     <h2>Sign in</h2>
     <form action="" method=post>
         {% if error %}
-            <p class=error><strong>Error:</strong> {{ error }}</p>
+            <p class=error><strong>Error:</strong> {{ error |e}}</p>
         {% endif %}
         <p>
             OpenID:
