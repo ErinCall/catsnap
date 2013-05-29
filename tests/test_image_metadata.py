@@ -4,9 +4,8 @@ import os.path
 from nose.tools import eq_
 from tests import TestCase
 
-from catsnap import Client
-from catsnap.image_truck import ImageTruck
 from catsnap.image_metadata import ImageMetadata
+
 
 class TestImageMetadata(TestCase):
     def test_get_image_metadata(self):

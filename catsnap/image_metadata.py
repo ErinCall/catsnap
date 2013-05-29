@@ -6,6 +6,7 @@ from fractions import Fraction
 import Image as ImageHandler
 import ExifTags
 
+
 class ImageMetadata(object):
     @classmethod
     def image_metadata(cls, contents):
@@ -14,7 +15,7 @@ class ImageMetadata(object):
         if exif is None:
             return {}
         decoded_exif = {ExifTags.TAGS.get(tag, tag): value
-                for (tag, value) in exif.iteritems()}
+                        for (tag, value) in exif.iteritems()}
 
         f_number = decoded_exif.get('FNumber')
         if f_number is not None:
@@ -27,7 +28,8 @@ class ImageMetadata(object):
 
         photographed_at = decoded_exif.get('DateTime')
         if photographed_at is not None:
-            photographed_at = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
+            photographed_at = time.strftime(
+                '%Y-%m-%d %H:%M:%S', time.strptime(
                     photographed_at, '%Y:%m:%d %H:%M:%S'))
 
         make = decoded_exif.get('Make')
@@ -41,13 +43,13 @@ class ImageMetadata(object):
         if focal_length is not None:
             focal_length = int(Fraction(*(focal_length)))
         return {
-                'camera': camera,
-                'photographed_at': photographed_at,
-                'focal_length': focal_length,
-                'aperture': aperture,
-                'shutter_speed': shutter_speed,
-                'iso': decoded_exif.get('ISOSpeedRatings'),
-                }
+            'camera': camera,
+            'photographed_at': photographed_at,
+            'focal_length': focal_length,
+            'aperture': aperture,
+            'shutter_speed': shutter_speed,
+            'iso': decoded_exif.get('ISOSpeedRatings'),
+        }
 
     @classmethod
     def _calculate_shutter_speed(cls, numerator, denominator):
