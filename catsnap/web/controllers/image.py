@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from flask import request, render_template, redirect, g, abort, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
+from catsnap.reorient_image import ReorientImage
 from catsnap.image_metadata import ImageMetadata
 from catsnap.table.image import Image, ImageResize
 from catsnap.table.album import Album
@@ -34,6 +35,8 @@ def add(request_format):
     else:
         abort(400)
     metadata = ImageMetadata.image_metadata(truck.contents)
+    print 'potentially reorienting'
+    truck.contents = ReorientImage.reorient_image(truck.contents)
     print 'uploading to s3'
     truck.upload()
     session = Client().session()
