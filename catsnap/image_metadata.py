@@ -21,6 +21,8 @@ class ImageMetadata(object):
         if f_number is not None:
             (aperture_numerator, aperture_denominator) = f_number
             aperture = '1/%.1f' % (aperture_numerator/aperture_denominator)
+        else:
+            aperture = None
 
         shutter_speed = decoded_exif.get('ExposureTime')
         if shutter_speed is not None:
