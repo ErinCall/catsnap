@@ -29,12 +29,12 @@ class ReorientImage(object):
             return contents
         exif = getattr(handler, '_getexif', lambda: None)()
         if not exif:
-            return handler
+            return contents
         decoded_exif = {ExifTags.TAGS.get(tag, tag): value
                         for (tag, value) in exif.iteritems()}
         orientation = decoded_exif.get('Orientation')
         if not orientation:
-            return handler
+            return contents
 
         reoriented_handler = {
             1: lambda: handler,
