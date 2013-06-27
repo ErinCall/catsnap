@@ -7,6 +7,7 @@ Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
 
+
 class Image(Base):
     __tablename__ = 'image'
 
@@ -33,8 +34,8 @@ class Image(Base):
         if filename:
             session = Client().session()
             existing_image = session.query(cls).\
-                    filter(cls.filename == filename).\
-                    first()
+                filter(cls.filename == filename).\
+                first()
 
             if existing_image:
                 return existing_image

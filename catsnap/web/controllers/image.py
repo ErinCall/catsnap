@@ -13,6 +13,7 @@ from catsnap.web.formatted_routes import formatted_route
 from catsnap.web.utils import login_required
 from catsnap import Client
 
+
 @formatted_route('/add', methods=['GET'])
 def show_add(request_format):
     session = Client().session()
@@ -21,6 +22,7 @@ def show_add(request_format):
         return render_template('add.html.jinja', user=g.user, albums=albums)
     elif request_format == 'json':
         return {'albums': albums}
+
 
 @formatted_route('/add', methods=['POST'])
 @login_required
@@ -60,18 +62,19 @@ def add(request_format):
     elif request_format == 'json':
         return {'url': truck.url()}
 
+
 @formatted_route(
-        '/image/<image_id>', methods=['GET'], defaults={'size': 'medium'})
+    '/image/<image_id>', methods=['GET'], defaults={'size': 'medium'})
 @formatted_route('/image/<image_id>/<size>', methods=['GET'])
 def show_image(request_format, image_id, size):
     session = Client().session()
     image = session.query(Image).\
-            filter(Image.image_id==image_id).\
-            one()
+        filter(Image.image_id == image_id).\
+        one()
     resizes = session.query(ImageResize).\
-            filter(ImageResize.image_id == image_id).\
-            order_by(ImageResize.width.asc()).\
-            all()
+        filter(ImageResize.image_id == image_id).\
+        order_by(ImageResize.width.asc()).\
+        all()
     url = ImageTruck.url_for_filename(image.filename)
     if resizes and size != 'original':
         if size not in map(lambda r: r.suffix, resizes):
@@ -98,7 +101,8 @@ def show_image(request_format, image_id, size):
             'album_id': image.album_id,
             'tags': list(tags),
             'source_url': url,
-                }
+        }
+
 
 @formatted_route('/image/<image_id>', methods=['PATCH'])
 @login_required

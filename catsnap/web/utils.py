@@ -3,8 +3,10 @@ from __future__ import unicode_literals
 from functools import wraps
 from flask import g, redirect, abort
 
+
 def is_logged_in():
     return g.user is not None
+
 
 def login_required(fn):
     @wraps(fn)
