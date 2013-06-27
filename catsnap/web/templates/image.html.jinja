@@ -73,5 +73,6 @@
     <script src="/public/js/edit_image.js"></script>
     <script>
         window.image_id = {{ image.image_id }};
+        window.logged_in = {{ 'true' if user else 'false' }};
     </script>
 {% endblock scripts %}

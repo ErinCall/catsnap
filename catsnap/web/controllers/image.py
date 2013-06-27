@@ -87,6 +87,7 @@ def show_image(request_format, image_id, size):
                                url=url,
                                tags=tags,
                                resizes=resizes,
+                               user=g.user,
                                size=size)
     elif request_format == 'json':
         return {

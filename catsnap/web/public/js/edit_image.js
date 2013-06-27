@@ -53,6 +53,8 @@
 	};
 
 	$(function() {
-		$('header h2').click(startEditing);
+		if (window.logged_in) {
+			$('header h2').click(startEditing);
+		}
 	});
 })();
