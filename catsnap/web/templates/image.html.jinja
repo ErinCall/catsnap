@@ -68,3 +68,10 @@
         </dl>
     </article>
 {% endblock content %}
+
+{% block scripts %}
+    <script src="/public/js/edit_image.js"></script>
+    <script>
+        window.image_id = {{ image.image_id }};
+    </script>
+{% endblock scripts %}

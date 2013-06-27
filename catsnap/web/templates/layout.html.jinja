@@ -7,10 +7,13 @@
 </head>
 <body>
 	<div class="container">
-		<h2>{{ self.title() }}</h2>
+		<header>
+			<h2>{{ self.title() }}</h2>
+		</header>
 		{%block content%}{%endblock content%}
 	</div>
 	<script src="/public/js/jquery-2.0.0.min.js"></script>
-	<script src="/public/js/bootstrap.min.js"></script>
+	<script src="/public/js/underscore-min.js"></script>
+	{%block scripts%}{%endblock%}
 </body>
 </html>

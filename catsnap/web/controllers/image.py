@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
+import json
 from flask import request, render_template, redirect, g, abort, url_for
+from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
 from catsnap.reorient_image import ReorientImage
@@ -97,3 +99,35 @@ def show_image(request_format, image_id, size):
             'tags': list(tags),
             'source_url': url,
                 }
+
+@formatted_route('/image/<image_id>', methods=['PATCH'])
+@login_required
+def edit_image(request_format, image_id):
+    if request_format != 'json':
+        abort(400)
+
+    session = Client().session()
+    image = session.query(Image).\
+        filter(Image.image_id == image_id).\
+        one()
+
+    attributes = json.loads(request.form['attributes'])
+    for attribute, value in attributes.iteritems():
+        if hasattr(image, attribute):
+            setattr(image, attribute, value)
+        else:
+            return {
+                'status': 'error',
+                'error_description': "No such attribute '%s'" % attribute
+            }
+
+    session.add(image)
+    try:
+        session.flush()
+    except IntegrityError:
+        return {
+            'status': 'error',
+            'error_description': "No such album_id '%s'" % image.album_id
+        }
+
+    return {'status': 'ok'}
