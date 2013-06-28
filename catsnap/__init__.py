@@ -9,6 +9,7 @@ from catsnap.singleton import Singleton
 from boto.exception import DynamoDBResponseError, S3CreateError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from threading import Lock
 
 #This really oughtta be, like, the tablename or something, but I screwed up, so
 #now there're existing catsnap installs that use this schema. Sucks :(
@@ -66,6 +67,27 @@ class Client(Singleton):
         if not self._engine:
             self._engine = create_engine(os.environ['DATABASE_URL'])
         if not self._session:
-            self._session = sessionmaker(bind=self._engine)()
+            self._session = MutexSession(self._engine)
         return self._session
 
+
+# "Whoa," you might be thinking, "a thread-safe session manager? Why, when 
+# Catsnap is single-threaded, as far as I can see?" Well, it's because the
+# acceptance tests spin up a second thread while the main thread pokes it
+# with a browser.
+mutex = Lock()
+class MutexSession(object):
+    def __init__(self, engine):
+        self._session = sessionmaker(bind=engine)()
+
+        def define_function(function_name):
+            def function(*args, **kwargs):
+                mutex.acquire()
+                try:
+                    return getattr(self._session, function_name)(*args, **kwargs)
+                finally:
+                    mutex.release()
+            return function
+        for function_name in ['add', 'flush', 'commit', 'rollback', 'query', 'execute']:
+            function = define_function(function_name)
+            setattr(self, function_name, function)
