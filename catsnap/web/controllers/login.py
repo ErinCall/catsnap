@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from flask import g, redirect, render_template, request, session
 from catsnap.web import app
 from catsnap.web import oid
