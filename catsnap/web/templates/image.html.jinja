@@ -2,6 +2,9 @@
 {% block title %}
     {{ image.caption() |e}}
 {% endblock title %}
+{% block page_title %}
+    <h2 data-attribute="title">{{ self.title() }}</h2>
+{% endblock page_title %}
 {% block content %}
     <article id="image">
         <div class="image-container">
@@ -23,9 +26,15 @@
                 </ul>
             </div>
         {% endif %}
-        {% if image.description %}
-            <div>
-                {{image.description |e}}
+        {% if image.description or user %}
+            <div id="description">
+                <span data-attribute="description">
+                    {% if image.description %}
+                        {{image.description |e}}
+                    {% else %}
+                        (click to add description)
+                    {% endif %}
+                </span>
             </div>
         {% endif %}
     </article>
