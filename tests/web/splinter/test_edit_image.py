@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from selenium.webdriver.common.keys import Keys
 from tests import with_settings
 from tests.web.splinter import TestCase, logged_in
 from catsnap import Client
@@ -15,12 +16,16 @@ class TestImageEdit(TestCase):
         image = Image(filename='asdf', title='click on this!')
         session.add(image)
         session.flush()
-        self.browser.visit('http://localhost:65432/image/%d' % image.image_id)
+
+        self.visit('/image/%d' % image.image_id)
         assert self.browser.is_text_present('click on this!'), \
             "Didn't find expected title"
 
         title = self.browser.find_by_css('h2').first
         title.click()
-        title_edit_field = self.browser.find_by_css('header input')
+        title_edit_field = self.browser.find_by_css('header input').first
         assert title_edit_field, "Didn't find a title-edit field!"
         eq_(title_edit_field.value, 'click on this!')
+
+        title_edit_field.fill('I clicked!\n')
+        # title_edit_field.sendKeys(Keys.RETURN)

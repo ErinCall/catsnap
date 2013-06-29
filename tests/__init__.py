@@ -48,6 +48,7 @@ db_info = {}
 def setUpPackage():
     create_temp_database()
     temp_db_url = 'postgresql://localhost/%s' % db_info['temp_db_name']
+    db_info['temp_db_url'] = temp_db_url
     db_info['engine'] = create_engine(temp_db_url)
 
     apply_migrations(temp_db_url)
