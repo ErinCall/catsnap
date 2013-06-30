@@ -16,6 +16,14 @@ class TestCase(BaseTestCase):
         super(TestCase, self).setUp()
         self.browser = web_actors['browser']
 
+    def tearDown(self):
+        try:
+            self.visit_url('/logout')
+        finally:
+            super(TestCase, self).tearDown()
+    def visit_url(self, path):
+        self.browser.visit('http://localhost:65432' + path)
+
 
 class App(object):
     def __init__(self):
