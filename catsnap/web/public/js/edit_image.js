@@ -1,12 +1,12 @@
 (function () {
 	var throbber,
-		startEditing,
-		stopEditing,
-		submitTag,
-		removeTag,
-		addTag;
+		start_editing,
+		stop_editing,
+		submit_tag,
+		remove_tag,
+		add_tag;
 
-	startEditing = function (event, display_element, edit_element, on_success) {
+	start_editing = function (event, display_element, edit_element, on_success) {
 		var $edit,
 			$form,
 			attribute,
@@ -16,12 +16,12 @@
 		$form = $("<form/>");
 		$edit = $("<" + edit_element + "/>").val($this.text().trim());
 		$edit.blur(function (event) {
-			_.bind(stopEditing, $form,
+			_.bind(stop_editing, $form,
 					event, attribute, display_element, edit_element, on_success)();
 		});
 		$form.submit(function (event) {
 			event.preventDefault();
-			_.bind(stopEditing, $form,
+			_.bind(stop_editing, $form,
 					event, attribute, display_element, edit_element, on_success)();
 		});
 		$form.append($edit);
@@ -31,7 +31,7 @@
 		$edit.select();
 	};
 
-	stopEditing = function (event,
+	stop_editing = function (event,
 			attribute,
 			display_element,
 			edit_element,
@@ -48,7 +48,7 @@
 		$display = $("<" + display_element + "/>").text(text);
 		$display.data('attribute', attribute);
 		$display.click(function(event) {
-			_.bind(startEditing, $display,
+			_.bind(start_editing, $display,
 					event, display_element, edit_element)();
 		});
 		$parent.append($throbber);
@@ -71,7 +71,7 @@
 		});
 	};
 
-	addTag = function(event) {
+	add_tag = function(event) {
 		var $form,
 			$edit,
 			$this = $(this);
@@ -82,15 +82,15 @@
 		$this.append($form);
 		$edit.focus();
 		$edit.blur(function(event) {
-			_.bind(submitTag, $this, event)();
+			_.bind(submit_tag, $this, event)();
 		});
 		$form.submit(function(event) {
 			event.preventDefault();
-			_.bind(submitTag, $this, event)();
+			_.bind(submit_tag, $this, event)();
 		})
 	};
 
-	submitTag = function(event) {
+	submit_tag = function(event) {
 		var tag_name,
 			$throbber = throbber(),
 			$this = $(this);
@@ -118,7 +118,7 @@
 				$remove = $('<a/>');
 				$remove.attr('href', '#');
 				$remove.text('x');
-				$remove.click(removeTag);
+				$remove.click(remove_tag);
 
 				$this.append(' [')
 				$this.append($remove);
@@ -126,7 +126,7 @@
 
 				$add_new = $('<li/>');
 				$add_new.text('(click to add a tag)');
-				$add_new.click(addTag);
+				$add_new.click(add_tag);
 				$this.parent().append($add_new);
 			},
 			error: function(jqXHR, status, errorThrown) {
@@ -136,7 +136,7 @@
 		});
 	};
 
-	removeTag = function(event) {
+	remove_tag = function(event) {
 		var tag_name,
 			$parent,
 			$throbber = throbber();
@@ -171,13 +171,13 @@
 				on_success = function(text) {
 					$('title').text(text + ' - Catsnap');
 				};
-				_.bind(startEditing, this, event, 'h2', 'input', on_success)();
+				_.bind(start_editing, this, event, 'h2', 'input', on_success)();
 			});
 			$('#description span').click(function(event) {
-				_.bind(startEditing, this, event, 'span', 'textarea')();
+				_.bind(start_editing, this, event, 'span', 'textarea')();
 			});
-			$('#add-tag').click(addTag);
-			$('.remove-tag').click(removeTag);
+			$('#add-tag').click(add_tag);
+			$('.remove-tag').click(remove_tag);
 		}
 	});
 })();
