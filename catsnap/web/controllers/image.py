@@ -116,15 +116,24 @@ def edit_image(request_format, image_id):
         filter(Image.image_id == image_id).\
         one()
 
-    attributes = json.loads(request.form['attributes'])
-    for attribute, value in attributes.iteritems():
-        if hasattr(image, attribute):
-            setattr(image, attribute, value)
-        else:
-            return {
-                'status': 'error',
-                'error_description': "No such attribute '%s'" % attribute
-            }
+    if 'attributes' in request.form:
+        attributes = json.loads(request.form['attributes'])
+        for attribute, value in attributes.iteritems():
+            if hasattr(image, attribute):
+                setattr(image, attribute, value)
+            else:
+                return {
+                    'status': 'error',
+                    'error_description': "No such attribute '%s'" % attribute
+                }
+
+    if 'add_tag' in request.form:
+        tag = request.form['add_tag']
+        image.add_tags([tag])
+
+    if 'remove_tag' in request.form:
+        tag = request.form['remove_tag']
+        image.remove_tag(tag)
 
     session.add(image)
     try:

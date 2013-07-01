@@ -4,6 +4,8 @@ from tests import with_settings
 from tests.web.splinter import TestCase, logged_in
 from catsnap import Client
 from catsnap.table.image import Image
+from catsnap.table.image_tag import ImageTag
+from catsnap.table.tag import Tag
 from nose.tools import eq_
 
 
@@ -71,3 +73,38 @@ class TestImageEdit(TestCase):
                 filter(Image.image_id == image.image_id).\
                 one()
         eq_(image.description, 'this image makes me sad')
+
+    @logged_in
+    @with_settings(bucket='whooyeah')
+    def test_add_and_remove_a_tag(self):
+        session = Client().session()
+        image = Image(filename='bab1e5')
+        session.add(image)
+        session.flush()
+        self.visit_url('/image/%d' % image.image_id)
+        assert self.browser.is_text_present('(click to add a tag)'),\
+            "Didn't find tag-adder"
+        add_tag = self.browser.find_by_css('#add-tag')
+        add_tag.click()
+        tag_name = self.browser.find_by_css('li input')
+        tag_name.fill("booya\n")
+
+        new_tag = self.browser.find_by_css('li span').first
+        eq_(new_tag.text, 'booya')
+
+        assert self.browser.is_text_present('(click to add a tag)'),\
+            "Didn't find new tag-adder"
+
+        image_tag = session.query(ImageTag).\
+                join(Tag, Tag.tag_id == ImageTag.tag_id).\
+                filter(Tag.name == 'booya').\
+                one()
+        eq_(image_tag.image_id, image.image_id)
+
+        self.browser.find_link_by_text('x').first.click()
+
+        assert not self.browser.is_text_present('booya'), \
+            "Tag wasn't deleted from the page"
+
+        image_tags = session.query(ImageTag).all()
+        eq_(image_tags, [])

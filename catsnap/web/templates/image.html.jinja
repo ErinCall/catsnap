@@ -38,13 +38,21 @@
             </div>
         {% endif %}
     </article>
-    {% if tags %}
+    {% if tags or user %}
         <article id="tags">
             Tags:
             <ul>
                 {% for tag in tags %}
-                    <li><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></li>
+                    <li>
+                        <span><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></span>
+                        {% if user %}
+                            [<a href="#" class="remove-tag">x</a>]
+                        {% endif %}
+                    </li>
                 {% endfor %}
+                {% if user %}
+                    <li id="add-tag">(click to add a tag)</li>
+                {% endif %}
             </ul>
         </article>
     {% endif %}

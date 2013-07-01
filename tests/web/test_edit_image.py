@@ -5,6 +5,8 @@ from tests import TestCase, with_settings, logged_in
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
+from catsnap.table.tag import Tag
+from catsnap.table.image_tag import ImageTag
 from catsnap.table.album import Album
 
 from unittest.case import SkipTest
@@ -74,3 +76,46 @@ class TestUpdateImage(TestCase):
             }),
         })
         eq_(response.status_code, 401)
+
+    @logged_in
+    def test_add_a_tag(self):
+        session = Client().session()
+        image = Image(filename='deadbeef')
+        session.add(image)
+        session.flush()
+
+        response = self.app.patch('/image/%d.json' % image.image_id, data={
+            'add_tag': 'cow',
+        })
+        eq_(response.status_code, 200)
+
+        body = json.loads(response.data)
+        eq_(body['status'], 'ok')
+
+        tag = session.query(Tag).filter(Tag.name == 'cow').one()
+        image_tag = session.query(ImageTag).\
+                filter(ImageTag.tag_id == tag.tag_id).\
+                one()
+        eq_(image_tag.image_id, image.image_id)
+
+    @logged_in
+    def test_remove_a_tag(self):
+        session = Client().session()
+        image = Image(filename='deadbeef')
+        tag = Tag(name='cow')
+        session.add(image)
+        session.add(tag)
+        session.flush()
+        image_tag = ImageTag(image_id=image.image_id, tag_id=tag.tag_id)
+        session.add(image_tag)
+        session.flush()
+
+        response = self.app.patch('/image/%d.json' % image.image_id, data={
+            'remove_tag': 'cow',
+        })
+        eq_(response.status_code, 200)
+        body = json.loads(response.data)
+        eq_(body['status'], 'ok')
+
+        image_tags = session.query(ImageTag).all()
+        eq_(image_tags, [])
