@@ -33,8 +33,8 @@ class Image(Base):
         if filename:
             session = Client().session()
             existing_image = session.query(cls).\
-                    filter(cls.filename == filename).\
-                    first()
+                filter(cls.filename == filename).\
+                first()
 
             if existing_image:
                 return existing_image
@@ -48,8 +48,8 @@ class Image(Base):
     @classmethod
     def find_by_filename(cls, filename):
         session = Client().session()
-        images = session.query(cls).filter(func.upper(cls.filename)
-                                          == func.upper(filename))
+        images = session.query(cls).filter(
+            func.upper(cls.filename) == func.upper(filename))
         return images.first()
 
     def get_tags(self):
@@ -58,9 +58,9 @@ class Image(Base):
         from catsnap.table.tag import Tag
         session = Client().session()
         tags = session.query(Tag.name).\
-                join(ImageTag).\
-                filter(ImageTag.image_id == self.image_id).\
-                filter(ImageTag.tag_id == Tag.tag_id)
+            join(ImageTag).\
+            filter(ImageTag.image_id == self.image_id).\
+            filter(ImageTag.tag_id == Tag.tag_id)
         for row in tags:
             yield row[0]
 
@@ -69,8 +69,8 @@ class Image(Base):
         from catsnap.table.tag import Tag
         session = Client().session()
         tags = session.query(Tag).\
-                filter(Tag.name.in_(tag_names)).\
-                all()
+            filter(Tag.name.in_(tag_names)).\
+            all()
         new_tags = set(tag_names) - set([t.name for t in tags])
         for tag_name in new_tags:
             tag = Tag(name=tag_name)
@@ -91,10 +91,11 @@ class Image(Base):
 
         return self.filename
 
+
 class ImageResize(Base):
     __tablename__ = 'image_resize'
 
     image_id = Column(Integer, ForeignKey(Image.image_id), primary_key=True)
-    width    = Column(Integer, primary_key=True)
-    height   = Column(Integer, primary_key=True)
-    suffix   = Column(String, nullable=False)
+    width = Column(Integer, primary_key=True)
+    height = Column(Integer, primary_key=True)
+    suffix = Column(String, nullable=False)

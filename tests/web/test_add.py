@@ -1,10 +1,9 @@
 from __future__ import unicode_literals
 
 import json
-from sqlalchemy import func
 from StringIO import StringIO
 from mock import patch, Mock
-from tests import TestCase, with_settings, logged_in
+from tests import TestCase, logged_in
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
@@ -30,9 +29,9 @@ class TestAdd(TestCase):
         truck.url.return_value = 'ess three'
 
         response = self.app.post('/add', data={
-                'album': '',
-                'tags': 'pet cool',
-                'url': 'imgur.com/cool_cat.gif'})
+            'album': '',
+            'tags': 'pet cool',
+            'url': 'imgur.com/cool_cat.gif'})
 
         session = Client().session()
         image = session.query(Image).one()
@@ -41,7 +40,7 @@ class TestAdd(TestCase):
 
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'],
-                'http://localhost/image/%d' % image.image_id)
+            'http://localhost/image/%d' % image.image_id)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ImageMetadata')
@@ -53,20 +52,20 @@ class TestAdd(TestCase):
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
         ImageMetadata.image_metadata.return_value = {
-                'camera': 'Samsung NX210',
-                'photographed_at': '2013-05-09 12:00:00',
-                'focal_length': 30,
-                'aperture': '1/1.8',
-                'shutter_speed': 5,
-                'iso': '400'}
+            'camera': 'Samsung NX210',
+            'photographed_at': '2013-05-09 12:00:00',
+            'focal_length': 30,
+            'aperture': '1/1.8',
+            'shutter_speed': 5,
+            'iso': '400'}
 
         response = self.app.post('/add', data={
-                'album': '',
-                'tags': 'pet cool',
-                'url': '',
-                'title': 'My cat being awesome',
-                'description': 'my cat is awesome. You can see how awesome.',
-                'file': (StringIO('booya'), 'img.jpg')})
+            'album': '',
+            'tags': 'pet cool',
+            'url': '',
+            'title': 'My cat being awesome',
+            'description': 'my cat is awesome. You can see how awesome.',
+            'file': (StringIO('booya'), 'img.jpg')})
 
         session = Client().session()
         image = session.query(Image).one()
@@ -80,7 +79,7 @@ class TestAdd(TestCase):
 
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'],
-                'http://localhost/image/%d' % image.image_id)
+            'http://localhost/image/%d' % image.image_id)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ImageMetadata')
