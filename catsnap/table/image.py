@@ -78,7 +78,15 @@ class Image(Base):
             tags.append(tag)
         session.flush()
 
+        existing_image_tags = session.query(ImageTag.tag_id).\
+            filter(ImageTag.image_id == self.image_id).\
+            filter(ImageTag.tag_id.in_([t.tag_id for t in tags])).\
+            all()
+        existing_image_tags = [row[0] for row in existing_image_tags]
+
         for tag in tags:
+            if tag.tag_id in existing_image_tags:
+                continue
             session.add(ImageTag(tag_id=tag.tag_id, image_id=self.image_id))
 
     def caption(self):

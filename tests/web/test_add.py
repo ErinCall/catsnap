@@ -7,6 +7,9 @@ from tests import TestCase, logged_in
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
+from catsnap.table.image_tag import ImageTag
+from catsnap.table.tag import Tag
+
 
 class TestAdd(TestCase):
     def test_adding_requires_login(self):
@@ -80,6 +83,39 @@ class TestAdd(TestCase):
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'],
             'http://localhost/image/%d' % image.image_id)
+
+    @logged_in
+    @patch('catsnap.web.controllers.image.ResizeImage')
+    @patch('catsnap.web.controllers.image.ImageMetadata')
+    @patch('catsnap.web.controllers.image.ImageTruck')
+    def test_upload_an_image_twice(self,
+                                   ImageTruck,
+                                   ImageMetadata,
+                                   ResizeImage):
+        truck = Mock()
+        ImageTruck.new_from_stream.return_value = truck
+        truck.calculate_filename.return_value = 'CA7'
+        truck.calculate_filename.return_value = 'CA7'
+        truck.url.return_value = 'ess three'
+        ImageMetadata.image_metadata.return_value = {}
+
+        response = self.app.post('/add', data={
+            'tags': 'pet',
+            'url': '',
+            'album': '',
+            'file': (StringIO('booya'), 'img.jpg')})
+        eq_(response.status_code, 302)
+        response = self.app.post('/add', data={
+            'tags': 'pet',
+            'url': '',
+            'album': '',
+            'file': (StringIO('booya'), 'img.jpg')})
+        eq_(response.status_code, 302)
+
+        session = Client().session()
+        image = session.query(Image).one()
+        image_tags = session.query(ImageTag.image_id).all()
+        eq_(image_tags, [(image.image_id,)])
 
     @logged_in
     @patch('catsnap.web.controllers.image.ImageMetadata')
