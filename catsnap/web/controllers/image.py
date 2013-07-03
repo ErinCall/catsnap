@@ -71,6 +71,14 @@ def show_image(request_format, image_id, size):
     image = session.query(Image).\
         filter(Image.image_id == image_id).\
         one()
+    if g.user:
+        albums = session.query(Album).all()
+    else:
+        albums = []
+    try:
+        album = filter(lambda a: a.album_id == image.album_id, albums)[0]
+    except IndexError:
+        album = None
     resizes = session.query(ImageResize).\
         filter(ImageResize.image_id == image_id).\
         order_by(ImageResize.width.asc()).\
@@ -84,6 +92,8 @@ def show_image(request_format, image_id, size):
     if request_format == 'html':
         return render_template('image.html.jinja',
                                image=image,
+                               album=album,
+                               albums=albums,
                                url=url,
                                tags=tags,
                                resizes=resizes,
@@ -120,6 +130,8 @@ def edit_image(request_format, image_id):
         attributes = json.loads(request.form['attributes'])
         for attribute, value in attributes.iteritems():
             if hasattr(image, attribute):
+                if not value:
+                    value = None
                 setattr(image, attribute, value)
             else:
                 return {

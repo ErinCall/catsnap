@@ -6,6 +6,7 @@ from catsnap import Client
 from catsnap.table.image import Image
 from catsnap.table.image_tag import ImageTag
 from catsnap.table.tag import Tag
+from catsnap.table.album import Album
 from nose.tools import eq_
 
 
@@ -108,3 +109,36 @@ class TestImageEdit(TestCase):
 
         image_tags = session.query(ImageTag).all()
         eq_(image_tags, [])
+
+    @logged_in
+    @with_settings(bucket='readytoshoot')
+    def test_change_album(self):
+        session = Client().session()
+        image = Image(filename='deadbeef')
+        session.add(image)
+        migrant = Album(name='migrant')
+        pink_friday = Album(name="Pink Friday")
+        session.add(migrant)
+        session.add(pink_friday)
+        session.flush()
+
+        self.visit_url('/image/%d' % image.image_id)
+        assert self.browser.is_text_present('image has no album')
+        assert self.browser.is_text_present('set album')
+
+        set_album = self.browser.find_by_css('#set-album').first
+        set_album.click()
+        self.browser.select('album', pink_friday.album_id)
+        assert self.browser.is_text_present(
+            "image appears in the album 'Pink Friday'"),\
+            "Album info wasn't present"
+
+        del image
+        image = session.query(Image).one()
+        eq_(image.album_id, pink_friday.album_id)
+
+        self.visit_url('/image/%d' % image.image_id)
+        assert self.browser.is_text_present(
+            "image appears in the album 'Pink Friday'"),\
+            "Album info wasn't right after reload"
+

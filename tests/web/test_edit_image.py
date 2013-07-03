@@ -27,12 +27,13 @@ class TestUpdateImage(TestCase):
 
         response = self.app.patch('/image/%d.json' % image.image_id, data={
             'attributes': json.dumps({
-                'album_id': album.album_id,
+                'album_id': str(album.album_id),
             })
         })
         body = json.loads(response.data)
         eq_(body['status'], 'ok')
 
+        del image
         image = session.query(Image).one()
         eq_(image.album_id, album.album_id)
 
@@ -68,6 +69,28 @@ class TestUpdateImage(TestCase):
         body = json.loads(response.data)
         eq_(body['status'], 'error')
         eq_(body['error_description'], "No such album_id '5'")
+
+    @logged_in
+    def test_clear_album_id(self):
+        session = Client().session()
+        album = Album(name='wolves')
+        session.add(album)
+        session.flush()
+        image = Image(filename='01f5', album_id=album.album_id)
+        session.add(image)
+        session.flush()
+
+        response = self.app.patch('/image/%d.json' % image.image_id, data={
+            'attributes': json.dumps({
+                'album_id': '',
+            })
+        })
+
+        body = json.loads(response.data)
+        eq_(body['status'], 'ok')
+
+        image = session.query(Image).one()
+        eq_(image.album_id, None)
 
     def test_login_is_required(self):
         response = self.app.patch('/image/1.json', data={

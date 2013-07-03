@@ -18,3 +18,7 @@ a:hover {
 article {
 	clear:left;
 }
+
+.data {
+	display: none;
+}
