@@ -1,7 +1,10 @@
 (function () {
+	'use strict';
 	var throbber,
 		start_editing,
 		stop_editing,
+		set_album,
+		change_album,
 		submit_tag,
 		remove_tag,
 		add_tag;
@@ -63,6 +66,103 @@
 				if (typeof on_success !== 'undefined') {
 					on_success(text);
 				}
+			},
+			error: function(jqXHR, status, errorThrown) {
+				$throbber.remove();
+				alert(errorThrown);
+			}
+		});
+	};
+
+	set_album = function(event, albums) {
+		var $parent,
+			$form,
+			$select,
+			$blank_option,
+			$new_album_link,
+			$this = $(this);
+
+		$parent = $this.parent();
+		if (typeof albums === 'undefined') {
+			albums = {};
+			_.each($parent.find('.data'), function(element) {
+				var $element = $(element);
+				albums[$element.data('id')] = $element.data('name');
+			})
+		}
+
+		$form = $('<form/>');
+		$select = $('<select/>');
+		$select.attr('name', 'album');
+		$form.append($select);
+		$blank_option = $('<option/>');
+		$blank_option.text('(no album)');
+		$blank_option.val('');
+		$select.append($blank_option);
+		_.each(_.keys(albums), function(album_id) {
+			var $option;
+			$option = $('<option/>');
+			$option.text(albums[album_id]);
+			$option.val(album_id);
+			if (album_id === window.album_id) {
+				$option.attr('selected', 'selected');
+			}
+			$select.append($option);
+		});
+		$select.change(function(event) {
+			_.bind(change_album, $select, event, albums)();
+		});
+
+		$parent.text('');
+		$parent.append($form);
+
+		$new_album_link = $('<a/>');
+		$new_album_link.attr('href', '/new_album');
+		$new_album_link.text('create a new album');
+		$parent.append(' or ');
+		$parent.append($new_album_link);
+	};
+
+	change_album = function(event, albums) {
+		var $parent,
+			post_data = {},
+			$throbber = throbber(),
+			$this = $(this);
+
+		$parent = $this.parent();
+		post_data.album_id = $this.val();
+		$this.remove();
+		$parent.append($throbber);
+
+		$.ajax('/image/' + window.image_id + '.json', {
+			type: "PATCH",
+			data: {attributes: JSON.stringify(post_data)},
+			success: function(data, status, jqXHR) {
+				var $set_album,
+					$selected,
+					$link;
+				if ($this.val() !== '') {
+					$selected = $this.find('option:selected');
+					$link = $('<a/>');
+					$link.attr('href', '/album/' + $this.val());
+					$link.text($selected.text());
+					$throbber.remove();
+					$parent.text("This image appears in the album '");
+					$parent.append($link);
+					$parent.append("'. ");
+				} else {
+					$parent.text("This image has no album. ");
+				}
+
+
+				$set_album = $('<span/>');
+				$set_album.text('(click to set album)');
+				$set_album.click(function(event) {
+					_.bind(set_album, $set_album, event, albums)();
+				});
+				$parent.append($set_album);
+
+				window.album_id = $this.val();
 			},
 			error: function(jqXHR, status, errorThrown) {
 				$throbber.remove();
@@ -176,6 +276,7 @@
 			$('#description span').click(function(event) {
 				_.bind(start_editing, this, event, 'span', 'textarea')();
 			});
+			$('#set-album').click(set_album);
 			$('#add-tag').click(add_tag);
 			$('.remove-tag').click(remove_tag);
 		}

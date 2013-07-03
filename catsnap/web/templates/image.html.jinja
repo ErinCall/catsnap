@@ -56,6 +56,22 @@
             </ul>
         </article>
     {% endif %}
+    {% if album or user %}
+        <article id="album">
+            {% if album %}
+                This image appears in the album
+                '<a href="{{ url_for('view_album', album_id=album.album_id) }}">{{album.name |e}}</a>'.
+            {% else %}
+                This image has no album.
+            {% endif %}
+            {% if user %}
+                <span id="set-album">(click to set album)</span>
+                {% for album in albums %}
+                    <span class="data" data-id="{{ album.album_id }}" data-name="{{ album.name |e }}"></span>
+                {% endfor %}
+            {% endif %}
+        </article>
+    {% endif %}
     <article id="metadata">
         <dl>
             {% if image.camera %}
@@ -90,6 +106,7 @@
     <script src="/public/js/edit_image.js"></script>
     <script>
         window.image_id = {{ image.image_id }};
+        window.album_id = "{{ album.album_id }}";
         window.logged_in = {{ 'true' if user else 'false' }};
     </script>
 {% endblock scripts %}
