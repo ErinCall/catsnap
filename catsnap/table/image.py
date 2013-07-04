@@ -7,6 +7,7 @@ Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
 
+
 class Image(Base):
     __tablename__ = 'image'
 
@@ -33,8 +34,8 @@ class Image(Base):
         if filename:
             session = Client().session()
             existing_image = session.query(cls).\
-                    filter(cls.filename == filename).\
-                    first()
+                filter(cls.filename == filename).\
+                first()
 
             if existing_image:
                 return existing_image
@@ -80,6 +81,17 @@ class Image(Base):
 
         for tag in tags:
             session.add(ImageTag(tag_id=tag.tag_id, image_id=self.image_id))
+
+    def remove_tag(self, tag_name):
+        from catsnap.table.image_tag import ImageTag
+        from catsnap.table.tag import Tag
+        session = Client().session()
+        image_tag = session.query(ImageTag).\
+                join(Tag, Tag.tag_id == ImageTag.tag_id).\
+                filter(Tag.name == tag_name).\
+                filter(ImageTag.image_id == self.image_id).\
+                one()
+        session.delete(image_tag)
 
     def caption(self):
         if self.title:

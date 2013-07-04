@@ -13,7 +13,7 @@ from catsnap.web import app
 
 import catsnap
 
-class TestCase():
+class TestCase(object):
     def setUp(self):
         (creds_fd, creds) = tempfile.mkstemp()
         self.creds_tempfile = creds
@@ -33,7 +33,7 @@ class TestCase():
         catsnap.Client().session().commit = catsnap.Client().session().flush
 
         app.config['TESTING'] = True
-        app.secret_key = 'super sekrit'
+        app.secret_key = str('super sekrit')
         self.app = app.test_client()
 
     def tearDown(self):

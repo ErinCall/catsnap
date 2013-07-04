@@ -38,6 +38,22 @@ class TestImages(TestCase):
 
         assert tag, 'no tag was created'
 
+    def test_remove_tag(self):
+        session = Client().session()
+        tag = Tag(name='booya')
+        image = Image(filename='bab1e5')
+        session.add(tag)
+        session.add(image)
+        session.flush()
+        image_tag = ImageTag(image_id=image.image_id, tag_id=tag.tag_id)
+        session.add(image_tag)
+        session.flush()
+
+        image.remove_tag('booya')
+
+        image_tags = session.query(ImageTag).all()
+        eq_(image_tags, [])
+
     def test_creating_with_a_new_source_url_updates_existing_record(self):
         session = Client().session()
         session.add(Image(filename='badcafe', source_url='example.com'))

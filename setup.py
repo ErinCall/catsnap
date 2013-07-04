@@ -27,5 +27,6 @@ setup(name="catsnap",
 
           "mock==0.8",
           "nose==1.1.2",
-          ],
+          "splinter==0.5.3",
+      ],
       )
