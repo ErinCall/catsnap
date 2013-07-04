@@ -1,10 +1,10 @@
 {% extends 'layout.html.jinja' %}
-{% block title %}{{ album.name }}{% endblock title %}
+{% block title %}{{ album.name |e}}{% endblock title %}
 {% block content %}
     <article>
         <ul>
             {% for image in images %}
-                <li><a href="{{ image['url'] }}">{{ image['caption'] }}</a></li>
+                <li><a href="{{ image['url'] }}">{{ image['caption'] |e}}</a></li>
             {% endfor %}
         </ul>
     </article>

@@ -19,7 +19,7 @@
         {% for album in albums %}
             <li>
                 <a href="{{ url_for('view_album', album_id=album.album_id) }}">
-                    {{album.name}}
+                    {{ album.name |e}}
                 </a>
             </li>
         {% endfor %}

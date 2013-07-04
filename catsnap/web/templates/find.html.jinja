@@ -6,7 +6,7 @@
 <article>
     <ul>
         {% for image in images %}<li>
-            <a href="{{ image.url }}">{{ image.tags }}</a>
+            <a href="{{ image.url }}">{{ image.tags |e}}</a>
         </li>{% endfor %}
     </ul>
 </article>

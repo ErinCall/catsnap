@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="4.1.2",
+      version="4.2.0",
       description="catalog and store images",
       author="Andrew Lorente",
       author_email="andrew.lorente@gmail.com",
@@ -27,5 +27,6 @@ setup(name="catsnap",
 
           "mock==0.8",
           "nose==1.1.2",
-          ],
+          "splinter==0.5.3",
+      ],
       )

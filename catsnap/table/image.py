@@ -7,6 +7,7 @@ Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
 
+
 class Image(Base):
     __tablename__ = 'image'
 
@@ -33,8 +34,8 @@ class Image(Base):
         if filename:
             session = Client().session()
             existing_image = session.query(cls).\
-                    filter(cls.filename == filename).\
-                    first()
+                filter(cls.filename == filename).\
+                first()
 
             if existing_image:
                 return existing_image
@@ -48,8 +49,8 @@ class Image(Base):
     @classmethod
     def find_by_filename(cls, filename):
         session = Client().session()
-        images = session.query(cls).filter(func.upper(cls.filename)
-                                          == func.upper(filename))
+        images = session.query(cls).filter(
+            func.upper(cls.filename) == func.upper(filename))
         return images.first()
 
     def get_tags(self):
@@ -58,9 +59,9 @@ class Image(Base):
         from catsnap.table.tag import Tag
         session = Client().session()
         tags = session.query(Tag.name).\
-                join(ImageTag).\
-                filter(ImageTag.image_id == self.image_id).\
-                filter(ImageTag.tag_id == Tag.tag_id)
+            join(ImageTag).\
+            filter(ImageTag.image_id == self.image_id).\
+            filter(ImageTag.tag_id == Tag.tag_id)
         for row in tags:
             yield row[0]
 
@@ -69,8 +70,8 @@ class Image(Base):
         from catsnap.table.tag import Tag
         session = Client().session()
         tags = session.query(Tag).\
-                filter(Tag.name.in_(tag_names)).\
-                all()
+            filter(Tag.name.in_(tag_names)).\
+            all()
         new_tags = set(tag_names) - set([t.name for t in tags])
         for tag_name in new_tags:
             tag = Tag(name=tag_name)
@@ -78,8 +79,27 @@ class Image(Base):
             tags.append(tag)
         session.flush()
 
+        existing_image_tags = session.query(ImageTag.tag_id).\
+            filter(ImageTag.image_id == self.image_id).\
+            filter(ImageTag.tag_id.in_([t.tag_id for t in tags])).\
+            all()
+        existing_image_tags = [row[0] for row in existing_image_tags]
+
         for tag in tags:
+            if tag.tag_id in existing_image_tags:
+                continue
             session.add(ImageTag(tag_id=tag.tag_id, image_id=self.image_id))
+
+    def remove_tag(self, tag_name):
+        from catsnap.table.image_tag import ImageTag
+        from catsnap.table.tag import Tag
+        session = Client().session()
+        image_tag = session.query(ImageTag).\
+                join(Tag, Tag.tag_id == ImageTag.tag_id).\
+                filter(Tag.name == tag_name).\
+                filter(ImageTag.image_id == self.image_id).\
+                one()
+        session.delete(image_tag)
 
     def caption(self):
         if self.title:
@@ -91,10 +111,11 @@ class Image(Base):
 
         return self.filename
 
+
 class ImageResize(Base):
     __tablename__ = 'image_resize'
 
     image_id = Column(Integer, ForeignKey(Image.image_id), primary_key=True)
-    width    = Column(Integer, primary_key=True)
-    height   = Column(Integer, primary_key=True)
-    suffix   = Column(String, nullable=False)
+    width = Column(Integer, primary_key=True)
+    height = Column(Integer, primary_key=True)
+    suffix = Column(String, nullable=False)
