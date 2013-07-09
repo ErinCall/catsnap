@@ -2,11 +2,11 @@ from __future__ import unicode_literals
 
 import os
 import sha
+import logging
 import datetime
+from logging.handlers import SMTPHandler
 from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
-from catsnap.web.middleware.exception_logger import ExceptionLogger
-from catsnap.web.middleware.exception_notifier import ExceptionNotifier
 from catsnap.table.album import Album
 from catsnap import Client
 
@@ -14,9 +14,26 @@ PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
-if os.environ.get('CATSNAP_ENV', None) == 'production':
-    app.wsgi_app = ExceptionNotifier(app.wsgi_app)
-app.wsgi_app = ExceptionLogger(app.wsgi_app)
+if 'SENDGRID_PASSWORD' in os.environ and not app.debug:
+    mail_handler = SMTPHandler('smtp.sendgrid.net',
+                               'errors@radlibs.info',
+                               ['andrew.lorente@gmail.com'],
+                               'Catsnap error',
+                               (os.environ['SENDGRID_USERNAME'],
+                                os.environ['SENDGRID_PASSWORD']))
+    mail_handler.setLevel(logging.ERROR)
+    mail_handler.setFormatter(logging.Formatter('''
+Message type:       %(levelname)s
+Location:           %(pathname)s:%(lineno)d
+Module:             %(module)s
+Function:           %(funcName)s
+Time:               %(asctime)s
+
+Message:
+
+%(message)s
+'''))
+    app.logger.addHandler(mail_handler)
 
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
