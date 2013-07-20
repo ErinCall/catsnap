@@ -1,3 +1,4 @@
+{% set js_page='image' %}
 {% extends 'layout.html.jinja' %}
 {% block title %}
     {{ image.caption() |e}}
@@ -103,7 +104,6 @@
 {% endblock content %}
 
 {% block scripts %}
-    <script src="/public/js/edit_image.js"></script>
     <script>
         window.image_id = {{ image.image_id }};
         window.album_id = "{{ album.album_id }}";

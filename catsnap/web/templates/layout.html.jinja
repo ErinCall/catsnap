@@ -5,7 +5,11 @@
     <link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/public/css/layout.css" rel="stylesheet" media="screen">
 </head>
-<body>
+<body
+    {% if js_page is defined %}
+        data-page="{{ js_page }}"
+    {% endif %}
+>
     <div class="container">
         <header>
             {% block page_title %}
@@ -16,6 +20,7 @@
     </div>
     <script src="/public/js/jquery-2.0.0.min.js"></script>
     <script src="/public/js/underscore-min.js"></script>
+    <script src="/public/js/edit_image.js"></script>
     {%block scripts%}{%endblock%}
 </body>
 </html>
