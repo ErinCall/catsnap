@@ -68,7 +68,7 @@ class TestAdd(TestCase):
             'url': '',
             'title': 'My cat being awesome',
             'description': 'my cat is awesome. You can see how awesome.',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
 
         session = Client().session()
         image = session.query(Image).one()
@@ -103,13 +103,13 @@ class TestAdd(TestCase):
             'tags': 'pet',
             'url': '',
             'album': '',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
         eq_(response.status_code, 302)
         response = self.app.post('/add', data={
             'tags': 'pet',
             'url': '',
             'album': '',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
         eq_(response.status_code, 302)
 
         session = Client().session()
