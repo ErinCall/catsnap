@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import StringIO
 import tempfile
 import os.path
-import Image as ImageHandler
+from wand.image import Image as ImageHandler
 from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock, call
 from nose.tools import eq_, raises, nottest
@@ -19,7 +19,7 @@ class TestResizeImage(TestCase):
     def test_resize_an_image(self):
         test_file = os.path.join(os.path.dirname(__file__),
                                  'test_image_640x427.jpg')
-        image_handler = ImageHandler.open(test_file)
+        image_handler = ImageHandler(filename=test_file)
         truck = Mock()
         session = Client().session()
         image = ImageTable(filename='badcafe')
@@ -64,9 +64,11 @@ class TestResizeImage(TestCase):
 
         truck = ImageTruck('contents', None, None)
 
-        image_handler = Mock()
+        image_handler = MagicMock()
         image_handler.size = (3648, 2736)
-        MockImage.open.return_value = image_handler
+        image_handler.clone.return_value = image_handler
+        image_handler.__enter__.return_value = image_handler
+        MockImage.return_value = image_handler
 
         ResizeImage.make_resizes(image, truck)
 
@@ -75,16 +77,18 @@ class TestResizeImage(TestCase):
             call(image, image_handler, truck, 'small'),
             call(image, image_handler, truck, 'medium'),
             call(image, image_handler, truck, 'large'),
-            ], any_order=True)
+        ], any_order=True)
 
     @patch('catsnap.resize_image.ImageHandler')
     @patch('catsnap.resize_image.ResizeImage._resize_image')
     def test_only_scales_images_down_not_up(self,
                                             resize_image_method,
                                             MockImage):
-        image_handler = Mock()
+        image_handler = MagicMock()
         image_handler.size = (360, 360)
-        MockImage.open.return_value = image_handler
+        image_handler.clone.return_value = image_handler
+        image_handler.__enter__.return_value = image_handler
+        MockImage.return_value = image_handler
 
         session = Client().session()
         image = ImageTable(filename='faded')
@@ -118,7 +122,7 @@ class TestResizeImage(TestCase):
         self.file_type_test(bucket_method,
                             'test_image_500x319.gif',
                             'image/gif',
-                            (100, 63))
+                            (100, 64))
 
     @nottest
     def file_type_test(self,
@@ -131,7 +135,7 @@ class TestResizeImage(TestCase):
         new_key = Mock()
         bucket.new_key.return_value = new_key
         test_file = os.path.join(os.path.dirname(__file__), test_file_name)
-        image_handler = ImageHandler.open(test_file)
+        image_handler = ImageHandler(filename=test_file)
         with open(test_file, 'r') as fh:
             truck = ImageTruck.new_from_stream(fh, content_type)
         session = Client().session()
@@ -144,5 +148,5 @@ class TestResizeImage(TestCase):
         new_key.set_metadata.assert_called_with('Content-Type', content_type)
         resized_contents = new_key.set_contents_from_string.call_args[0][0]
 
-        image_handler = ImageHandler.open(StringIO.StringIO(resized_contents))
+        image_handler = ImageHandler(blob=resized_contents)
         eq_(image_handler.size, resized_size)
