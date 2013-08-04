@@ -7,11 +7,13 @@ import datetime
 from logging.handlers import SMTPHandler
 from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
+from flask.ext.assets import Environment, Bundle
 from catsnap.table.album import Album
 from catsnap import Client
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
-app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
+app = Flask(__name__,
+            static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
 if 'SENDGRID_PASSWORD' in os.environ and not app.debug:
@@ -37,6 +39,23 @@ Message:
 
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
+
+
+if os.getenv('ASSETS_DEBUG'):
+    app.config['ASSETS_DEBUG'] = True
+assets = Environment(app)
+js = Bundle('js/jquery-2.0.0.min.js',
+            'js/bootstrap.min.js',
+            'js/underscore-min.js',
+            'js/edit_image.js',
+            filters='jsmin',
+            output='gen/packed.js')
+assets.register('js_all', js)
+css = Bundle("css/bootstrap.min.css",
+             "css/layout.css",
+             filters='cssmin',
+             output='gen/packed.css')
+assets.register('css_all', css)
 
 
 @app.before_request

@@ -265,7 +265,7 @@
 	};
 
 	$(function() {
-		if (window.logged_in) {
+		if ($('body').data('page') === 'image' && window.logged_in) {
 			$('header h2').click(function(event) {
 				var on_success;
 				on_success = function(text) {

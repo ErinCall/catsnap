@@ -1,21 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>{%block title%}{%endblock title%} - Catsnap</title>
-	<link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
-	<link href="/public/css/layout.css" rel="stylesheet" media="screen">
+    <title>{%block title%}{%endblock title%} - Catsnap</title>
+    {% assets "css_all" %}
+        <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
 </head>
-<body>
-	<div class="container">
-		<header>
-			{% block page_title %}
-				<h2>{{ self.title() }}</h2>
-			{% endblock page_title %}
-		</header>
-		{%block content%}{%endblock content%}
-	</div>
-	<script src="/public/js/jquery-2.0.0.min.js"></script>
-	<script src="/public/js/underscore-min.js"></script>
-	{%block scripts%}{%endblock%}
+<body
+    {% if js_page is defined %}
+        data-page="{{ js_page }}"
+    {% endif %}
+>
+    <div class="container">
+        <header>
+            {% block page_title %}
+                <h2>{{ self.title() }}</h2>
+            {% endblock page_title %}
+        </header>
+        {%block content%}{%endblock content%}
+    </div>
+    {% assets "js_all" %}
+        <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    {%block scripts%}{%endblock%}
 </body>
 </html>
