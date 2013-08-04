@@ -4,7 +4,7 @@ import os
 import tempfile
 from StringIO import StringIO
 import ExifTags
-import Image as ImageHandler
+from wand.image import Image as ImageHandler
 
 
 class ReorientImage(object):
@@ -16,43 +16,27 @@ class ReorientImage(object):
     orientation, returns new contents that have been rotated/flipped to
     correspond to the listed orientation.
 
-    In the case that an image is reoriented, the returned contents will NOT
-    have any EXIF data inside them.
+    In the case that an image is reoriented, the returned contents will have
+    EXIF data inside them, but the orientation tag will be wrong. :(
 
     !!!THIS METHOD IS NOT TESTED!!! Tread carefully.
     """
     @classmethod
     def reorient_image(cls, contents):
-        try:
-            handler = ImageHandler.open(StringIO(contents))
-        except IOError:
-            return contents
-        exif = getattr(handler, '_getexif', lambda: None)()
-        if not exif:
-            return contents
-        decoded_exif = {ExifTags.TAGS.get(tag, tag): value
-                        for (tag, value) in exif.iteritems()}
-        orientation = decoded_exif.get('Orientation')
+        handler = ImageHandler(blob=contents)
+        orientation = handler.metadata.get('exif:Orientation')
         if not orientation:
             return contents
 
-        reoriented_handler = {
-            1: lambda: handler,
-            2: lambda: handler.transpose(ImageHandler.FLIP_LEFT_RIGHT),
-            3: lambda: handler.transpose(ImageHandler.ROTATE_180),
-            4: lambda: handler.transpose(ImageHandler.FLIP_TOP_BOTTOM),
-            5: lambda: handler.transpose(ImageHandler.FLIP_TOP_BOTTOM).
-            transpose(ImageHandler.ROTATE_270),
-            6: lambda: handler.transpose(ImageHandler.ROTATE_270),
-            7: lambda: handler.transpose(ImageHandler.FLIP_LEFT_RIGHT).
-            transpose(ImageHandler.ROTATE_270),
-            8: lambda: handler.transpose(ImageHandler.ROTATE_90),
+        {
+            '1': lambda: None,
+            '2': lambda: handler.flop(),
+            '3': lambda: handler.rotate(degree=180),
+            '4': lambda: handler.flip(),
+            '5': lambda: handler.flip().rotate(degree=90),
+            '6': lambda: handler.rotate(degree=90),
+            '7': lambda: handler.flop().rotate(degree=90),
+            '8': lambda: handler.rotate(degree=270),
         }[orientation]()
 
-        (_, contents_file) = tempfile.mkstemp()
-        try:
-            reoriented_handler.save(contents_file, handler.format)
-            with open(contents_file, 'r') as fh:
-                return fh.read()
-        finally:
-            os.unlink(contents_file)
+        return handler.make_blob()

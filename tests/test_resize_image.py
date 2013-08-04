@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import StringIO
 import os.path
 from wand.image import Image as ImageHandler
 from mock import patch, MagicMock, Mock, call
@@ -120,7 +119,7 @@ class TestResizeImage(TestCase):
         self.file_type_test(bucket_method,
                             'test_image_500x319.gif',
                             'image/gif',
-                            (100, 64))
+                            (100, 63))
 
     @nottest
     def file_type_test(self,
