@@ -25,7 +25,9 @@ class TestAdd(TestCase):
     @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_add_a_tag(self, ImageTruck, ResizeImage, ImageMetadata):
+    @patch('catsnap.web.controllers.image.ReorientImage')
+    def test_add_a_tag(
+            self, ReorientImage, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -48,8 +50,10 @@ class TestAdd(TestCase):
     @logged_in
     @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
+    @patch('catsnap.web.controllers.image.ReorientImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image(self, ImageTruck, ResizeImage, ImageMetadata):
+    def test_upload_an_image(
+            self, ImageTruck, ReorientImage, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -68,7 +72,7 @@ class TestAdd(TestCase):
             'url': '',
             'title': 'My cat being awesome',
             'description': 'my cat is awesome. You can see how awesome.',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
 
         session = Client().session()
         image = session.query(Image).one()
@@ -86,11 +90,13 @@ class TestAdd(TestCase):
 
     @logged_in
     @patch('catsnap.web.controllers.image.ResizeImage')
+    @patch('catsnap.web.controllers.image.ReorientImage')
     @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ImageTruck')
     def test_upload_an_image_twice(self,
                                    ImageTruck,
                                    ImageMetadata,
+                                   ReorientImage,
                                    ResizeImage):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
@@ -103,13 +109,13 @@ class TestAdd(TestCase):
             'tags': 'pet',
             'url': '',
             'album': '',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
         eq_(response.status_code, 302)
         response = self.app.post('/add', data={
             'tags': 'pet',
             'url': '',
             'album': '',
-            'file': (StringIO('booya'), 'img.jpg')})
+            'file': (StringIO(str('booya')), 'img.jpg')})
         eq_(response.status_code, 302)
 
         session = Client().session()
@@ -120,8 +126,10 @@ class TestAdd(TestCase):
     @logged_in
     @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
+    @patch('catsnap.web.controllers.image.ReorientImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_with_json_format(self, ImageTruck, ResizeImage, ImageMetadata):
+    def test_with_json_format(
+            self, ImageTruck, ReorientImage, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'

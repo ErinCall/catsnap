@@ -1,21 +1,21 @@
 from __future__ import unicode_literals
 
-import time
 import datetime
 import sha
-from StringIO import StringIO
 from mock import patch, Mock
 from tests import TestCase, with_settings
 from nose.tools import eq_
 from catsnap import Client
-from catsnap.table.image import Image
+
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
     @patch('catsnap.web.controllers.image.ImageMetadata')
     @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_hmac_auth(self, ImageTruck, ResizeImage, ImageMetadata):
+    @patch('catsnap.web.controllers.image.ReorientImage')
+    def test_hmac_auth(
+            self, ReorientImage, ImageTruck, ResizeImage, ImageMetadata):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
@@ -25,23 +25,24 @@ class TestAuth(TestCase):
         signature = sha.sha(string_to_sign).hexdigest()
 
         response = self.app.post('/add',
-                headers=[
-                    ('X-Catsnap-Signature', signature),
-                    ('X-Catsnap-Signature-Date', now)],
-                data={'tags': 'pet cool',
-                    'album': '',
-                    'url': 'http://imgur.com/cat.gif'},
-                follow_redirects=True)
+                                 headers=[
+                                     ('X-Catsnap-Signature', signature),
+                                     ('X-Catsnap-Signature-Date', now)],
+                                 data={'tags': 'pet cool',
+                                       'album': '',
+                                       'url': 'http://imgur.com/cat.gif'},
+                                 follow_redirects=True)
         eq_(response.status_code, 200, response.data)
 
     @with_settings(api_key='supersekrit')
     def test_hmac_auth__fails_if_signature_does_not_match(self):
         now = str(datetime.datetime.utcnow())
         response = self.app.post('/add',
-                headers=[
-                    ('X-Catsnap-Signature', 'MALISHUS'),
-                    ('X-Catsnap-Signature-Date', now)],
-                data={'tags': 'pet cool', 'url': 'http://imgur.com/cat.gif'})
+                                 headers=[
+                                     ('X-Catsnap-Signature', 'MALISHUS'),
+                                     ('X-Catsnap-Signature-Date', now)],
+                                 data={'tags': 'pet cool',
+                                       'url': 'http://imgur.com/cat.gif'})
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'], 'http://localhost/')
 
@@ -52,9 +53,10 @@ class TestAuth(TestCase):
         signature = sha.sha(string_to_sign).hexdigest()
 
         response = self.app.post('/add',
-                headers=[
-                    ('X-Catsnap-Signature', signature),
-                    ('X-Catsnap-Signature-Date', then)],
-                data={'tags': 'pet cool', 'url': 'http://imgur.com/cat.gif'})
+                                 headers=[
+                                     ('X-Catsnap-Signature', signature),
+                                     ('X-Catsnap-Signature-Date', then)],
+                                 data={'tags': 'pet cool',
+                                       'url': 'http://imgur.com/cat.gif'})
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'], 'http://localhost/')

@@ -2,30 +2,30 @@ from __future__ import unicode_literals
 
 import os
 import tempfile
-from StringIO import StringIO
-import Image as ImageHandler
+from wand.image import Image as ImageHandler
 
 from catsnap import Client
-from catsnap.table.image import Image as ImageTable, ImageResize
-from catsnap.image_truck import ImageTruck
+from catsnap.table.image import ImageResize
 
 RESIZES = {
-        'thumbnail': 100,
-        'small': 320,
-        'medium': 500,
-        'large': 1600
-        }
+    'thumbnail': 100,
+    'small': 320,
+    'medium': 500,
+    'large': 1600
+}
+
 
 class ResizeImage(object):
     @classmethod
     def make_resizes(cls, image, truck):
         contents = truck.contents
-        image_handler = ImageHandler.open(StringIO(contents))
+        image_handler = ImageHandler(blob=contents)
         long_side = max(image_handler.size)
 
         for size, new_long_side in RESIZES.iteritems():
             if new_long_side < long_side:
-                cls._resize_image(image, image_handler, truck, size)
+                with image_handler.clone() as clone:
+                    cls._resize_image(image, clone, truck, size)
 
     @classmethod
     def _resize_image(cls, image, image_handler, truck, size):
@@ -37,11 +37,10 @@ class ResizeImage(object):
                                                       RESIZES[size])
 
         print 'resizing to %s' % size
-        resized = image_handler.resize((new_width, new_height),
-                                       ImageHandler.ANTIALIAS)
+        image_handler.resize(new_width, new_height)
         (_, contents_file) = tempfile.mkstemp()
         try:
-            resized.save(contents_file, image_handler.format)
+            image_handler.save(filename=contents_file)
             with open(contents_file, 'r') as contents:
                 print 'uploading resized image'
                 truck.upload_resize(contents.read(), size)
