@@ -71,10 +71,7 @@ def show_image(request_format, image_id, size):
     image = session.query(Image).\
         filter(Image.image_id == image_id).\
         one()
-    if g.user:
-        albums = session.query(Album).all()
-    else:
-        albums = []
+    albums = session.query(Album).all()
     try:
         album = filter(lambda a: a.album_id == image.album_id, albums)[0]
     except IndexError:
@@ -89,9 +86,12 @@ def show_image(request_format, image_id, size):
             size = resizes[0].suffix
         url = '%s_%s' % (url, size)
     tags = image.get_tags()
+
     if request_format == 'html':
         return render_template('image.html.jinja',
                                image=image,
+                               previous_image_id=image.previous_image_id(),
+                               next_image_id=image.next_image_id(),
                                album=album,
                                albums=albums,
                                url=url,

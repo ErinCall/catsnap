@@ -7,6 +7,7 @@ from nose.tools import eq_
 from mock import patch
 
 from catsnap.table.image import Image
+from catsnap.table.album import Album
 from catsnap.table.tag import Tag
 from catsnap.table.image_tag import ImageTag
 
@@ -122,7 +123,58 @@ class TestImages(TestCase):
         eq_(image.caption(), 'awesome cat')
 
     def test_caption__falls_back_to_filename(self):
-        session = Client().session()
         image = Image(title='', filename='the filename')
 
         eq_(image.caption(), 'the filename')
+
+    def test_previous_image_id_is_none_if_no_album(self):
+        image = Image(filename='the filename')
+
+        eq_(image.previous_image_id(), None)
+
+    def test_previous_image_id__finds_previous_in_album(self):
+        session = Client().session()
+        album = Album(name='my pictures')
+        session.add(album)
+        session.flush()
+
+        first = Image(
+            album_id=album.album_id, filename='first', created_at='20070514')
+        second = Image(
+            album_id=album.album_id, filename='second', created_at='20100509')
+        third = Image(
+            album_id=album.album_id, filename='third', created_at='20130804')
+        session.add(first)
+        session.add(second)
+        session.add(third)
+        session.flush()
+
+        eq_(third.previous_image_id(), second.image_id)
+        eq_(second.previous_image_id(), first.image_id)
+        eq_(first.previous_image_id(), None)
+
+    def test_next_image_id_is_none_if_no_album(self):
+        image = Image(filename='the filename')
+
+        eq_(image.next_image_id(), None)
+
+    def test_next_image_id__finds_next_in_album(self):
+        session = Client().session()
+        album = Album(name='my pictures')
+        session.add(album)
+        session.flush()
+
+        first = Image(
+            album_id=album.album_id, filename='first', created_at='20070514')
+        second = Image(
+            album_id=album.album_id, filename='second', created_at='20100509')
+        third = Image(
+            album_id=album.album_id, filename='third', created_at='20130804')
+        session.add(first)
+        session.add(second)
+        session.add(third)
+        session.flush()
+
+        eq_(first.next_image_id(), second.image_id)
+        eq_(second.next_image_id(), third.image_id)
+        eq_(third.next_image_id(), None)
