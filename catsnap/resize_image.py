@@ -5,15 +5,15 @@ import tempfile
 from wand.image import Image as ImageHandler
 
 from catsnap import Client
-from catsnap.table.image import Image as ImageTable, ImageResize
-from catsnap.image_truck import ImageTruck
+from catsnap.table.image import ImageResize
 
 RESIZES = {
-        'thumbnail': 100,
-        'small': 320,
-        'medium': 500,
-        'large': 1600
-        }
+    'thumbnail': 100,
+    'small': 320,
+    'medium': 500,
+    'large': 1600
+}
+
 
 class ResizeImage(object):
     @classmethod

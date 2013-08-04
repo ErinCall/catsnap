@@ -1,19 +1,17 @@
 from __future__ import unicode_literals
 
 import StringIO
-import tempfile
 import os.path
 from wand.image import Image as ImageHandler
-from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock, call
-from nose.tools import eq_, raises, nottest
-from nose.plugins.skip import SkipTest
-from tests import TestCase, with_settings
+from nose.tools import eq_, nottest
+from tests import TestCase
 
 from catsnap import Client
 from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image as ImageTable, ImageResize
 from catsnap.resize_image import ResizeImage
+
 
 class TestResizeImage(TestCase):
     def test_resize_an_image(self):
@@ -101,7 +99,7 @@ class TestResizeImage(TestCase):
         resize_image_method.assert_has_calls([
             call(image, image_handler, truck, 'thumbnail'),
             call(image, image_handler, truck, 'small'),
-            ], any_order=True)
+        ], any_order=True)
 
     @patch('catsnap.Client.bucket')
     def test_handles_jpegs(self, bucket_method):
