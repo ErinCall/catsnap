@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import time
 from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.exc import NoResultFound
 Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
@@ -44,7 +45,8 @@ class Image(Base):
 
     def __init__(self, *args, **kwargs):
         super(Image, self).__init__(*args, **kwargs)
-        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+        if not self.created_at:
+            self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
     @classmethod
     def find_by_filename(cls, filename):
@@ -110,6 +112,34 @@ class Image(Base):
             return ' '.join(tags)
 
         return self.filename
+
+    def previous_image_id(self):
+        if not self.album_id:
+            return None
+        try:
+            row = Client().session().query(Image.image_id).\
+                filter(Image.album_id == self.album_id).\
+                filter(Image.created_at < self.created_at).\
+                order_by(Image.created_at.desc()).\
+                limit(1).\
+                one()
+        except NoResultFound:
+            return None
+        return row[0]
+
+    def next_image_id(self):
+        if not self.album_id:
+            return None
+        try:
+            row = Client().session().query(Image.image_id).\
+                filter(Image.album_id == self.album_id).\
+                filter(Image.created_at > self.created_at).\
+                order_by(Image.created_at.asc()).\
+                limit(1).\
+                one()
+        except NoResultFound:
+            return None
+        return row[0]
 
 
 class ImageResize(Base):
