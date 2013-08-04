@@ -19,7 +19,7 @@ class ReorientImage(object):
     In the case that an image is reoriented, the returned contents will have
     EXIF data inside them, but the orientation tag will be wrong. :(
 
-    !!!THIS METHOD IS NOT TESTED!!! Tread carefully.
+    This method is not well-tested. Tread carefully.
     """
     @classmethod
     def reorient_image(cls, contents):
