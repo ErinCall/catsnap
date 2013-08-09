@@ -6,6 +6,8 @@ from tests import TestCase as BaseTestCase
 from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
+from splinter.driver.webdriver.firefox import WebDriver
+from splinter.browser import _DRIVERS
 from splinter import Browser
 
 web_actors = {}
@@ -49,8 +51,8 @@ def setUpPackage():
 
 
 def tearDownPackage():
-    web_actors['server'].stop()
     web_actors['browser'].quit()
+    web_actors['server'].stop()
 
 
 @app.route('/become_logged_in')
@@ -66,3 +68,10 @@ def logged_in(fn):
         web_actors['browser'].visit('http://localhost:65432/become_logged_in')
         fn(*args, **kwargs)
     return wrapper
+
+
+class FastFirefoxDriver(WebDriver):
+    def visit(self, url):
+        self.driver.get(url)
+
+_DRIVERS['firefox'] = FastFirefoxDriver
