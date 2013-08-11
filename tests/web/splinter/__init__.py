@@ -7,8 +7,6 @@ from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
 from splinter.driver.webdriver.firefox import WebDriver
-from splinter.browser import _DRIVERS
-from splinter import Browser
 
 web_actors = {}
 
@@ -23,6 +21,7 @@ class TestCase(BaseTestCase):
             self.visit_url('/logout')
         finally:
             super(TestCase, self).tearDown()
+
     def visit_url(self, path):
         self.browser.visit('http://localhost:65432' + path)
 
@@ -47,7 +46,7 @@ def setUpPackage():
     thread.start()
     web_actors['server'] = test_app
 
-    web_actors['browser'] = Browser()
+    web_actors['browser'] = SingleVisitFirefoxDriver()
 
 
 def tearDownPackage():
@@ -70,8 +69,6 @@ def logged_in(fn):
     return wrapper
 
 
-class FastFirefoxDriver(WebDriver):
+class SingleVisitFirefoxDriver(WebDriver):
     def visit(self, url):
         self.driver.get(url)
-
-_DRIVERS['firefox'] = FastFirefoxDriver
