@@ -102,14 +102,18 @@ class Image(Base):
         session.delete(image_tag)
 
     def caption(self):
-        if self.title:
-            return self.title
-
         tags = list(self.get_tags())
+        return self.make_caption(title=self.title,
+                tags=tags,
+                filename=self.filename)
+
+    @classmethod
+    def make_caption(cls, filename, title, tags):
+        if title:
+            return title
         if tags:
             return ' '.join(tags)
-
-        return self.filename
+        return filename
 
 
 class ImageResize(Base):

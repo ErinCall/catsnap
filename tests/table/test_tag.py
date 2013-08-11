@@ -29,7 +29,7 @@ class TestGetImageData(TestCase):
 
         session = Client().session()
 
-        dog = Image(filename='D06')
+        dog = Image(filename='D06', title='my dog')
         cat = Image(filename='CA7')
         stegosaurus = Image(filename='57E60')
         session.add(dog)
@@ -51,12 +51,14 @@ class TestGetImageData(TestCase):
     def test_a_simple_query(self):
         (dog, cat, stegosaurus) = self.setup_test_data()
         image_data = Tag.get_image_data(['pet'])
-        eq_(list(image_data), [ ('CA7', cat.image_id, ['pet', 'cool']),
-                                ('D06', dog.image_id, ['pet']        )])
+        eq_(list(image_data), [
+                ('CA7', cat.image_id, 'pet cool'),
+                ('D06', dog.image_id, 'my dog')])
 
     def test_multiple_tags(self):
         (dog, cat, stegosaurus) = self.setup_test_data()
         image_data = Tag.get_image_data(['pet','cool'])
-        eq_(list(image_data), [ ('57E60', stegosaurus.image_id, ['cool']       ),
-                                ('CA7',   cat.image_id,         ['pet', 'cool']),
-                                ('D06',   dog.image_id,         ['pet']        )])
+        eq_(list(image_data), [
+                ('57E60', stegosaurus.image_id, 'cool'),
+                ('CA7',   cat.image_id,         'pet cool'),
+                ('D06',   dog.image_id,         'my dog')])

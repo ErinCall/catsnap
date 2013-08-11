@@ -46,8 +46,8 @@ def find(args):
     image_structs = json.loads(response.text)
     for struct in image_structs:
         url = ImageTruck.extensioned(struct['url'])
-        tags = ' '.join(struct['tags'])
-        print '%s   |   %s' % (url, tags)
+        caption = struct['caption']
+        print '%s   |   %s' % (url, caption)
 
 def update_config(args):
     config = FileConfig()
