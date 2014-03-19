@@ -38,7 +38,6 @@ Message:
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
 
-
 @app.before_request
 def before_request():
     g.user = None
