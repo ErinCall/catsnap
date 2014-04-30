@@ -64,8 +64,8 @@ def add(request_format):
 
 
 @formatted_route(
-    '/image/<image_id>', methods=['GET'], defaults={'size': 'medium'})
-@formatted_route('/image/<image_id>/<size>', methods=['GET'])
+    '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})
+@formatted_route('/image/<int:image_id>/<size>', methods=['GET'])
 def show_image(request_format, image_id, size):
     session = Client().session()
     image = session.query(Image).\
