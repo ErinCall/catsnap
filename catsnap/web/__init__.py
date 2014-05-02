@@ -14,10 +14,14 @@ PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
-if 'SENDGRID_PASSWORD' in os.environ and not app.debug:
+if not app.debug and all(map(lambda x: x in os.environ,
+                             ['SENDGRID_PASSWORD',
+                             'SENDGRID_USERNAME',
+                             'ERROR_RECIPIENT',
+                             'ERROR_SENDER'])):
     mail_handler = SMTPHandler('smtp.sendgrid.net',
-                               'errors@radlibs.info',
-                               ['andrew.lorente@gmail.com'],
+                               os.environ['ERROR_SENDER'],
+                               [os.environ['ERROR_RECIPIENT']],
                                'Catsnap error',
                                (os.environ['SENDGRID_USERNAME'],
                                 os.environ['SENDGRID_PASSWORD']))
