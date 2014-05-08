@@ -10,7 +10,7 @@ Catsnap uses Amazon S3 and a PostgreSQL database to store and organize your imag
 
 Once you store an image, you can look it up by its tags or album. Easy!
 
-If you like, you can `check out my catsnap instance <http://catsnap.andrewlorente.com>`_ to see what it looks like once running.
+If you like, you can `check out my catsnap instance <https://catsnap.andrewlorente.com>`_ to see what it looks like once running.
 
 Setting up Catsnap
 ------------------
@@ -27,9 +27,9 @@ Now that you've got your S3 bucket set up, you'll want a catsnap server. Catsnap
 
 To run catsnap on Heroku, you'll first need to sign up. Like Amazon, Heroku will want your credit card information, but you'll be able to run catsnap on their free tier.  Heroku has `an excellent getting-started guide <https://devcenter.heroku.com/articles/quickstart>`_. Go ahead and follow the first few steps of that, until you can successfully run ``heroku login``.
 
-Running a heroku app requires having a local checkout of your code. Clone Catsnap from Github:
+Running a heroku app requires having a local checkout of your code. Clone Catsnap from GitLab:
 
-    ``git clone git@github.com:AndrewLorente/catsnap.git``
+    ``git clone https://git.andrewlorente.com/AndrewLorente/catsnap.git``
 
 Change into the catsnap directory and use the heroku toolkit to create a new app:
 
