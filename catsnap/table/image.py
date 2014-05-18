@@ -102,15 +102,16 @@ class Image(Base):
         session.delete(image_tag)
 
     def caption(self):
-        tags = list(self.get_tags())
+        get_tags = lambda: list(self.get_tags())
         return self.make_caption(title=self.title,
-                tags=tags,
+                get_tags=get_tags,
                 filename=self.filename)
 
     @classmethod
-    def make_caption(cls, filename, title, tags):
+    def make_caption(cls, filename, title, get_tags):
         if title:
             return title
+        tags = get_tags()
         if tags:
             return ' '.join(tags)
         return filename
