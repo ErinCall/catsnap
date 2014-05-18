@@ -75,10 +75,13 @@ def show_image(request_format, image_id, size):
         albums = session.query(Album).all()
     else:
         albums = []
-    try:
-        album = filter(lambda a: a.album_id == image.album_id, albums)[0]
-    except IndexError:
+    if image.album_id is not None:
+        album = session.query(Album).\
+            filter(Album.album_id == image.album_id).\
+            one()
+    else:
         album = None
+    (prev, next) = image.neighbors()
     resizes = session.query(ImageResize).\
         filter(ImageResize.image_id == image_id).\
         order_by(ImageResize.width.asc()).\
@@ -92,6 +95,8 @@ def show_image(request_format, image_id, size):
     if request_format == 'html':
         return render_template('image.html.jinja',
                                image=image,
+                               prev=prev,
+                               next=next,
                                album=album,
                                albums=albums,
                                url=url,

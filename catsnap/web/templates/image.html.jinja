@@ -56,8 +56,8 @@
             </ul>
         </article>
     {% endif %}
-    {% if album or user %}
-        <article id="album">
+    <article id="album">
+        <div>
             {% if album %}
                 This image appears in the album
                 '<a href="{{ url_for('view_album', album_id=album.album_id) }}">{{album.name |e}}</a>'.
@@ -70,8 +70,16 @@
                     <span class="data" data-id="{{ album.album_id }}" data-name="{{ album.name |e }}"></span>
                 {% endfor %}
             {% endif %}
-        </article>
-    {% endif %}
+        </div><div>
+            {% if prev %}
+                <a href="{{ url_for('show_image', image_id=prev.image_id) }}">Previous: {{ prev.caption() }}</a>
+            {% endif %}
+        </div><div>
+            {% if next %}
+                <a href="{{ url_for('show_image', image_id=next.image_id) }}">Next: {{ next.caption() }}</a>
+            {% endif %}
+        </div>
+    </article>
     <article id="metadata">
         <dl>
             {% if image.camera %}

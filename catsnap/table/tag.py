@@ -45,5 +45,5 @@ class Tag(Base):
         for image_struct in image_data:
             caption = Image.make_caption(title=image_struct[2],
                 filename=image_struct[0],
-                tags=image_struct[3])
+                get_tags=lambda: image_struct[3])
             yield (image_struct[0], image_struct[1], caption)
