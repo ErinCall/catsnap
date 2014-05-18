@@ -13,6 +13,7 @@ class TestShowImage(TestCase):
         session = Client().session()
         album = Album(name='cow shots')
         session.add(album)
+        session.flush()
         image = Image(filename='deadbeef',
                       description='one time I saw a dead cow',
                       title='dead beef',
@@ -24,6 +25,9 @@ class TestShowImage(TestCase):
         response = self.app.get('/image/%d' % image.image_id)
         assert 'https://s3.amazonaws.com/snapcats/deadbeef' in response.data,\
                 response.data
+
+        assert 'appears in the album' in response.data, response.data
+        assert 'cow shots' in response.data, response.data
 
     @with_settings(bucket='snapcats')
     def test_get_image_info_as_json(self):
