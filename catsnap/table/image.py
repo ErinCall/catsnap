@@ -1,7 +1,15 @@
 from __future__ import unicode_literals
 
 import time
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    func,
+    or_,
+    ForeignKey,
+)
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
@@ -100,6 +108,28 @@ class Image(Base):
                 filter(ImageTag.image_id == self.image_id).\
                 one()
         session.delete(image_tag)
+
+    def neighbors(self):
+        if self.album_id is None:
+            return (None, None)
+        else:
+            session = Client().session()
+            neighbors = session.query(Image).\
+                filter(Image.album_id == self.album_id).\
+                filter(or_(
+                    Image.image_id == session.query(func.max(Image.image_id)).
+                        filter(Image.image_id < self.image_id),
+                    Image.image_id == session.query(func.min(Image.image_id)).
+                        filter(Image.image_id > self.image_id))).\
+                all()
+            if len(neighbors) == 2:
+                return (neighbors[0], neighbors[1])
+            elif len(neighbors) == 1 and neighbors[0].image_id > self.image_id:
+                return (None, neighbors[0])
+            elif len(neighbors) == 1 and neighbors[0].image_id < self.image_id:
+                return (neighbors[0], None)
+            else:
+                return (None, None)
 
     def caption(self):
         get_tags = lambda: list(self.get_tags())

@@ -6,6 +6,7 @@ from catsnap import Client
 from nose.tools import eq_
 from mock import patch
 
+from catsnap.table.album import Album
 from catsnap.table.image import Image
 from catsnap.table.tag import Tag
 from catsnap.table.image_tag import ImageTag
@@ -122,7 +123,58 @@ class TestImages(TestCase):
         eq_(image.caption(), 'awesome cat')
 
     def test_caption__falls_back_to_filename(self):
-        session = Client().session()
         image = Image(title='', filename='the filename')
 
         eq_(image.caption(), 'the filename')
+
+    def test_neighbors_is_nones_when_the_image_has_no_album(self):
+        image = Image(filename='faceface')
+        eq_((None, None), image.neighbors())
+
+    def test_neighbors_is_none_and_one_when_there_is_a_greater_neighbor(self):
+        session = Client().session()
+        album = Album(name='Light me up')
+        session.add(album)
+        session.flush()
+
+        image = Image(filename='f1acc1d', album_id=album.album_id)
+        session.add(image)
+        next = Image(filename='1ace', album_id=album.album_id)
+        session.add(next)
+        session.flush()
+
+        eq_((None, next), image.neighbors())
+
+    def test_neighbors_is_one_and_none_when_the_image_has_a_lesser_neighbor(self):
+        session = Client().session()
+        album = Album(name='Light me up')
+        session.add(album)
+        session.flush()
+
+        prev = Image(filename='1ace', album_id=album.album_id)
+        session.add(prev)
+        image = Image(filename='f1acc1d', album_id=album.album_id)
+        session.add(image)
+        session.flush()
+
+        eq_((prev, None), image.neighbors())
+
+    def test_neighbors_is_both_neighbors_when_many_neighbors_are_present(self):
+        session = Client().session()
+        album = Album(name='Light me up')
+
+        session.add(album)
+        session.flush()
+
+        session.add(Image(filename='babeface'))
+        session.add(Image(filename='cafebabe', album_id=album.album_id))
+        prev = Image(filename='1ace', album_id=album.album_id)
+        session.add(prev)
+        image = Image(filename='f1acc1d', album_id=album.album_id)
+        session.add(image)
+        next = Image(filename='bab1e5', album_id=album.album_id)
+        session.add(next)
+        session.add(Image(filename='acebabe', album_id=album.album_id))
+        session.flush()
+
+        eq_((prev, next), image.neighbors())
