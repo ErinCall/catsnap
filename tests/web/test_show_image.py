@@ -14,12 +14,17 @@ class TestShowImage(TestCase):
         album = Album(name='cow shots')
         session.add(album)
         session.flush()
+        prev_image = Image(filename='badcafe',
+                           album_id=album.album_id)
+        session.add(prev_image)
         image = Image(filename='deadbeef',
                       description='one time I saw a dead cow',
                       title='dead beef',
                       album_id=album.album_id)
-
         session.add(image)
+        next_image = Image(filename='dadface',
+                           album_id=album.album_id)
+        session.add(next_image)
         session.flush()
 
         response = self.app.get('/image/%d' % image.image_id)
@@ -28,6 +33,8 @@ class TestShowImage(TestCase):
 
         assert 'appears in the album' in response.data, response.data
         assert 'cow shots' in response.data, response.data
+        assert str(prev_image.image_id) in response.data, response.data
+        assert str(next_image.image_id) in response.data, response.data
 
     @with_settings(bucket='snapcats')
     def test_get_image_info_as_json(self):

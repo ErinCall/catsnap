@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import json
 from flask import request, render_template, redirect, g, abort, url_for
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, or_
 from catsnap.image_truck import ImageTruck
 from catsnap.resize_image import ResizeImage
 from catsnap.reorient_image import ReorientImage
@@ -79,8 +80,25 @@ def show_image(request_format, image_id, size):
         album = session.query(Album).\
             filter(Album.album_id == image.album_id).\
             one()
+        neighbors = session.query(Image).\
+            filter(Image.album_id == image.album_id).\
+            filter(or_(
+                Image.image_id == session.query(func.max(Image.image_id)).
+                    filter(Image.image_id < image.image_id),
+                Image.image_id == session.query(func.min(Image.image_id)).
+                    filter(Image.image_id > image.image_id))).\
+            all()
+        if len(neighbors) == 2:
+            (prev, next) = neighbors
+        elif len(neighbors) == 1 and neighbors[0].image_id > image.image_id:
+            (prev, next) = (None, neighbors[0])
+        elif len(neighbors) == 1 and neighbors[0].image_id < image.image_id:
+            (prev, next) = (neighbors[0], None)
+        else:
+            (prev, next) = (None, None)
     else:
         album = None
+        (prev, next) = (None, None)
     resizes = session.query(ImageResize).\
         filter(ImageResize.image_id == image_id).\
         order_by(ImageResize.width.asc()).\
@@ -94,6 +112,8 @@ def show_image(request_format, image_id, size):
     if request_format == 'html':
         return render_template('image.html.jinja',
                                image=image,
+                               prev=prev,
+                               next=next,
                                album=album,
                                albums=albums,
                                url=url,
