@@ -178,3 +178,23 @@ class TestImages(TestCase):
         session.flush()
 
         eq_((prev, next), image.neighbors())
+
+    def test_neighbors_skips_over_images_from_other_albums(self):
+        session = Client().session()
+        hobbiton = Album(name='Hobbiton')
+        session.add(hobbiton)
+        hardbottle = Album(name='Hardbottle')
+        session.add(hardbottle)
+        session.flush()
+
+        samwise = Image(filename='5411111115e', album_id=hobbiton.album_id)
+        session.add(samwise)
+        bilbo = Image(filename='b11b0', album_id=hobbiton.album_id)
+        session.add(bilbo)
+        lobelia = Image(filename='10be11a', album_id=hardbottle.album_id)
+        session.add(lobelia)
+        frodo = Image(filename='f0d0', album_id=hobbiton.album_id)
+        session.add(frodo)
+        session.flush()
+
+        eq_((samwise, frodo), bilbo.neighbors())

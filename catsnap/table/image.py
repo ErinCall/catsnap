@@ -118,9 +118,12 @@ class Image(Base):
                 filter(Image.album_id == self.album_id).\
                 filter(or_(
                     Image.image_id == session.query(func.max(Image.image_id)).
-                        filter(Image.image_id < self.image_id),
+                        filter(Image.image_id < self.image_id).
+                        filter(Image.album_id == self.album_id),
                     Image.image_id == session.query(func.min(Image.image_id)).
-                        filter(Image.image_id > self.image_id))).\
+                        filter(Image.image_id > self.image_id).
+                        filter(Image.album_id == self.album_id)
+                )).\
                 order_by(Image.created_at).\
                 all()
             if len(neighbors) == 2:
