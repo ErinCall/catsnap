@@ -121,6 +121,7 @@ class Image(Base):
                         filter(Image.image_id < self.image_id),
                     Image.image_id == session.query(func.min(Image.image_id)).
                         filter(Image.image_id > self.image_id))).\
+                order_by(Image.created_at).\
                 all()
             if len(neighbors) == 2:
                 return (neighbors[0], neighbors[1])
