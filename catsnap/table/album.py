@@ -23,4 +23,5 @@ class Album(Base):
         session = Client().session()
         return session.query(Image).\
                 filter(Image.album_id == album_id).\
+                order_by(Image.image_id).\
                 all()
