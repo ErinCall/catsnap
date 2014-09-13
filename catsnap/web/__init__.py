@@ -39,6 +39,10 @@ Message:
 '''))
     app.logger.addHandler(mail_handler)
 
+stderr_handler = logging.StreamHandler()
+stderr_handler.setLevel(logging.WARNING)
+app.logger.addHandler(stderr_handler)
+
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 oid = OpenID(app)
 
