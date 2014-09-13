@@ -158,3 +158,23 @@ class ImageResize(Base):
     width = Column(Integer, primary_key=True)
     height = Column(Integer, primary_key=True)
     suffix = Column(String, nullable=False)
+
+    def __new__(cls, *args, **kwargs):
+        try:
+            image_id = kwargs['image_id']
+            width = kwargs['width']
+            height = kwargs['height']
+        except KeyError:
+            return super(ImageResize, cls).__new__(cls, *args, **kwargs)
+
+        session = Client().session()
+        existing_resize = session.query(cls).\
+            filter(cls.image_id == image_id).\
+            filter(cls.width == width).\
+            filter(cls.height == height).\
+            first()
+
+        if existing_resize:
+            return existing_resize
+
+        return super(ImageResize, cls).__new__(cls, *args, **kwargs)

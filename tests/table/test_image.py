@@ -7,7 +7,7 @@ from nose.tools import eq_
 from mock import patch
 
 from catsnap.table.album import Album
-from catsnap.table.image import Image
+from catsnap.table.image import Image, ImageResize
 from catsnap.table.tag import Tag
 from catsnap.table.image_tag import ImageTag
 
@@ -198,3 +198,31 @@ class TestImages(TestCase):
         session.flush()
 
         eq_((samwise, frodo), bilbo.neighbors())
+
+    def test_image_resizes_do_upserts(self):
+        session = Client().session()
+        image = Image(filename='ac1d1c')
+        session.add(image)
+        session.flush()
+
+        resize = ImageResize(
+            image_id=image.image_id,
+            width=15,
+            height=15,
+            suffix="little")
+        session.add(resize)
+        session.flush()
+
+        resize = ImageResize(
+            image_id=image.image_id,
+            width=15,
+            height=15,
+            suffix="small")
+        session.add(resize)
+        session.flush()
+
+        resize = session.query(ImageResize).\
+            filter(ImageResize.image_id == image.image_id).\
+            one()
+        eq_('small', resize.suffix)
+
