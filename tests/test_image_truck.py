@@ -19,6 +19,7 @@ class TestImageTruck(TestCase):
         bucket.new_key.return_value = key
         client = Mock()
         client.bucket.return_value = bucket
+        client.config = MagicMock()
         MockClient.return_value = client
         calculate_filename.return_value = 'I am the keymaster'
 

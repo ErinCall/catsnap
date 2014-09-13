@@ -52,10 +52,12 @@ class ImageTruck():
         return cls._url(filename)
 
     def upload(self):
-        key = Client().bucket().new_key(self.calculate_filename())
+        filename = self.calculate_filename()
+        key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(self.contents)
         key.make_public()
+        self.invalidate(filename)
 
     def upload_resize(self, resized_contents, suffix):
         filename = '%s_%s' % (self.calculate_filename(), suffix)
@@ -63,7 +65,9 @@ class ImageTruck():
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(resized_contents)
         key.make_public()
+        self.invalidate(filename)
 
+    def invalidate(self, filename):
         config = Client().config()
         if 'cloudfront_distribution_id' in config:
             distro_id = config['cloudfront_distribution_id']
