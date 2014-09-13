@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 import StringIO
 import tempfile
 from requests.exceptions import HTTPError
-from mock import patch, MagicMock, Mock, call
+from mock import patch, MagicMock, Mock
 from nose.tools import eq_, raises
 from tests import TestCase, with_settings
 
+from catsnap import Client
 from catsnap.image_truck import ImageTruck
 
 class TestImageTruck(TestCase):
@@ -37,6 +38,7 @@ class TestImageTruck(TestCase):
         key = Mock()
         bucket.new_key.return_value = key
         client = Mock()
+        client.config.return_value = MagicMock()
         client.bucket.return_value = bucket
         MockClient.return_value = client
         calculate_filename.return_value = 'faceb00c'
@@ -137,14 +139,22 @@ class TestImageTruck(TestCase):
         truck = ImageTruck('greensleeves', None, None)
         eq_(truck.url(), 'https://s3.amazonaws.com/tune-carrier/greensleeves')
 
-    @with_settings(cloudfront_url='https://ggaaghlhaagl.cloudfront.net')
+    @patch('catsnap.image_truck.Client')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    def test_url__with_cloudfront_url(self, calculate_filename):
+    @with_settings(cloudfront_distribution_id='JEEZAMANDA')
+    def test_url__with_cloudfront_url(self, calculate_filename, MockClient):
+        client = Mock()
+        client.cloudfront_url.return_value = \
+            'https://ggaaghlhaagl.cloudfront.net'
+        client.config.return_value = Client().config()
+        MockClient.return_value = client
+
         calculate_filename.return_value = 'chumbawamba'
         truck = ImageTruck('tubthumper', None, None)
 
         url = truck.url()
         eq_(url, 'https://ggaaghlhaagl.cloudfront.net/chumbawamba')
+        client.cloudfront_url.assert_called_with('JEEZAMANDA')
 
     @with_settings(bucket='tune', extension=True)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')

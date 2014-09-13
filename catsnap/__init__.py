@@ -23,6 +23,7 @@ class Client(Singleton):
 
     _dynamo_connection = None
     _s3_connection = None
+    _cloudfront_connection = None
     _engine = None
     _session = None
 
@@ -63,6 +64,13 @@ class Client(Singleton):
                     aws_secret_access_key=self.config().aws_secret_access_key)
         return self._s3_connection
 
+    def get_cloudfront(self):
+        if not self._cloudfront_connection:
+            self._cloudfront_connection = boto.connect_cloudfront(
+                    aws_access_key_id=self.config().aws_access_key_id,
+                    aws_secret_access_key=self.config().aws_secret_access_key)
+        return self._cloudfront_connection
+
     def session(self):
         if not self._engine:
             self._engine = create_engine(os.environ['DATABASE_URL'])
@@ -70,6 +78,12 @@ class Client(Singleton):
             self._session = MutexSession(self._engine)
         return self._session
 
+    def cloudfront_url(self, distro_id):
+        distro_info = self.get_cloudfront().get_distribution_info(distro_id)
+        if len(distro_info.config.cnames) > 0:
+            return distro_info.config.cnames[0]
+        else:
+            return distro_info.domain_name
 
 # "Whoa," you might be thinking, "a thread-safe session manager? Why, when 
 # Catsnap is single-threaded, as far as I can see?" Well, it's because the

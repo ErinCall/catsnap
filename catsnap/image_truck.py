@@ -64,6 +64,12 @@ class ImageTruck():
         key.set_contents_from_string(resized_contents)
         key.make_public()
 
+        config = Client().config()
+        if 'cloudfront_distribution_id' in config:
+            distro_id = config['cloudfront_distribution_id']
+            Client().get_cloudfront().create_invalidation_request(
+                distro_id, filename)
+
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
 
@@ -73,9 +79,11 @@ class ImageTruck():
     @classmethod
     def _url(cls, filename):
         config = Client().config()
-        if 'cloudfront_url' in  config:
+        if 'cloudfront_distribution_id' in config:
+            distro_id = config['cloudfront_distribution_id']
+            cloudfront_url = Client().cloudfront_url(distro_id)
             url = '%(host)s/%(filename)s' % {
-                    'host': config.cloudfront_url, 'filename': filename}
+                    'host': cloudfront_url, 'filename': filename}
         else:
             url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
                     'bucket': config.bucket, 'filename': filename}

@@ -62,7 +62,7 @@ The last thing you'll need to do is configure Catsnap for your personal use. Con
     * CATSNAP_SECRET_KEY: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters.
     * CATSNAP_OWNER_ID: an OpenID provider that identifies you as the owner of this catsnap installation. I recommend using your Google account, in which case you would set this to ``https://www.google.com/accounts/o8/id``.
     * CATSNAP_OWNER_EMAIL: the email address associated with your OpenID url.
-    * CATSNAP_CLOUDFRONT_URL: (optional) the host for your cloudfront distribution, if you made one. Note this should be a full url, including "https://".
+    * CATSNAP_CLOUDFRONT_DISTRIBUTION_ID: (optional) the id of your cloudfront distribution, if you made one. Note this is different from the XXXX.cloudfront.net domain; you want to get it from your AWS console.
 
 Now your catsnap server is all set up! Navigate to the url for your Heroku app and you're ready to start adding images.
 

@@ -125,8 +125,8 @@ class FileConfig(Config):
                 override_message=" (leave blank to keep using '%s')"),
             FileSetting(
                 section='catsnap',
-                name='cloudfront_url',
-                message='enter your cloudfront url%s',
+                name='cloudfront_distribution_id',
+                message='enter your cloudfront distribution id%s',
                 override_message=" (leave blank to keep using '%s')"),
         )}
 
