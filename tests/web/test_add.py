@@ -30,6 +30,7 @@ class TestAdd(TestCase):
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        truck.contents = ""
 
         response = self.app.post('/add', data={
             'album': '',
@@ -54,6 +55,7 @@ class TestAdd(TestCase):
         ImageTruck.new_from_stream.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        truck.contents = ''
         ImageMetadata.image_metadata.return_value = {
             'camera': 'Samsung NX210',
             'photographed_at': '2013-05-09 12:00:00',
@@ -97,6 +99,7 @@ class TestAdd(TestCase):
         truck.calculate_filename.return_value = 'CA7'
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        truck.contents = ''
         ImageMetadata.image_metadata.return_value = {}
 
         response = self.app.post('/add', data={
@@ -126,6 +129,7 @@ class TestAdd(TestCase):
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        truck.contents = ''
         ImageMetadata.image_metadata.return_value = {}
 
         response = self.app.post('/add.json', data={

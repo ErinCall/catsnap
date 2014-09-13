@@ -1,10 +1,6 @@
 from __future__ import unicode_literals
 
-import os
-import tempfile
-from StringIO import StringIO
-import ExifTags
-import Image as ImageHandler
+from wand.image import Image as ImageHandler
 
 
 class ReorientImage(object):
@@ -24,35 +20,22 @@ class ReorientImage(object):
     @classmethod
     def reorient_image(cls, contents):
         try:
-            handler = ImageHandler.open(StringIO(contents))
+            handler = ImageHandler(blob=contents)
         except IOError:
             return contents
-        exif = getattr(handler, '_getexif', lambda: None)()
-        if not exif:
-            return contents
-        decoded_exif = {ExifTags.TAGS.get(tag, tag): value
-                        for (tag, value) in exif.iteritems()}
-        orientation = decoded_exif.get('Orientation')
+        orientation = handler.metadata.get('exif:Orientation')
         if not orientation:
             return contents
 
-        reoriented_handler = {
+        {
             1: lambda: handler,
-            2: lambda: handler.transpose(ImageHandler.FLIP_LEFT_RIGHT),
-            3: lambda: handler.transpose(ImageHandler.ROTATE_180),
-            4: lambda: handler.transpose(ImageHandler.FLIP_TOP_BOTTOM),
-            5: lambda: handler.transpose(ImageHandler.FLIP_TOP_BOTTOM).
-            transpose(ImageHandler.ROTATE_270),
-            6: lambda: handler.transpose(ImageHandler.ROTATE_270),
-            7: lambda: handler.transpose(ImageHandler.FLIP_LEFT_RIGHT).
-            transpose(ImageHandler.ROTATE_270),
-            8: lambda: handler.transpose(ImageHandler.ROTATE_90),
-        }[orientation]()
+            2: lambda: handler.flop(),
+            3: lambda: handler.rotate(180),
+            4: lambda: handler.flip(),
+            5: lambda: handler.flip().rotate(270),
+            6: lambda: handler.rotate(270),
+            7: lambda: handler.flop().rotate(270),
+            8: lambda: handler.rotate(90),
+        }[int(orientation)]()
 
-        (_, contents_file) = tempfile.mkstemp()
-        try:
-            reoriented_handler.save(contents_file, handler.format)
-            with open(contents_file, 'r') as fh:
-                return fh.read()
-        finally:
-            os.unlink(contents_file)
+        return handler.make_blob()

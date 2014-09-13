@@ -1,13 +1,9 @@
 from __future__ import unicode_literals
 
-import os
-import tempfile
-from StringIO import StringIO
-import Image as ImageHandler
+from wand.image import Image as ImageHandler
 
 from catsnap import Client
-from catsnap.table.image import Image as ImageTable, ImageResize
-from catsnap.image_truck import ImageTruck
+from catsnap.table.image import ImageResize
 
 RESIZES = {
         'thumbnail': 100,
@@ -20,7 +16,7 @@ class ResizeImage(object):
     @classmethod
     def make_resizes(cls, image, truck):
         contents = truck.contents
-        image_handler = ImageHandler.open(StringIO(contents))
+        image_handler = ImageHandler(blob=contents)
         long_side = max(image_handler.size)
 
         for size, new_long_side in RESIZES.iteritems():
@@ -37,16 +33,10 @@ class ResizeImage(object):
                                                       RESIZES[size])
 
         print 'resizing to %s' % size
-        resized = image_handler.resize((new_width, new_height),
-                                       ImageHandler.ANTIALIAS)
-        (_, contents_file) = tempfile.mkstemp()
-        try:
-            resized.save(contents_file, image_handler.format)
-            with open(contents_file, 'r') as contents:
-                print 'uploading resized image'
-                truck.upload_resize(contents.read(), size)
-        finally:
-            os.unlink(contents_file)
+        image_handler.resize(new_width, new_height,
+                             filter='hamming')
+        print 'uploading resized image'
+        truck.upload_resize(image_handler.make_blob(), size)
 
         resize = ImageResize(image_id=image.image_id,
                              width=new_width,
