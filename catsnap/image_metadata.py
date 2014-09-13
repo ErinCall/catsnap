@@ -1,62 +1,58 @@
 from __future__ import unicode_literals
 
 import time
-from StringIO import StringIO
-from fractions import Fraction
-import Image as ImageHandler
-import ExifTags
+from wand.image import Image as ImageHandler
 
 
 class ImageMetadata(object):
     @classmethod
     def image_metadata(cls, contents):
-        handler = ImageHandler.open(StringIO(contents))
-        exif = getattr(handler, '_getexif', lambda: None)()
-        if exif is None:
+        handler = ImageHandler(blob=contents)
+        metadata = handler.metadata
+        any_exif = filter(lambda x: x.startswith('exif:'), metadata.keys())
+        if not any_exif:
             return {}
-        decoded_exif = {ExifTags.TAGS.get(tag, tag): value
-                        for (tag, value) in exif.iteritems()}
 
-        f_number = decoded_exif.get('FNumber')
-        if f_number is not None:
-            (aperture_numerator, aperture_denominator) = f_number
-            aperture = '1/%.1f' % (aperture_numerator/aperture_denominator)
-        else:
-            aperture = None
+        aperture = metadata.get('exif:FNumber')
+        if aperture is not None:
+            parts = aperture.split('/')
+            if len(parts) == 0:
+                aperture = '1/{0}'.format(parts[0])
+            else:
+                aperture = '1/{0}'.format(float(parts[0]) / float(parts[1]))
 
-        shutter_speed = decoded_exif.get('ExposureTime')
-        if shutter_speed is not None:
-            shutter_speed = cls._calculate_shutter_speed(*shutter_speed)
+        shutter_speed = metadata.get('exif:ExposureTime')
 
-        photographed_at = decoded_exif.get('DateTime')
+        photographed_at = metadata.get('exif:DateTime')
         if photographed_at is not None:
             photographed_at = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.strptime(
                     photographed_at, '%Y:%m:%d %H:%M:%S'))
 
-        make = decoded_exif.get('Make')
-        model = decoded_exif.get('Model')
+        make = metadata.get('exif:Make')
+        model = metadata.get('exif:Model')
         if make is not None and model is not None:
             camera = '%s %s' % (make, model)
         else:
             camera = model
 
-        focal_length = decoded_exif.get('FocalLength')
+        focal_length = metadata.get('exif:FocalLength')
         if focal_length is not None:
-            focal_length = int(Fraction(*(focal_length)))
+            parts = focal_length.split('/')
+            if len(parts) == 1:
+                focal_length = parts[0]
+            else:
+                focal_length = float(parts[0]) / float(parts[1])
+
+        iso = metadata.get('exif:ISOSpeedRatings')
+        if iso is not None:
+            iso = int(iso)
+
         return {
             'camera': camera,
             'photographed_at': photographed_at,
             'focal_length': focal_length,
             'aperture': aperture,
             'shutter_speed': shutter_speed,
-            'iso': decoded_exif.get('ISOSpeedRatings'),
+            'iso': iso,
         }
-
-    @classmethod
-    def _calculate_shutter_speed(cls, numerator, denominator):
-        rational = Fraction(numerator, denominator)
-        if rational.denominator == 1:
-            return unicode(rational.numerator)
-        else:
-            return '%d/%d' % (numerator, denominator)

@@ -19,9 +19,9 @@ class TestImageMetadata(TestCase):
         eq_(metadata, {
             'camera': 'SAMSUNG NX210',
             'photographed_at': '2013-05-03 09:17:02',
-            'aperture': '1/4.0',
+            'aperture': '1/4.5' ,
             'shutter_speed': '1/800',
-            'focal_length': 30,
+            'focal_length': 30.0,
             'iso': 200,
             })
 
@@ -34,10 +34,6 @@ class TestImageMetadata(TestCase):
         metadata = ImageMetadata.image_metadata(contents)
 
         eq_(metadata, {})
-
-    def test_calculate_shutter_speed(self):
-        eq_(ImageMetadata._calculate_shutter_speed(1, 800), '1/800')
-        eq_(ImageMetadata._calculate_shutter_speed(50, 10), '5')
 
     def test_handles_oddly_malformed_metadata(self):
         test_file = os.path.join(os.path.dirname(__file__),

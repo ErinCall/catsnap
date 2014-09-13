@@ -1,14 +1,11 @@
 from __future__ import unicode_literals
 
-import time
 import datetime
 import sha
-from StringIO import StringIO
 from mock import patch, Mock
 from tests import TestCase, with_settings
 from nose.tools import eq_
 from catsnap import Client
-from catsnap.table.image import Image
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
@@ -20,6 +17,7 @@ class TestAuth(TestCase):
         ImageTruck.new_from_url.return_value = truck
         truck.calculate_filename.return_value = 'CA7'
         truck.url.return_value = 'ess three'
+        truck.contents = ''
         now = str(datetime.datetime.utcnow())
         string_to_sign = "%s\n%s" % (now, Client().config().api_key)
         signature = sha.sha(string_to_sign).hexdigest()
