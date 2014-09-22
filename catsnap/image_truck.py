@@ -86,7 +86,7 @@ class ImageTruck():
         if 'cloudfront_distribution_id' in config:
             distro_id = config['cloudfront_distribution_id']
             cloudfront_url = Client().cloudfront_url(distro_id)
-            url = '%(host)s/%(filename)s' % {
+            url = 'https://%(host)s/%(filename)s' % {
                     'host': cloudfront_url, 'filename': filename}
         else:
             url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {

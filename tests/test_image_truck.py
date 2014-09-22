@@ -146,7 +146,7 @@ class TestImageTruck(TestCase):
     def test_url__with_cloudfront_url(self, calculate_filename, MockClient):
         client = Mock()
         client.cloudfront_url.return_value = \
-            'https://ggaaghlhaagl.cloudfront.net'
+            'ggaaghlhaagl.cloudfront.net'
         client.config.return_value = Client().config()
         MockClient.return_value = client
 
