@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import StringIO
 import tempfile
+from boto.cloudfront.exception import CloudFrontServerError
 from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock
 from nose.tools import eq_, raises
@@ -51,6 +52,43 @@ class TestImageTruck(TestCase):
         key.set_contents_from_string.assert_called_with('resizedcontents')
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_once()
+
+    @with_settings(cloudfront_distribution_id='CRIPESKAREN')
+    @patch('catsnap.image_truck.Client')
+    def test_toomanyinvalidation_errors_are_ignored(self, MockClient):
+        error = CloudFrontServerError(400, 'Bad Request')
+        error.error_code = 'TooManyInvalidationsInProgress'
+
+        cloudfront = Mock()
+        cloudfront.create_invalidation_request.side_effect = error
+
+        config = Client().config()
+        client = Mock()
+        client.config.return_value = config
+        client.get_cloudfront.return_value = cloudfront
+        MockClient.return_value = client
+
+        truck = ImageTruck('somecontents', 'image/gif', None)
+        truck.invalidate('abad1dea')
+
+    @raises(CloudFrontServerError)
+    @with_settings(cloudfront_distribution_id='CRIPESKAREN')
+    @patch('catsnap.image_truck.Client')
+    def test_unknown_cloudfront_errors_reraise(self, MockClient):
+        error = CloudFrontServerError(400, 'Bad Request')
+        error.error_code = 'CloudFrontHatesYouToday'
+
+        cloudfront = Mock()
+        cloudfront.create_invalidation_request.side_effect = error
+
+        config = Client().config()
+        client = Mock()
+        client.config.return_value = config
+        client.get_cloudfront.return_value = cloudfront
+        MockClient.return_value = client
+
+        truck = ImageTruck('somecontents', 'image/gif', None)
+        truck.invalidate('abad1dea')
 
     @patch('catsnap.image_truck.hashlib')
     def test_calculate_filename(self, hashlib):
