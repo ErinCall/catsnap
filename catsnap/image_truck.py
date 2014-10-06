@@ -6,6 +6,7 @@ import requests
 import hashlib
 import subprocess
 import re
+from boto.cloudfront.exception import CloudFrontServerError
 
 from catsnap import Client
 
@@ -69,10 +70,15 @@ class ImageTruck():
 
     def invalidate(self, filename):
         config = Client().config()
-        if 'cloudfront_distribution_id' in config:
+        try:
             distro_id = config['cloudfront_distribution_id']
             Client().get_cloudfront().create_invalidation_request(
                 distro_id, filename)
+        except KeyError:
+            pass
+        except CloudFrontServerError as e:
+            if e.error_code != 'TooManyInvalidationsInProgress':
+                raise
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
