@@ -76,6 +76,10 @@ import catsnap.web.controllers.find
 import catsnap.web.controllers.image
 import catsnap.web.controllers.album
 
+config = Client().config()
+if 'cloudfront_distribution_id' in config:
+    distro_id = config['cloudfront_distribution_id']
+    Client().cloudfront_url(distro_id)
 
 @app.route('/')
 def index():
