@@ -3,10 +3,7 @@ import boto
 import os
 
 from catsnap.config import MetaConfig
-from catsnap.config.file_config import FileConfig
-from catsnap.config.env_config import EnvConfig
 from catsnap.singleton import Singleton
-from boto.exception import DynamoDBResponseError, S3CreateError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from threading import Lock
@@ -24,6 +21,7 @@ class Client(Singleton):
     _dynamo_connection = None
     _s3_connection = None
     _cloudfront_connection = None
+    _cloudfront_url = None
     _engine = None
     _session = None
 
@@ -79,13 +77,15 @@ class Client(Singleton):
         return self._session
 
     def cloudfront_url(self, distro_id):
-        distro_info = self.get_cloudfront().get_distribution_info(distro_id)
-        if len(distro_info.config.cnames) > 0:
-            return distro_info.config.cnames[0]
-        else:
-            return distro_info.domain_name
+        if self._cloudfront_url is None:
+            distro_info = self.get_cloudfront().get_distribution_info(distro_id)
+            if len(distro_info.config.cnames) > 0:
+                self._cloudfront_url = distro_info.config.cnames[0]
+            else:
+                self._cloudfront_url = distro_info.domain_name
+        return self._cloudfront_url
 
-# "Whoa," you might be thinking, "a thread-safe session manager? Why, when 
+# "Whoa," you might be thinking, "a thread-safe session manager? Why, when
 # Catsnap is single-threaded, as far as I can see?" Well, it's because the
 # acceptance tests spin up a second thread while the main thread pokes it
 # with a browser.
