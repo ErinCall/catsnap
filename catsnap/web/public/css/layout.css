@@ -22,3 +22,25 @@ article {
 .data {
 	display: none;
 }
+
+header {
+    background-color: #222222;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+h1 {
+    font-size: 120%;
+    line-height: 20px;
+    display: inline-block;
+}
+
+.user-actions {
+    float: right;
+}
+
+a form {
+    margin: 0;
+}

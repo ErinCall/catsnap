@@ -6,16 +6,46 @@
     <link href="/public/css/layout.css" rel="stylesheet" media="screen">
 </head>
 <body>
+    <header>
+        <a href="/">
+            <h1>Catsnap</h1>
+        </a>
+        <span class="user-actions">
+            <ul class="nav-pills nav">
+                {% if user %}
+                    <li>
+                        <a href="{{ url_for('add') }}">Add images</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('logout') }}" class="form-submitter">
+                            <form method="post" action="{{ url_for('logout') }}">
+                                Log out
+                            </form>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('login') }}" class="form-submitter pill">
+                            <form method="post" action="{{ url_for('login') }}">
+                                Log in
+                            </form>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </span>
+    </header>
     <div class="container">
-        <header>
+        <div class="page-head">
             {% block page_title %}
                 <h2>{{ self.title() }}</h2>
             {% endblock page_title %}
-        </header>
+        </div>
         {%block content%}{%endblock content%}
     </div>
     <script src="/public/js/jquery-2.0.0.min.js"></script>
     <script src="/public/js/underscore-min.js"></script>
+    <script src="/public/js/application.js"></script>
     {%block scripts%}{%endblock%}
 </body>
 </html>

@@ -15,6 +15,7 @@ from catsnap import Client
 
 
 @formatted_route('/add', methods=['GET'])
+@login_required
 def show_add(request_format):
     session = Client().session()
     albums = session.query(Album).all()
