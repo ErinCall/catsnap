@@ -1,21 +1,21 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>{%block title%}{%endblock title%} - Catsnap</title>
-	<link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
-	<link href="/public/css/layout.css" rel="stylesheet" media="screen">
+    <title>{%block title%}{%endblock title%} - Catsnap</title>
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/public/css/layout.css" rel="stylesheet" media="screen">
 </head>
 <body>
-	<div class="container">
-		<header>
-			{% block page_title %}
-				<h2>{{ self.title() }}</h2>
-			{% endblock page_title %}
-		</header>
-		{%block content%}{%endblock content%}
-	</div>
-	<script src="/public/js/jquery-2.0.0.min.js"></script>
-	<script src="/public/js/underscore-min.js"></script>
-	{%block scripts%}{%endblock%}
+    <div class="container">
+        <header>
+            {% block page_title %}
+                <h2>{{ self.title() }}</h2>
+            {% endblock page_title %}
+        </header>
+        {%block content%}{%endblock content%}
+    </div>
+    <script src="/public/js/jquery-2.0.0.min.js"></script>
+    <script src="/public/js/underscore-min.js"></script>
+    {%block scripts%}{%endblock%}
 </body>
 </html>
