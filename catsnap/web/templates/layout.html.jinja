@@ -12,7 +12,7 @@
         </a>
         <span class="user-actions">
             <ul class="nav-pills nav">
-                {% if user %}
+                {% if g.user %}
                     <li>
                         <a href="{{ url_for('add') }}">Add images</a>
                     </li>
@@ -28,6 +28,7 @@
                         <a href="{{ url_for('login') }}" class="form-submitter pill">
                             <form method="post" action="{{ url_for('login') }}">
                                 Log in
+                                <input type="hidden" value="{{ request.path }}" name="next">
                             </form>
                         </a>
                     </li>
