@@ -8,7 +8,6 @@ from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image
 from catsnap.table.image_tag import ImageTag
-from catsnap.table.tag import Tag
 
 
 class TestAdd(TestCase):
@@ -17,6 +16,7 @@ class TestAdd(TestCase):
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'], 'http://localhost/')
 
+    @logged_in
     def test_get_the_add_page(self):
         response = self.app.get('/add')
         eq_(response.status_code, 200)

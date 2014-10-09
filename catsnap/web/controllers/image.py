@@ -15,11 +15,12 @@ from catsnap import Client
 
 
 @formatted_route('/add', methods=['GET'])
+@login_required
 def show_add(request_format):
     session = Client().session()
     albums = session.query(Album).all()
     if request_format == 'html':
-        return render_template('add.html.jinja', user=g.user, albums=albums)
+        return render_template('add.html.jinja', albums=albums)
     elif request_format == 'json':
         return {'albums': albums}
 
@@ -102,7 +103,6 @@ def show_image(request_format, image_id, size):
                                url=url,
                                tags=tags,
                                resizes=resizes,
-                               user=g.user,
                                size=size)
     elif request_format == 'json':
         return {

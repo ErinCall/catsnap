@@ -44,7 +44,7 @@ stderr_handler.setLevel(logging.WARNING)
 app.logger.addHandler(stderr_handler)
 
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
-oid = OpenID(app)
+oid = OpenID(app, safe_roots=[])
 
 @app.before_request
 def before_request():
@@ -86,4 +86,4 @@ def index():
     albums = Client().session().query(Album).\
         order_by(Album.name).\
         all()
-    return render_template('index.html.jinja', user=g.user, albums=albums)
+    return render_template('index.html.jinja', albums=albums)

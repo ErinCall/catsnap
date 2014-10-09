@@ -266,7 +266,7 @@
 
 	$(function() {
 		if (window.logged_in) {
-			$('header h2').click(function(event) {
+			$('div.page-head h2').click(function(event) {
 				var on_success;
 				on_success = function(text) {
 					$('title').text(text + ' - Catsnap');

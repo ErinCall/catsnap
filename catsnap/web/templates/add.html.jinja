@@ -4,50 +4,44 @@
 {% endblock title %}
 {% block content %}
     <article id="add">
-        {% if not user %}
-            <form method="post" action="{{ url_for('login') }}">
-                <input type="submit" name="login" id="login" value="Log in to add images" />
+        <div>
+            <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+                <div>
+                    <label for="url">Url: </label>
+                    <input type="text" name="url" id="url" />
+                    or
+                    <label for="file" style="display:inline">from file:</label>
+                    <input type="file" name="file" id="file" />
+                </div>
+                <div>
+                    <label for="tags">Tags: </label>
+                    <input type="text" name="tags" id="tags" />
+                </div>
+                <div>
+                    <label for="album">Album: </label>
+                    <select name="album" id="album">
+                        <option value="">(none)</option>
+                        {% for album in albums %}
+                        <option value="{{ album.album_id }}">{{ album.name |e}}</option>
+                        {% endfor %}
+                    </select>
+                    or <a href="{{ url_for('new_album') }}">create a new album</a>
+                </div>
+                <div>
+                    <label for="title">Title:</label>
+                    <input type="text" name="title" id="title" />
+                </div>
+                <div>
+                    <label for="description">Description:</label>
+                    <textarea name="description" id="description" ></textarea>
+                </div>
+                <div>
+                    <input type="submit" name="add_button" id="add_button" value="Add" />
+                </div>
             </form>
-        {% else %}
-            <div>
-                <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
-                    <div>
-                        <label for="url">Url: </label>
-                        <input type="text" name="url" id="url" />
-                        or
-                        <label for="file" style="display:inline">from file:</label>
-                        <input type="file" name="file" id="file" />
-                    </div>
-                    <div>
-                        <label for="tags">Tags: </label>
-                        <input type="text" name="tags" id="tags" />
-                    </div>
-                    <div>
-                        <label for="album">Album: </label>
-                        <select name="album" id="album">
-                            <option value="">(none)</option>
-                            {% for album in albums %}
-                            <option value="{{ album.album_id }}">{{ album.name |e}}</option>
-                            {% endfor %}
-                        </select>
-                        or <a href="{{ url_for('new_album') }}">create a new album</a>
-                    </div>
-                    <div>
-                        <label for="title">Title:</label>
-                        <input type="text" name="title" id="title" />
-                    </div>
-                    <div>
-                        <label for="description">Description:</label>
-                        <textarea name="description" id="description" ></textarea>
-                    </div>
-                    <div>
-                        <input type="submit" name="add_button" id="add_button" value="Add" />
-                    </div>
-                </form>
-            </div>
-            <div>
-                or <a href="{{ url_for('logout') }}">Log Out</a>.
-            </div>
-        {% endif %}
+        </div>
+        <div>
+            or <a href="{{ url_for('logout') }}">Log Out</a>.
+        </div>
     </article>
 {% endblock content %}

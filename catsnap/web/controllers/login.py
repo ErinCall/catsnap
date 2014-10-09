@@ -23,7 +23,7 @@ def login_redirect(openid_response):
             openid_response.email == Client().config().owner_email:
         g.user = 1
         session['openid'] = openid_response.identity_url
-    return redirect('/')
+    return redirect(oid.get_next_url())
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
