@@ -86,4 +86,4 @@ def index():
     albums = Client().session().query(Album).\
         order_by(Album.name).\
         all()
-    return render_template('index.html.jinja', user=g.user, albums=albums)
+    return render_template('index.html.jinja', albums=albums)
