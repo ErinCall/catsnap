@@ -24,6 +24,8 @@ setup(name="catsnap",
           "sqlalchemy==0.8.0b2",
           "yoyo-migrations==4.1.6",
           "wand==0.3.3",
+          "celery==3.1.16",
+          "redis==2.10.3",
 
           "mock==0.8",
           "nose==1.1.2",

@@ -6,9 +6,9 @@ import requests
 import hashlib
 import subprocess
 import re
-from boto.cloudfront.exception import CloudFrontServerError
 
 from catsnap import Client
+from catsnap.worker.tasks import Invalidate
 
 class ImageTruck():
     def __init__(self, contents, content_type, source_url):
@@ -58,7 +58,7 @@ class ImageTruck():
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(self.contents)
         key.make_public()
-        self.invalidate(filename)
+        Invalidate().delay(filename)
 
     def upload_resize(self, resized_contents, suffix):
         filename = '%s_%s' % (self.calculate_filename(), suffix)
@@ -66,19 +66,7 @@ class ImageTruck():
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(resized_contents)
         key.make_public()
-        self.invalidate(filename)
-
-    def invalidate(self, filename):
-        config = Client().config()
-        try:
-            distro_id = config['cloudfront_distribution_id']
-            Client().get_cloudfront().create_invalidation_request(
-                distro_id, filename)
-        except KeyError:
-            pass
-        except CloudFrontServerError as e:
-            if e.error_code != 'TooManyInvalidationsInProgress':
-                raise
+        Invalidate().delay(filename)
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()

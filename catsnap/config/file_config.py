@@ -128,6 +128,11 @@ class FileConfig(Config):
                 name='cloudfront_distribution_id',
                 message='enter your cloudfront distribution id%s',
                 override_message=" (leave blank to keep using '%s')"),
+            FileSetting(
+                section='catsnap',
+                name='celery_broker_url',
+                message='enter your celery broker URL%s',
+                override_message=" (leave blank to keep using '%s')"),
         )}
 
 
