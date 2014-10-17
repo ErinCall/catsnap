@@ -6,6 +6,7 @@ class Config(object):
                                           'extension',
                                           'owner_id',
                                           'owner_email',
+                                          'celery_broker_url',
                                           'api_host',
                                           'cloudfront_distribution_id',
                                           'api_key')

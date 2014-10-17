@@ -9,9 +9,12 @@ import time
 import subprocess
 import os
 import os.path
-from catsnap.web import app
-
 import catsnap
+
+if 'CATSNAP_CELERY_BROKER_URL' not in os.environ:
+    os.environ['CATSNAP_CELERY_BROKER_URL'] = 'redis://localhost/1'
+
+from catsnap.web import app
 
 class TestCase(object):
     def setUp(self):
