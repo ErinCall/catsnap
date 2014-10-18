@@ -61,12 +61,3 @@ class ResizeImage(object):
             (new_height, new_width) = (new_long_side, new_short_side)
 
         return (new_width, new_height)
-
-    @classmethod
-    def _content_type_from_format(cls, format):
-        return {
-            'JPEG': 'image/jpeg',
-            'PNG': 'image/png',
-            'GIF': 'image/gif',
-                }[format]
-
