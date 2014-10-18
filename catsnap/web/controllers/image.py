@@ -4,13 +4,11 @@ import json
 from flask import request, render_template, redirect, g, abort, url_for
 from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck
-from catsnap.resize_image import ResizeImage
-from catsnap.reorient_image import ReorientImage
-from catsnap.image_metadata import ImageMetadata
-from catsnap.table.image import Image, ImageResize
+from catsnap.table.image import Image, ImageResize, ImageContents
 from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route
 from catsnap.web.utils import login_required
+from catsnap.worker.tasks import process_image
 from catsnap import Client
 
 
@@ -28,41 +26,31 @@ def show_add(request_format):
 @formatted_route('/add', methods=['POST'])
 @login_required
 def add(request_format):
-    tag_names = request.form['tags'].split(' ')
     url = request.form['url']
 
     if url:
-        print 'fetching from remote url'
         truck = ImageTruck.new_from_url(url)
     elif request.files['file']:
-        image = request.files['file']
-        truck = ImageTruck.new_from_stream(image.stream, image.mimetype)
+        data = request.files['file']
+        truck = ImageTruck.new_from_stream(data.stream, data.mimetype)
     else:
         abort(400)
-    metadata = ImageMetadata.image_metadata(truck.contents)
-    print 'potentially reorienting'
-    truck.contents = ReorientImage.reorient_image(truck.contents)
-    print 'uploading to s3'
-    truck.upload()
-    session = Client().session()
-    image = Image(filename=truck.calculate_filename(),
-                  source_url=url,
-                  description=request.form.get('description'),
-                  title=request.form.get('title'),
-                  **metadata)
-    album_id = request.form['album']
-    if album_id:
-        image.album_id = album_id
-    session.add(image)
-    image.add_tags(tag_names)
 
-    ResizeImage.make_resizes(image, truck)
+    session = Client().session()
+    image = Image(filename=truck.filename, source_url=url)
+    session.add(image)
+    session.flush()
+    contents = ImageContents(image_id=image.image_id,
+                             contents=truck.contents,
+                             content_type=truck.content_type)
+    session.add(contents)
+    session.flush()
+    process_image.delay(contents.image_contents_id)
 
     if request_format == 'html':
         return redirect(url_for('show_image', image_id=image.image_id))
     elif request_format == 'json':
-        return {'url': truck.url()}
-
+        return {'url': truck.url(), 'image_id': image.image_id}
 
 @formatted_route(
     '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})

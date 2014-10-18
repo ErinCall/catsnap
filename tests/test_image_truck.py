@@ -61,6 +61,14 @@ class TestImageTruck(TestCase):
         eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
 
+    @patch('catsnap.image_truck.hashlib')
+    def test_filename_is_calculated_on_initialization(self, hashlib):
+        sha = Mock()
+        sha.hexdigest.return_value = 'indigestible'
+        hashlib.sha1.return_value = sha
+        truck = ImageTruck('razors', None, None)
+        eq_(truck.filename, 'indigestible')
+
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
         response = Mock()
@@ -211,3 +219,4 @@ class TestImageTruck(TestCase):
         MockClient.return_value = client
 
         ImageTruck.contents_of_filename('x')
+

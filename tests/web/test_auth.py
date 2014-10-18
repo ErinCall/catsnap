@@ -9,15 +9,14 @@ from catsnap import Client
 
 class TestAuth(TestCase):
     @with_settings(api_key='supersekrit')
-    @patch('catsnap.web.controllers.image.ImageMetadata')
-    @patch('catsnap.web.controllers.image.ResizeImage')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_hmac_auth(self, ImageTruck, ResizeImage, ImageMetadata):
+    def test_hmac_auth(self, ImageTruck):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
-        truck.calculate_filename.return_value = 'CA7'
+        truck.filename = 'CA7'
+        truck.content_type = "image/jpeg"
         truck.url.return_value = 'ess three'
-        truck.contents = ''
+        truck.contents = b''
         now = str(datetime.datetime.utcnow())
         string_to_sign = "%s\n%s" % (now, Client().config().api_key)
         signature = sha.sha(string_to_sign).hexdigest()

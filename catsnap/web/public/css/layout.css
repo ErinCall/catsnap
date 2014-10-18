@@ -44,3 +44,89 @@ h1 {
 a form {
     margin: 0;
 }
+
+.add {
+    max-width: 300px;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+}
+
+.add img {
+    display: block;
+    margin: auto;
+}
+
+.nav-tabs li a {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.nav-tabs.nav.nav-justified {
+    border-bottom: 3px solid #eeeeee;
+}
+
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    margin: 10px;
+}
+
+.url-upload {
+    margin: 10px;
+}
+
+input, label.btn {
+    margin-top: 5px;
+}
+.input {
+    overflow: hidden;
+    padding-right: 5px;
+}
+.upload input[type="submit"] {
+    float: right;
+}
+.input input[type="text"], label.btn {
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.input input[type="file"] {
+    line-height: 15px;
+    cursor: pointer;
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 5px;
+}
+
+input[type="text"] {
+    color: #222222;
+}
+
+.add input[type="text"], .add textarea, .edit {
+    width: 100%;
+}
+
+.enter-to-submit {
+    display: none !important;
+}
+
+li.tag {
+    font-size: 150%;
+}
+
+li.tag span, li.tag a {
+    font-size: 14px;
+}
+
+.add li input {
+    vertical-align: middle;
+    display: inline-block;
+}

@@ -1,47 +1,37 @@
 {% extends 'layout.html.jinja' %}
 {% block title %}
-    Add New Image
+    Add Images
 {% endblock title %}
 {% block content %}
-    <article id="add">
-        <div>
-            <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
-                <div>
-                    <label for="url">Url: </label>
-                    <input type="text" name="url" id="url" />
-                    or
-                    <label for="file" style="display:inline">from file:</label>
-                    <input type="file" name="file" id="file" />
+    <article class="add">
+        <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+                <li class="active">
+                    <a href="#file-upload" role="tab" data-toggle="tab">From File</a>
+                </li>
+                <li>
+                    <a href="#url-upload" role="tab" data-toggle="tab">From Url</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane upload url-upload" id="url-upload">
+                    <input type="submit" value="Go" class="btn btn-default">
+                    <div class="input">
+                        <input type="text" name="url" id="url" class="form-control">
+                    </div>
                 </div>
-                <div>
-                    <label for="tags">Tags: </label>
-                    <input type="text" name="tags" id="tags" />
+
+                <div class="tab-pane active upload file-upload" id="file-upload">
+                    <input type="submit" value="Go" class="btn btn-default">
+                    <div class="input">
+                        <label class="btn btn-default" for="file">Select</label>
+                        <input type="file" id="file" name="file">
+                    </div>
                 </div>
-                <div>
-                    <label for="album">Album: </label>
-                    <select name="album" id="album">
-                        <option value="">(none)</option>
-                        {% for album in albums %}
-                        <option value="{{ album.album_id }}">{{ album.name |e}}</option>
-                        {% endfor %}
-                    </select>
-                    or <a href="{{ url_for('new_album') }}">create a new album</a>
-                </div>
-                <div>
-                    <label for="title">Title:</label>
-                    <input type="text" name="title" id="title" />
-                </div>
-                <div>
-                    <label for="description">Description:</label>
-                    <textarea name="description" id="description" ></textarea>
-                </div>
-                <div>
-                    <input type="submit" name="add_button" id="add_button" value="Add" />
-                </div>
-            </form>
-        </div>
-        <div>
-            or <a href="{{ url_for('logout') }}">Log Out</a>.
-        </div>
+            </div>
+        </form>
     </article>
 {% endblock content %}
+{% block scripts %}
+    <script src="/public/js/add_image.js"></script>
+{% endblock scripts %}

@@ -8,13 +8,13 @@ import subprocess
 import re
 
 from catsnap import Client
-from catsnap.worker.tasks import Invalidate
 
 class ImageTruck():
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
+        self.filename = self.calculate_filename()
 
     @classmethod
     def new_from_url(cls, url):
@@ -53,15 +53,16 @@ class ImageTruck():
         return cls._url(filename)
 
     def upload(self):
-        filename = self.calculate_filename()
-        key = Client().bucket().new_key(filename)
+        from catsnap.worker.tasks import Invalidate
+        key = Client().bucket().new_key(self.filename)
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(self.contents)
         key.make_public()
-        Invalidate().delay(filename)
+        Invalidate().delay(self.filename)
 
     def upload_resize(self, resized_contents, suffix):
-        filename = '%s_%s' % (self.calculate_filename(), suffix)
+        from catsnap.worker.tasks import Invalidate
+        filename = '%s_%s' % (self.filename, suffix)
         key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(resized_contents)
@@ -72,7 +73,7 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename())
+        return self._url(self.filename)
 
     @classmethod
     def _url(cls, filename):
