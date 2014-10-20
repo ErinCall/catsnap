@@ -220,7 +220,7 @@
                 $remove.text('x');
                 $remove.click(remove_tag);
 
-                $this.append(' [')
+                $this.append(' [');
                 $this.append($remove);
                 $this.append(']');
 
