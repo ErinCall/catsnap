@@ -53,19 +53,17 @@ class ImageTruck():
         return cls._url(filename)
 
     def upload(self):
-        from catsnap.worker.tasks import Invalidate
-        key = Client().bucket().new_key(self.filename)
-        key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(self.contents)
-        key.make_public()
-        Invalidate().delay(self.filename)
+        self._upload(self.filename, self.contents)
 
     def upload_resize(self, resized_contents, suffix):
-        from catsnap.worker.tasks import Invalidate
         filename = '%s_%s' % (self.filename, suffix)
+        self._upload(filename, resized_contents)
+
+    def _upload(self, filename, contents):
+        from catsnap.worker.tasks import Invalidate
         key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(resized_contents)
+        key.set_contents_from_string(contents)
         key.make_public()
         Invalidate().delay(filename)
 
