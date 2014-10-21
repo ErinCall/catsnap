@@ -66,6 +66,39 @@ class TestProcessImage(TestCase):
 
         eq_(contents, [])
 
+    # After an async upload, the page JS starts checking for the worker's
+    # completion. Ideally, it wants the thumbnail image. For very small
+    # images, though, there won't even be a thumbnail, so the JS needs to be
+    # able to fall back to the original size. Doing that requires that
+    # "original exists and thumbnail does not" must mean "thumbnail won't
+    # exist."
+    # There's still a conceivable race condition: [check_thumbnail,
+    # upload_thumbnail, upload_original, check_original]. However, it should be
+    # sufficiently rare: There's no deliberate delay between check_thumbnail
+    # and check_original, while there is some resize-processing time between
+    # upload_thumbnail and upload_original, or if there's just thumbnail and
+    # original, original must be close enough to thumbnail size that it won't
+    # be a big deal if the race condition does hit.
+    @patch('catsnap.worker.tasks.ImageTruck')
+    @patch('catsnap.worker.tasks.ResizeImage')
+    def test_resize_happens_before_main_upload(
+            self, ResizeImage, ImageTruck):
+        class StopDoingThingsNow(StandardError): pass
+
+        image_data = self.image_data()
+        (image, contents) = self.setup_contents(image_data)
+        truck = Mock()
+        truck.contents = image_data
+        truck.upload.side_effect = StopDoingThingsNow
+        ImageTruck.return_value = truck
+
+        try:
+            process_image(contents.image_contents_id)
+        except StopDoingThingsNow:
+            pass
+
+        ResizeImage.make_resizes.assert_called_with(image, truck)
+
     # ResizeImage and ReorientImage are just stubbed for speed;
     # the test image with intact EXIF data is quite large
     @patch('catsnap.worker.tasks.ResizeImage')

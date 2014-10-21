@@ -104,16 +104,20 @@ $(document).ready(function () {
             $a = $('<a href="/image/' + this.data('image_id') +'">'),
             $img = $('<img>');
 
-        $img.error(function () {
-            window.setTimeout(
-                _.bind(check_for_image, $container, new_timeout), new_timeout);
+        $img.error(function() {
+            $img.off('error');
+            $img.error(function() {
+                window.setTimeout(_.bind(
+                    check_for_image, $container, new_timeout), new_timeout);
+            });
+            $img.attr('src', url);
         });
         $img.load(function() {
             $container.find('img').remove();
             $a.append($img);
             $container.prepend($a);
         });
-        $img.attr('src', url);
+        $img.attr('src', url + '_thumbnail');
     };
 
     $('.add form').submit(send_image);

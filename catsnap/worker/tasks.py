@@ -38,8 +38,9 @@ def process_image(self, image_contents_id):
         contents.contents, contents.content_type, image.source_url)
     metadata = ImageMetadata.image_metadata(truck.contents)
     truck.contents = ReorientImage.reorient_image(truck.contents)
-    truck.upload()
     ResizeImage.make_resizes(image, truck)
+    print "uploading original image"
+    truck.upload()
 
     for attr, value in metadata.iteritems():
         setattr(image, attr, value)
