@@ -94,7 +94,10 @@ $(document).ready(function () {
     };
 
     handle_upload_error = function(data) {
-        console.log(data);
+        var message = data.responseJSON.error;
+        this.prepend($('<div class="alert alert-warning">' + message + '</div>'));
+        this.find('form').show();
+        this.find('img').remove();
     };
 
     check_for_image = function(previous_timeout) {

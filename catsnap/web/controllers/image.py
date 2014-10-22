@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 
 import json
-from flask import request, render_template, redirect, g, abort, url_for
+from flask import request, render_template, redirect, g, url_for
 from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image, ImageResize, ImageContents
 from catsnap.table.album import Album
-from catsnap.web.formatted_routes import formatted_route
+from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from catsnap.worker.tasks import process_image
 from catsnap import Client
@@ -34,7 +34,7 @@ def add(request_format):
         data = request.files['file']
         truck = ImageTruck.new_from_stream(data.stream, data.mimetype)
     else:
-        abort(400)
+        abort(request_format, 400, "Please submit either a file or a url.")
 
     session = Client().session()
     image = Image(filename=truck.filename, source_url=url)
@@ -112,7 +112,7 @@ def show_image(request_format, image_id, size):
 @login_required
 def edit_image(request_format, image_id):
     if request_format != 'json':
-        abort(400)
+        abort(request_format, 400, "This endpoint is JSON-only...")
 
     session = Client().session()
     image = session.query(Image).\
