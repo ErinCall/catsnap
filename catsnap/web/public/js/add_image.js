@@ -5,6 +5,7 @@ $(document).ready(function () {
         receive_image_data,
         handle_upload_error,
         tag_link,
+        another_add,
         check_for_image;
 
     send_image = function(event) {
@@ -14,8 +15,6 @@ $(document).ready(function () {
 
         event.preventDefault();
 
-        $this.hide();
-        $article.append($('<img src="/public/img/large-throbber.gif">'));
         $.ajax($this.attr('action') + '.json', {
             type: $this.attr('method'),
             data: form_data,
@@ -30,6 +29,9 @@ $(document).ready(function () {
         var delay = 2000, //milliseconds
             $ul;
 
+        another_add(this.clone(true));
+        this.find('form').hide();
+        this.append($('<img src="/public/img/large-throbber.gif">'));
         this.data('image_id', data.image_id);
         this.data('url', data.url);
         window.setTimeout(_.bind(check_for_image, this, delay), delay);
@@ -43,6 +45,23 @@ $(document).ready(function () {
 
         this.append($('<textarea placeholder="Description" class="form-control">'));
         this.append($('<input type="submit" value="Save" class="btn btn-default edit">'));
+    };
+
+    another_add = function($article) {
+        var $last_row = $('.row').last(),
+            $target_row;
+        if ($last_row.find('article').length >= 3) {
+            $target_row = $('<section class="row">');
+            $last_row.parent().append($target_row);
+        } else {
+            $target_row = $last_row;
+        }
+
+        $target_row.append($article);
+        $article.find('input').val(null);
+        $article.find('input[type="submit"]').val('Go');
+        $article.find('label').text('Select');
+        $article.show();
     };
 
     tag_link = function() {
@@ -124,7 +143,7 @@ $(document).ready(function () {
     };
 
     $('.add form').submit(send_image);
-    $('input[type="file"]').change(function(event) {
+    $('input[type="file"]').on('change', function(event) {
         $(this).siblings('label').text($(this).val());
     });
 });

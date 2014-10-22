@@ -45,16 +45,24 @@ a form {
     margin: 0;
 }
 
+.row {
+    padding-bottom: 10px;
+}
+
 .add {
     max-width: 300px;
+    min-width: 300px;
     padding: 5px;
     border-radius: 4px;
     border: 1px solid #eeeeee;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .add img {
     display: block;
     margin: auto;
+    max-width: 300px;
 }
 
 .nav-tabs li a {

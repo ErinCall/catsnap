@@ -3,34 +3,36 @@
     Add Images
 {% endblock title %}
 {% block content %}
-    <article class="add">
-        <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
-            <ul class="nav nav-tabs nav-justified" role="tablist">
-                <li class="active">
-                    <a href="#file-upload" role="tab" data-toggle="tab">From File</a>
-                </li>
-                <li>
-                    <a href="#url-upload" role="tab" data-toggle="tab">From Url</a>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane upload url-upload" id="url-upload">
-                    <input type="submit" value="Go" class="btn btn-default">
-                    <div class="input">
-                        <input type="text" name="url" id="url" class="form-control">
+    <section class="row">
+        <article class="add">
+            <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+                <ul class="nav nav-tabs nav-justified" role="tablist">
+                    <li class="active">
+                        <a href="#file-upload" role="tab" data-toggle="tab">From File</a>
+                    </li>
+                    <li>
+                        <a href="#url-upload" role="tab" data-toggle="tab">From Url</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane upload url-upload" id="url-upload">
+                        <input type="submit" value="Go" class="btn btn-default">
+                        <div class="input">
+                            <input type="text" name="url" id="url" class="form-control">
+                        </div>
                     </div>
-                </div>
 
-                <div class="tab-pane active upload file-upload" id="file-upload">
-                    <input type="submit" value="Go" class="btn btn-default">
-                    <div class="input">
-                        <label class="btn btn-default" for="file">Select</label>
-                        <input type="file" id="file" name="file">
+                    <div class="tab-pane active upload file-upload" id="file-upload">
+                        <input type="submit" value="Go" class="btn btn-default">
+                        <div class="input">
+                            <label class="btn btn-default" for="file">Select</label>
+                            <input type="file" id="file" name="file">
+                        </div>
                     </div>
                 </div>
-            </div>
-        </form>
-    </article>
+            </form>
+        </article>
+    </section>
 {% endblock content %}
 {% block scripts %}
     <script src="/public/js/add_image.js"></script>
