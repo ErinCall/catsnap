@@ -5,6 +5,7 @@ from wand.image import Image as ImageHandler
 from mock import patch, Mock, call
 from nose.tools import eq_, nottest
 from tests import TestCase
+from tests.image_helper import SMALL_JPG, SOME_GIF, SOME_PNG
 
 from catsnap import Client
 from catsnap.image_truck import ImageTruck
@@ -13,9 +14,7 @@ from catsnap.resize_image import ResizeImage
 
 class TestResizeImage(TestCase):
     def test_resize_an_image(self):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 'test_image_640x427.jpg')
-        image_handler = ImageHandler(filename=test_file)
+        image_handler = ImageHandler(filename=SMALL_JPG)
         truck = Mock()
         session = Client().session()
         image = ImageTable(filename='badcafe')
@@ -98,35 +97,34 @@ class TestResizeImage(TestCase):
     @patch('catsnap.Client.bucket')
     def test_handles_jpegs(self, bucket_method):
         self.file_type_test(bucket_method,
-                            'test_image_640x427.jpg',
+                            SMALL_JPG,
                             'image/jpeg',
                             (100, 66))
 
     @patch('catsnap.Client.bucket')
     def test_handles_pngs(self, bucket_method):
         self.file_type_test(bucket_method,
-                            'test_image_592x821.png',
+                            SOME_PNG,
                             'image/png',
                             (72, 100))
 
     @patch('catsnap.Client.bucket')
     def test_handles_gifs(self, bucket_method):
         self.file_type_test(bucket_method,
-                            'test_image_500x319.gif',
+                            SOME_GIF,
                             'image/gif',
                             (100, 64))
 
     @nottest
     def file_type_test(self,
                        bucket_method,
-                       test_file_name,
+                       test_file,
                        content_type,
                        resized_size):
         bucket = Mock()
         bucket_method.return_value = bucket
         new_key = Mock()
         bucket.new_key.return_value = new_key
-        test_file = os.path.join(os.path.dirname(__file__), test_file_name)
         image_handler = ImageHandler(filename=test_file)
         with open(test_file, 'r') as fh:
             truck = ImageTruck.new_from_stream(fh, content_type)

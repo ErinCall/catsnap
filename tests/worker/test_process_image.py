@@ -5,6 +5,7 @@ from mock import patch, Mock
 from nose.tools import eq_
 
 from tests import TestCase
+from tests.image_helper import SOME_PNG, EXIF_JPG
 from catsnap import Client
 from catsnap.table.image import Image, ImageContents
 from catsnap.worker.tasks import process_image
@@ -105,10 +106,7 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ReorientImage')
     @patch('catsnap.worker.tasks.ImageTruck')
     def test_calculates_metadata(self, ImageTruck, ReorientImage, ResizeImage):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 '..',
-                                 'test_image_5472x3648.jpg')
-        with open(test_file, 'r') as fh:
+        with open(EXIF_JPG, 'r') as fh:
             image_data = fh.read()
 
         (image, contents) = self.setup_contents(image_data)
@@ -131,10 +129,7 @@ class TestProcessImage(TestCase):
         eq_(image.iso, 200)
 
     def image_data(self):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 '..',
-                                 'test_image_592x821.png')
-        with open(test_file, 'r') as fh:
+        with open(SOME_PNG, 'r') as fh:
             return fh.read()
 
     def setup_contents(self, image_data):
