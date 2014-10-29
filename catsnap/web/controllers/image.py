@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import json
 from flask import request, render_template, redirect, g, url_for
+from requests.exceptions import RequestException
 from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck
 from catsnap.table.image import Image, ImageResize, ImageContents
@@ -29,7 +30,10 @@ def add(request_format):
     url = request.form['url']
 
     if url:
-        truck = ImageTruck.new_from_url(url)
+        try:
+            truck = ImageTruck.new_from_url(url)
+        except RequestException:
+            abort(request_format, 400, "That url is no good.")
     elif request.files['file']:
         data = request.files['file']
         truck = ImageTruck.new_from_stream(data.stream, data.mimetype)

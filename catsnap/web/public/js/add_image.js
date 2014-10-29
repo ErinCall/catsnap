@@ -15,6 +15,8 @@ $(document).ready(function () {
 
         event.preventDefault();
 
+        $article.find('div.alert').remove();
+
         $.ajax($this.attr('action') + '.json', {
             type: $this.attr('method'),
             data: form_data,
@@ -37,13 +39,13 @@ $(document).ready(function () {
         window.setTimeout(_.bind(check_for_image, this, delay), delay);
 
         this.children('form').remove();
-        this.append($('<input type="text" placeholder="Title" class="form-control">'));
+        this.append($('<input type="text" name="title" placeholder="Title" class="form-control">'));
 
         $ul = $('<ul><li class="tag"></li></ul>');
         $ul.children('li').append(_.bind(tag_link, this)());
         this.append($ul);
 
-        this.append($('<textarea placeholder="Description" class="form-control">'));
+        this.append($('<textarea placeholder="Description" class="form-control" name="description">'));
         this.append($('<input type="submit" value="Save" class="btn btn-default edit">'));
     };
 
@@ -70,23 +72,32 @@ $(document).ready(function () {
 
         $a.click(function(event) {
             var tag_name,
+                abort_editing,
+                submit_tag,
                 $this_li = $(this).parent(),
+                $tag_input,
                 $form;
             event.preventDefault();
             $a.hide();
 
-            $form = $('<form><input type="text" class="edit form-control"/><input type="submit" class="enter-to-submit"/></form>');
-            $form.submit(function(event) {
+            submit_tag = function(event, success_events) {
                 event.preventDefault();
-                tag_name = $form.find('input[type=text]').val();
+                tag_name = $form.find('input[type=text]').val().trim();
+                if (tag_name === "") {
+                    abort_editing();
+                    return;
+                }
                 $form.find('input').attr('disabled', true);
+                if (typeof(success_events) === 'undefined') {
+                    success_events = [];
+                }
 
                 $.ajax('/image/' + $container.data('image_id') + '.json', {
                     type: "PATCH",
                     data: {add_tag: tag_name},
-                    success: function(data) {
+                    success: [function(data) {
                         var $next_li = $('<li class="tag">'),
-                            $name_span = $('<span>'),
+                            $name_span = $('<span class="tag">'),
                             new_tag_link;
 
                         $a.remove();
@@ -98,12 +109,38 @@ $(document).ready(function () {
                         new_tag_link = _.bind(tag_link, $container)();
                         $next_li.append(new_tag_link);
                         $container.find('ul').append($next_li);
-                    },
+                    }].concat(success_events),
                     error: function(jqXHR, status, errorThrown) {
                         alert(errorThrown);
                     }
                 });
+            };
+            $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
+            $tag_input = $('<input type="text" class="edit form-control" name="tag"/>');
+            $form.prepend($tag_input);
+            $form.submit(submit_tag);
+            $tag_input.blur(_.bind(submit_tag, $form));
+            $tag_input.keydown(function(event) {
+                if (event.which === KeyCodes.ENTER) {
+                    event.preventDefault();
+                    $form.trigger('submit', function() {
+                        $this_li.siblings().find('a').click();
+                    });
+                } else if (event.which == KeyCodes.ESCAPE) {
+                    abort_editing();
+                }
             });
+
+            abort_editing = function () {
+                $a.show();
+/* In Firefox (at least), if there's an autocompletion box up when the input
+is removed, the input goes away correctly but the autocompletion box hangs
+around. Blurring the element first seems to be a sufficient workaround.
+*/
+                $tag_input.off('blur');
+                $tag_input.blur();
+                $tag_input.remove();
+            };
 
             $this_li.append($form);
             $a.parent().append($this_li);
