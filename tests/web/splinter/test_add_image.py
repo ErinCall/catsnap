@@ -12,7 +12,30 @@ from mock import patch, Mock
 from nose.tools import eq_, nottest
 
 
-class TestUploadImage(TestCase):
+class UploadTestCase(TestCase):
+    @nottest
+    @patch('catsnap.web.controllers.image.ImageTruck')
+    def upload_one_image(self, ImageTruck):
+        ImageTruck.new_from_url.return_value = self.mock_truck()
+
+        self.visit_url('/add')
+        self.browser.click_link_by_text('From Url')
+        url_field = self.browser.find_by_css('input[name="url"]')
+        url_field.fill('http://cdn.mlkshk.com/r/118S7')
+        self.browser.find_by_css('input[name="url-submit"]').click()
+
+    @nottest
+    def mock_truck(self):
+        truck = Mock()
+        with open(SOME_GIF, 'r') as fh:
+            truck.contents = fh.read()
+        truck.url.return_value = 'https://catsnap.cdn/ca7face'
+        truck.filename = 'ca7face'
+        truck.content_type = 'image/gif'
+        return truck
+
+
+class TestUploadImage(UploadTestCase):
     @logged_in
     @with_settings(bucket='frootypoo')
     def test_try_to_add_a_bad_url(self):
@@ -136,19 +159,8 @@ class TestUploadImage(TestCase):
 
         eq_(file_label.text, 'image.jpg')
 
-    @classmethod
-    @nottest
-    def mock_truck(cls):
-        truck = Mock()
-        with open(SOME_GIF, 'r') as fh:
-            truck.contents = fh.read()
-        truck.url.return_value = 'https://catsnap.cdn/ca7face'
-        truck.filename = 'ca7face'
-        truck.content_type = 'image/gif'
-        return truck
 
-
-class TestAddTagsAfterUpload(TestCase):
+class TestAddTagsAfterUpload(UploadTestCase):
     @logged_in
     @with_settings(bucket='frootypoo')
     def test_tab_from_tag_input_focuses_descr_and_saves(self):
@@ -220,13 +232,39 @@ class TestAddTagsAfterUpload(TestCase):
         tags = Client().session().query(ImageTag).all()
         eq_(tags, [])
 
-    @nottest
-    @patch('catsnap.web.controllers.image.ImageTruck')
-    def upload_one_image(self, ImageTruck):
-        ImageTruck.new_from_url.return_value = TestUploadImage.mock_truck()
+class TestEditAttributes(UploadTestCase):
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_submit_title(self):
+        self.upload_one_image()
+        title_input = self.browser.find_by_name('title').first
+        title_input.fill('Tiny chipmunk dancing\n')
 
-        self.visit_url('/add')
-        self.browser.click_link_by_text('From Url')
-        url_field = self.browser.find_by_css('input[name="url"]')
-        url_field.fill('http://cdn.mlkshk.com/r/118S7')
-        self.browser.find_by_css('input[name="url-submit"]').click()
+        image = Client().session().query(Image).one()
+        eq_(image.title, "Tiny chipmunk dancing")
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_submit_description(self):
+        self.upload_one_image()
+        description_input = self.browser.find_by_name('description').first
+        description_input.fill('A chipmunk dances.\nIt dances its heart out')
+        self.browser.find_by_name('save').click()
+
+        image = Client().session().query(Image).one()
+        eq_(image.description, "A chipmunk dances.\nIt dances its heart out")
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_blurring_inputs_submits_changes(self):
+        self.upload_one_image()
+        description_input = self.browser.find_by_name('description').first
+        description_input.fill('A chipmunk dances.\nIt dances its heart out')
+        title_input = self.browser.find_by_name('title').first
+        title_input.fill('Tiny chipmunk dancing')
+
+        self.browser.click_link_by_text('From File')
+
+        image = Client().session().query(Image).one()
+        eq_(image.title, "Tiny chipmunk dancing")
+        eq_(image.description, "A chipmunk dances.\nIt dances its heart out")
