@@ -186,6 +186,83 @@ class TestAlbumFunctions(UploadTestCase):
         image = session.query(Image).one()
         eq_(image.album_id, album.album_id)
 
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_create_new_album(self):
+        self.visit_url('/add')
+
+        self.browser.click_link_by_partial_text('create new album')
+        album_input = self.browser.find_by_name('album-name').first
+        album_input.fill('Soviet Kitsch\n')
+
+        album_select = self.browser.find_by_name('album').first
+
+        album = Client().session().query(Album).one()
+        eq_(album.name, "Soviet Kitsch")
+
+        options = album_select.find_by_tag('option')
+        soviet_kitsch = filter(lambda o: o.value == unicode(album.album_id),
+                               options)[0]
+        assert soviet_kitsch, "The new album wasn't added to the dropdown!"
+        assert soviet_kitsch.selected, "The new album wasn't selected!"
+        assert not self.browser.find_by_css('#new-album').first.visible, \
+            "The modal didn't hide correctly!"
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_invalid_album_names_get_an_error_message(self):
+        session = Client().session()
+        session.add(Album(name="Begin To Hope"))
+        session.flush()
+
+        self.visit_url('/add')
+
+        self.browser.click_link_by_partial_text('create new album')
+        album_input = self.browser.find_by_name('album-name').first
+        album_input.fill('Begin To Hope\n')
+
+        assert self.browser.find_by_css('#new-album').first.visible, \
+            "The modal was hidden when there was an error!"
+        assert self.browser.is_text_present(
+            'There is already an album with that name.'), \
+            "The album-name error message wasn't displayed!"
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_album_name_input_is_cleared_on_submit(self):
+        self.visit_url('/add')
+
+        self.browser.click_link_by_partial_text('create new album')
+        album_input = self.browser.find_by_name('album-name').first
+        album_input.fill('Soviet Kitsch\n')
+
+        self.browser.click_link_by_partial_text('create new album')
+        album_input = self.browser.find_by_name('album-name').first
+        eq_(album_input.value, '')
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_previous_errors_are_cleared_on_success(self):
+        session = Client().session()
+        session.add(Album(name="Led Zeppelin"))
+        session.flush()
+
+        self.visit_url('/add')
+
+        self.browser.click_link_by_partial_text('create new album')
+        album_input = self.browser.find_by_name('album-name').first
+        album_input.fill('Led Zeppelin\n')
+
+        assert self.browser.is_text_present(
+            'There is already an album with that name.'), \
+            "The album-name error message wasn't displayed!"
+        album_input.fill('Led Zeppelin II\n')
+
+        self.browser.click_link_by_partial_text('create new album')
+        assert not self.browser.is_text_present(
+            'There is already an album with that name.'), \
+            "The album-name error message overstayed its welcome!"
+
 
 class TestAddTagsAfterUpload(UploadTestCase):
     @logged_in

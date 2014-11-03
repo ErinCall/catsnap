@@ -37,6 +37,10 @@ h1 {
     display: inline-block;
 }
 
+h3 {
+    margin-top: 10px;
+}
+
 .user-actions {
     float: right;
 }
@@ -146,4 +150,8 @@ li.tag span, li.tag a {
 .album-menu select {
     min-width: 300px;
     margin-right: 3px;
+}
+
+.modal-content {
+    background-color: #444444;
 }

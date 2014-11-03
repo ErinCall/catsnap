@@ -8,6 +8,7 @@ $(document).ready(function () {
         another_add,
         save_attributes,
         editing_url,
+        save_album,
         check_for_image;
 
     send_image = function(event) {
@@ -223,7 +224,38 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
         return "/image/" + $element.data('image_id') + '.json';
     };
 
+    save_album = function(event) {
+        var $form = $(this),
+            $modal_header = $('#new-album').find('.modal-header'),
+            $album_input = $form.find('input[type="text"]'),
+            album_name = $album_input.val();
+
+        event.preventDefault();
+
+        $.ajax($form.attr('action') + '.json', {
+            type: "POST",
+            data: {name: album_name},
+            success: function(data) {
+                var $album_dropdown = $('#album'),
+                    $modal = $('#new-album'),
+                    $option;
+
+                $option = $('<option>');
+                $option.text(album_name);
+                $option.val(data.album_id);
+                $album_dropdown.append($option);
+                $album_dropdown.val(data.album_id);
+
+                $modal_header.find('div.alert').remove();
+                $album_input.val('');
+                $modal.modal('hide');
+            },
+            error: _.bind(show_error, $modal_header),
+        });
+    };
+
     $('.add form').submit(send_image);
+    $('#new-album form').submit(save_album);
     $('input[type="file"]').on('change', function(event) {
         $(this).siblings('label').text($(this).val());
     });
