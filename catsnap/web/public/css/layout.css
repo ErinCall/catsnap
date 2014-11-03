@@ -138,3 +138,12 @@ li.tag span, li.tag a {
     vertical-align: middle;
     display: inline-block;
 }
+
+.album-menu {
+    margin-left: -30px;
+}
+
+.album-menu select {
+    min-width: 300px;
+    margin-right: 3px;
+}

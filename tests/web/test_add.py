@@ -7,6 +7,7 @@ from tests import TestCase, logged_in
 from nose.tools import eq_
 from catsnap import Client
 from catsnap.table.image import Image, ImageContents
+from catsnap.table.album import Album
 
 
 class TestAdd(TestCase):
@@ -31,15 +32,21 @@ class TestAdd(TestCase):
         truck.contents = b''
         truck.content_type = "image/jpeg"
 
+        session = Client().session()
+        album = Album(name='11:11 Eleven Eleven')
+        session.add(album)
+        session.flush()
+
         response = self.app.post('/add', data={
             'url': '',
+            'album_id': album.album_id,
             'file': (StringIO(str('booya')), 'img.jpg')})
 
-        session = Client().session()
         image = session.query(Image).one()
 
         eq_(image.filename, 'CA7')
         eq_(image.source_url, '')
+        eq_(image.album_id, album.album_id)
 
         eq_(response.status_code, 302, response.data)
         eq_(response.headers['Location'],

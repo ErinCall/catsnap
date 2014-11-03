@@ -42,6 +42,11 @@ def add(request_format):
 
     session = Client().session()
     image = Image(filename=truck.filename, source_url=url)
+    album_id = request.form.get('album_id')
+    if album_id:
+        image.album_id = int(album_id)
+    else:
+        image.album_id = None
     session.add(image)
     session.flush()
     contents = ImageContents(image_id=image.image_id,

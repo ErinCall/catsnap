@@ -16,6 +16,7 @@ $(document).ready(function () {
             $article = $this.parent('article');
 
         event.preventDefault();
+        form_data.append('album_id', $('select[name="album"]').val());
 
         $article.find('div.alert').remove();
 

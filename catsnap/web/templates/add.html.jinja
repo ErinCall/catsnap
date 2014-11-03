@@ -3,6 +3,17 @@
     Add Images
 {% endblock title %}
 {% block content %}
+    <section class="album-menu">
+        <form action="#" class="navbar-form">
+            <select name="album" class="form-control">
+                <option value="" selected>(Select album)</option>
+                {% for album in albums %}
+                    <option value="{{ album.album_id }}">{{ album.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </section>
+
     <section class="row">
         <article class="add">
             <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >

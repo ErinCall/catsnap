@@ -7,6 +7,7 @@ from tests.image_helper import SOME_GIF
 from tests.web.splinter import TestCase, logged_in
 from catsnap import Client
 from catsnap.table.image import Image
+from catsnap.table.album import Album
 from catsnap.table.image_tag import ImageTag
 from mock import patch, Mock
 from nose.tools import eq_, nottest
@@ -158,6 +159,32 @@ class TestUploadImage(UploadTestCase):
         self.browser.attach_file('file', '/path/to/image.jpg')
 
         eq_(file_label.text, 'image.jpg')
+
+class TestAlbumFunctions(UploadTestCase):
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    @patch('catsnap.web.controllers.image.ImageTruck')
+    def test_upload_to_an_album(self, ImageTruck):
+        ImageTruck.new_from_url.return_value = self.mock_truck()
+        session = Client().session()
+        album = Album(name='fotoz')
+        session.add(album)
+        session.flush()
+
+        self.visit_url('/add')
+        album_select = self.browser.find_by_name('album')
+        album_select.select(str(album.album_id))
+
+        self.browser.click_link_by_text('From Url')
+        url_field = self.browser.find_by_css('input[name="url"]')
+        url_field.fill('http://cdn.mlkshk.com/r/111V1')
+        self.browser.find_by_css('input[name="url-submit"]').click()
+
+        # force a wait for the upload response
+        self.browser.find_by_css('textarea')
+
+        image = session.query(Image).one()
+        eq_(image.album_id, album.album_id)
 
 
 class TestAddTagsAfterUpload(UploadTestCase):
