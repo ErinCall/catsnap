@@ -65,10 +65,13 @@ def before_request():
                 and skew.seconds <= (5*60):
             g.user = 1
 
+delayed_tasks = []
 
 @app.after_request
 def after_request(response):
     Client().session().commit()
+    for (task, args, kwargs) in delayed_tasks:
+        task.delay(*args, **kwargs)
     return response
 
 import catsnap.web.controllers.login

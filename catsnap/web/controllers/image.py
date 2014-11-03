@@ -10,6 +10,7 @@ from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from catsnap.worker.tasks import process_image
+from catsnap.worker.web import delay
 from catsnap import Client
 
 
@@ -54,7 +55,7 @@ def add(request_format):
                              content_type=truck.content_type)
     session.add(contents)
     session.flush()
-    process_image.delay(contents.image_contents_id)
+    delay(process_image, contents.image_contents_id)
 
     if request_format == 'html':
         return redirect(url_for('show_image', image_id=image.image_id))
