@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import time
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,16 +14,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
-
-
-class CreatedAtBookkeeper(Base):
-    __abstract__ = True
-
-    created_at = Column(DateTime)
-
-    def __init__(self, *args, **kwargs):
-        super(CreatedAtBookkeeper, self).__init__(*args, **kwargs)
-        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+from catsnap.table.created_at_bookkeeper import CreatedAtBookkeeper
 
 
 class Image(CreatedAtBookkeeper):

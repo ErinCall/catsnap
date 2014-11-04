@@ -58,24 +58,31 @@ class TestAlbum(TestCase):
         eq_(body['error'], "There is already an album with that name.")
 
     @with_settings(bucket='cattysnap')
-    def test_view_an_album(self):
+    def test_get_album_in_json_format(self):
         session = Client().session()
         album = Album(name='my pix')
         session.add(album)
         session.flush()
+
         cat = Image(album_id=album.album_id, filename='CA7')
-        session.add(cat)
         dog = Image(album_id=album.album_id, filename='D06')
+        session.add(cat)
         session.add(dog)
-        not_in_album = Image(album_id=None, filename='deadbeef')
-        session.add(not_in_album)
         session.flush()
 
-        response = self.app.get('/album/%d' % album.album_id)
-        link = '<a href="/image/%d">'
-        cat_link = link % cat.image_id
-        dog_link = link % dog.image_id
-        assert cat_link in response.data, response.data
-        assert dog_link in response.data, response.data
-        assert 'my pix' in response.data, response.data
+        response = self.app.get('/album/{0}.json'.format(album.album_id))
+        eq_(response.status_code, 200, response.data)
+        body = json.loads(response.data)
+        eq_(body, [
+            {
+                'page_url': '/image/{0}'.format(cat.image_id),
+                'source_url': 'https://s3.amazonaws.com/cattysnap/CA7',
+                'caption': 'CA7'
+            },
+            {
+                'page_url': '/image/{0}'.format(dog.image_id),
+                'source_url': 'https://s3.amazonaws.com/cattysnap/D06',
+                'caption': 'D06'
+            },
+        ])
 

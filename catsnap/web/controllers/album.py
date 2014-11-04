@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
-from flask import request, render_template, redirect, g, url_for
+from flask import request, render_template, redirect, url_for
 from sqlalchemy.exc import IntegrityError
 from catsnap import Client
 from catsnap.table.album import Album
@@ -40,16 +40,16 @@ def view_album(request_format, album_id):
     images = Album.images_for_album_id(album_id)
     def struct_from_image(image):
         return {
-            'url': url_for('show_image', image_id=image.image_id),
-            'filename': image.filename,
+            'page_url': url_for('show_image', image_id=image.image_id),
+            'source_url': ImageTruck.url_for_filename(image.filename),
             'caption': image.caption(),
         }
     image_structs = map(struct_from_image, images)
 
     if request_format == 'html':
         return render_template('view_album.html.jinja',
-                images = image_structs,
+                images=image_structs,
                 album=album)
     else:
-        return images
+        return image_structs
 

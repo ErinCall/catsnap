@@ -1,13 +1,19 @@
 {% extends 'layout.html.jinja' %}
 {% block title %}{{ album.name |e}}{% endblock title %}
 {% block content %}
-    <article>
-        <ul>
-            {% for image in images %}
-                <li><a href="{{ image['url'] }}">{{ image['caption'] |e}}</a></li>
-            {% endfor %}
-        </ul>
-    </article>
+    <section class="container-fluid">
+        {% for image in images %}
+            <div class="thumbnail-holder col-xs-4 col-sm-3 col-md-2">
+                <a href="{{ image['page_url'] }}">
+                    <div class="thumbnail-box">
+                        <img src="{{ image['source_url'] }}_thumbnail" alt="{{ image['caption'] }}" class="thumbnail maybe-unavailable">
+                    </div>
+                    {{ image['caption'] }}
+                </a>
+            </div>
+        {% endfor %}
+    </section>
 {% endblock content %}
-    </body>
-</html>
+{% block scripts %}
+    <script src="/public/js/view_album.js"></script>
+{% endblock scripts %}
