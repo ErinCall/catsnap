@@ -34,3 +34,40 @@ class TestAlbums(TestCase):
         images = Album.images_for_album_id(album.album_id)
         eq_(['deadbeef', 'badcafe'],
                 map(lambda x: x.filename, images))
+
+    def test_images_for_album_id_sorts_by_photographed_then_added_date(self):
+        session = Client().session()
+        album = Album(name='my pix')
+        session.add(album)
+        session.flush()
+
+        han = Image(
+            photographed_at='2012-05-13 03:00:00',
+            album_id=album.album_id,
+            filename="han",
+        )
+        han.created_at = '2014-11-22 13:15:00'
+        greedo = Image(
+            photographed_at='2014-12-28 15:24:00',
+            album_id=album.album_id,
+            filename="greedo",
+        )
+        greedo.created_at = '2014-08-01 08:00:00'
+        artoo = Image(
+            photographed_at=None,
+            album_id=album.album_id,
+            filename="R2D2",
+        )
+        artoo.created_at = '1977-05-13 01:00:00'
+        session.add(han)
+        session.add(greedo)
+        session.add(artoo)
+        session.flush()
+
+        # Sorting should be done by the date the image was shot, or the date
+        # it was added if it has no photographed_at. Han shot first, so he
+        # should show up before greedo. Artoo never shot at all, so use his
+        # created_at (which refers to the *record*, not the image) instead.
+        images = Album.images_for_album_id(album.album_id)
+        eq_(['R2D2', 'han', 'greedo'],
+                map(lambda x: x.filename, images))

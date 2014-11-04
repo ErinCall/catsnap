@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.sql.functions import coalesce
 from catsnap import Client
 from catsnap.table.created_at_bookkeeper import CreatedAtBookkeeper
 
@@ -16,5 +17,5 @@ class Album(CreatedAtBookkeeper):
         session = Client().session()
         return session.query(Image).\
                 filter(Image.album_id == album_id).\
-                order_by(Image.image_id).\
+                order_by(coalesce(Image.photographed_at, Image.created_at)).\
                 all()
