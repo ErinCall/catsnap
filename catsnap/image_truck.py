@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 import requests
 import hashlib
 import subprocess
+import tempfile
+import os
 import re
 
 from catsnap import Client
@@ -36,9 +38,14 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type):
-        contents = stream.read()
-        return cls(contents, content_type, None)
+    def new_from_stream(cls, stream):
+        (_, image_file) = tempfile.mkstemp()
+        with open(image_file, 'w') as fh:
+            fh.write(stream.read())
+        try:
+            return cls.new_from_file(image_file)
+        finally:
+            os.unlink(image_file)
 
     @classmethod
     def new_from_something(cls, path):

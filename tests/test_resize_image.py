@@ -126,8 +126,7 @@ class TestResizeImage(TestCase):
         new_key = Mock()
         bucket.new_key.return_value = new_key
         image_handler = ImageHandler(filename=test_file)
-        with open(test_file, 'r') as fh:
-            truck = ImageTruck.new_from_stream(fh, content_type)
+        truck = ImageTruck.new_from_file(test_file)
         session = Client().session()
         image = ImageTable(filename='badcafe')
         session.add(image)

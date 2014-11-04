@@ -28,39 +28,52 @@ def show_add(request_format):
 @formatted_route('/add', methods=['POST'])
 @login_required
 def add(request_format):
-    url = request.form['url']
+    url = request.form.get('url')
 
     if url:
         try:
-            truck = ImageTruck.new_from_url(url)
+            trucks = [ImageTruck.new_from_url(url)]
         except RequestException:
             abort(request_format, 400, "That url is no good.")
-    elif request.files['file']:
+    elif request.files.get('file[]'):
+        trucks = [ImageTruck.new_from_stream(data.stream)
+                  for data in request.files.getlist('file[]')]
+    elif request.files.get('file'):
         data = request.files['file']
-        truck = ImageTruck.new_from_stream(data.stream, data.mimetype)
+        trucks = [ImageTruck.new_from_stream(data.stream)]
     else:
         abort(request_format, 400, "Please submit either a file or a url.")
 
+    # These loops are sorta awkwardly phrased to avoid lots of round-tripping
+    # to the database. I hope you don't consider the optimization premature.
     session = Client().session()
-    image = Image(filename=truck.filename, source_url=url)
-    album_id = request.form.get('album_id')
-    if album_id:
-        image.album_id = int(album_id)
-    else:
-        image.album_id = None
-    session.add(image)
+    images = []
+    for truck in trucks:
+        image = Image(filename=truck.filename, source_url=url)
+        album_id = request.form.get('album_id')
+        if album_id:
+            image.album_id = int(album_id)
+        session.add(image)
+        images.append(image)
+
     session.flush()
-    contents = ImageContents(image_id=image.image_id,
-                             contents=truck.contents,
-                             content_type=truck.content_type)
-    session.add(contents)
+    contentses = []
+    for i in xrange(0, len(images)):
+        (truck, image) = trucks[i], images[i]
+        contents = ImageContents(image_id=image.image_id,
+                                 contents=truck.contents,
+                                 content_type=truck.content_type)
+        session.add(contents)
+        contentses.append(contents)
     session.flush()
-    delay(process_image, contents.image_contents_id)
+    for contents in contentses:
+        delay(process_image, contents.image_contents_id)
 
     if request_format == 'html':
         return redirect(url_for('show_image', image_id=image.image_id))
     elif request_format == 'json':
-        return {'url': truck.url(), 'image_id': image.image_id}
+        return [{'url': trucks[i].url(), 'image_id': images[i].image_id}
+                for i in xrange(0, len(trucks))]
 
 @formatted_route(
     '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})

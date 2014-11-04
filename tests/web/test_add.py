@@ -98,7 +98,6 @@ class TestAdd(TestCase):
 
         response = self.app.post('/add.json', data={
             'album': '',
-            'tags': 'pet cool',
             'url': 'imgur.com/cool_cat.gif'})
         eq_(response.status_code, 200, response.data)
 
@@ -106,15 +105,58 @@ class TestAdd(TestCase):
         image = session.query(Image).one()
         body = json.loads(response.data)
 
-        eq_(body, {'url': 'cloudfrunt.nut/CA741C', 'image_id': image.image_id})
+        eq_(body,
+            [{'url': 'cloudfrunt.nut/CA741C', 'image_id': image.image_id}])
         contents = session.query(ImageContents).one()
         eq_(contents.image_id, image.image_id)
         process_image.delay.assert_called_with(contents.image_contents_id)
 
     @logged_in
+    @patch('catsnap.web.controllers.image.process_image')
+    @patch('catsnap.web.controllers.image.ImageTruck')
+    def test_upload_several_images_in_one_go(self, ImageTruck, process_image):
+        (truck1, truck2, truck3) = (Mock(), Mock(), Mock())
+
+        truck1.filename = 'BAD1DEA'
+        truck1.url.return_value = 'cloudfrunt.nut/BAD1DEA'
+        truck1.contents = b'boom'
+        truck1.content_type = "image/jpeg"
+
+        truck2.filename = 'CAFEBABE'
+        truck2.url.return_value = 'cloudfrunt.nut/CAFEBABE'
+        truck2.contents = b'shaka'
+        truck2.content_type = "image/jpeg"
+
+        truck3.filename = 'DADD1E'
+        truck3.url.return_value = 'cloudfrunt.nut/DADD1E'
+        truck3.contents = b'laka'
+        truck3.content_type = "image/jpeg"
+
+        ImageTruck.new_from_stream.side_effect = [truck1, truck2, truck3]
+
+        response = self.app.post('/add.json', data={
+            'album': '',
+            'url': '',
+            'file[]': [
+                (StringIO(str('boom')), 'image_1.jpg'),
+                (StringIO(str('shaka')), 'image_2.jpg'),
+                (StringIO(str('laka')), 'image_3.jpg'),
+            ]})
+        eq_(response.status_code, 200, response.data)
+
+        session = Client().session()
+        images = session.query(Image).all()
+        body = json.loads(response.data)
+
+        eq_(body, [
+            {'url': 'cloudfrunt.nut/BAD1DEA', 'image_id': images[0].image_id},
+            {'url': 'cloudfrunt.nut/CAFEBABE', 'image_id': images[1].image_id},
+            {'url': 'cloudfrunt.nut/DADD1E', 'image_id': images[2].image_id},
+        ])
+
+    @logged_in
     def test_returns_bad_request_if_no_image_provided(self):
         response = self.app.post('/add', data={
             'url': '',
-            'image_file': (StringIO(), ''),
-            'tags': 'pet cool'})
+            'image_file': (StringIO(), '')})
         eq_(response.status_code, 400)

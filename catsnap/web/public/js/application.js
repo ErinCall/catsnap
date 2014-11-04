@@ -5,8 +5,8 @@ $(document).ready(function () {
     sizes work, so follow the underlay label as it's sized and resized.
     */
     var input_size_fix = function () {
-        $('#file').width($('label.btn').width());
-        $('#file').height($('label.btn').height() * 1.4);
+        $('input[type="file"]').width($('label.btn').width());
+        $('input[type="file"]').height($('label.btn').height() * 1.4);
     };
     input_size_fix();
     $(window).resize(input_size_fix);

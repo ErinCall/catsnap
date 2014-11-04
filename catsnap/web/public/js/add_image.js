@@ -5,10 +5,11 @@ $(document).ready(function () {
         receive_image_data,
         show_error,
         tag_link,
-        another_add,
+        append_add_pane,
         save_attributes,
         editing_url,
         save_album,
+        available_row,
         check_for_image;
 
     send_image = function(event) {
@@ -26,7 +27,20 @@ $(document).ready(function () {
             data: form_data,
             contentType: false,
             processData: false,
-            success: _.bind(receive_image_data, $article),
+            success: function(data) {
+                var $new_add_pane = $article.clone(true);
+                $article.remove();
+
+                $.each(data, function(i, datum) {
+                    var $edit_pane = $('<article class="add">'),
+                        $target_row = available_row();
+
+                    $target_row.append($edit_pane);
+                    _.bind(receive_image_data, $edit_pane)(datum);
+                });
+
+                append_add_pane($new_add_pane);
+            },
             error: function(data, status, errorThrown) {
                 $article.find('form').show();
                 $article.find('img').remove();
@@ -40,9 +54,7 @@ $(document).ready(function () {
             $form,
             $ul;
 
-        another_add(this.clone(true));
-        this.find('form').remove();
-        this.append($('<img src="/public/img/large-throbber.gif">'));
+        this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
         this.data('image_id', data.image_id);
         this.data('url', data.url);
         window.setTimeout(_.bind(check_for_image, this, delay), delay);
@@ -92,21 +104,22 @@ $(document).ready(function () {
         });
     };
 
-    another_add = function($article) {
-        var $last_row = $('.row').last(),
-            $target_row;
-        if ($last_row.find('article').length >= 3) {
-            $target_row = $('<section class="row">');
-            $last_row.parent().append($target_row);
-        } else {
-            $target_row = $last_row;
-        }
+    append_add_pane = function($article) {
+        var $target_row = available_row();
 
         $target_row.append($article);
         $article.find('input').val(null);
         $article.find('input[type="submit"]').val('Go');
         $article.find('label').text('Select');
         $article.show();
+    };
+
+    available_row = function() {
+        var $last_row = $('.row').last();
+        if ($last_row.find('article').length >= 3) {
+            $last_row.parent().append($('<section class="row">'));
+        }
+        return $('.row').last();
     };
 
     tag_link = function() {
@@ -257,6 +270,12 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
     $('.add form').submit(send_image);
     $('#new-album form').submit(save_album);
     $('input[type="file"]').on('change', function(event) {
-        $(this).siblings('label').text($(this).val());
+        var num_files = $(this).prop('files').length,
+            display_text = $(this).val();
+
+        if (num_files > 1) {
+            display_text = display_text + ', ' + (num_files - 1) + ' more';
+        }
+        $(this).siblings('label').text(display_text);
     });
 });

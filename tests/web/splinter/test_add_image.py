@@ -121,7 +121,7 @@ class TestUploadImage(UploadTestCase):
     def test_add_by_file(self):
         self.visit_url('/add')
 
-        file_field = self.browser.find_by_css('input[name="file"]').first
+        file_field = self.browser.find_by_css('input[type="file"]').first
         file_label = self.browser.find_by_css('label[for="file"]').first
         assert file_field, "Didn't find the file input"
         assert not file_field.visible, "The file input is visible"
@@ -132,13 +132,13 @@ class TestUploadImage(UploadTestCase):
         ''') # selenium won't interact with invisible objects. Ridiculous!
         assert file_field.visible, "The file input didn't become visible!"
 
-        self.browser.attach_file('file', SOME_GIF)
+        self.browser.attach_file('file[]', SOME_GIF)
         self.browser.find_by_css('input[name="file-submit"]').click()
 
         img = self.browser.find_by_css('img')[0]
         eq_(img['src'], 'http://localhost:65432/public/img/large-throbber.gif')
 
-        file_field = self.browser.find_by_css('input[name="file"]')
+        file_field = self.browser.find_by_css('input[type="file"]')
         file_label = self.browser.find_by_css('label[for="file"]')
         assert file_field, "The page didn't create a new upload form"
 
@@ -147,7 +147,7 @@ class TestUploadImage(UploadTestCase):
     def test_file_labels_track_the_input_value(self):
         self.visit_url('/add')
 
-        file_field = self.browser.find_by_css('input[name="file"]').first
+        file_field = self.browser.find_by_css('input[type="file"]').first
         file_label = self.browser.find_by_css('label[for="file"]').first
         assert file_field, "Didn't find the file input"
         assert file_label, "Didn't find a label for the file input"
@@ -156,7 +156,7 @@ class TestUploadImage(UploadTestCase):
         ''') # selenium won't interact with invisible objects. Ridiculous!
         assert file_field.visible, "The file input didn't become visible!"
 
-        self.browser.attach_file('file', '/path/to/image.jpg')
+        self.browser.attach_file('file[]', '/path/to/image.jpg')
 
         eq_(file_label.text, 'image.jpg')
 
