@@ -34,7 +34,7 @@ Whatever deploy system you choose, it'll need to perform at least these tasks:
 * Install dependencies, with `python setup.py develop`.
 * Run any needed migrations, with `yoyo-migrate -b apply migrations $DATABASE_URL`.
 * Re/start the web process, with `gunicorn catsnap.app:app -b 0.0.0.0:$PORT`.
-* Re/start the worker process, with `celery -A catsnap.worker.celery worker`.
+* Re/start the worker process, with `celery -A catsnap.worker worker`.
 
 Outside your deploy process, you'll need to add some Catsnap configuration. In keeping with the [12-factor app](http://12factor.net/) philosophy, Catsnap will tend to look for environment variables. You can have your deploy system set them up in the web user's environment, or just point a variable called ENV at a file containing environment variables and they'll be merged into Catsnap's environment. Catsnap uses the following environment variables:
 

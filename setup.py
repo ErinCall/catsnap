@@ -27,7 +27,7 @@ setup(name="catsnap",
           "celery==3.1.16",
           "redis==2.10.3",
 
-          "mock==0.8",
+          "mock==1.0.1",
           "nose==1.1.2",
           "splinter==0.5.3",
       ],
