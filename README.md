@@ -46,7 +46,9 @@ Outside your deploy process, you'll need to add some Catsnap configuration. In k
 * `CATSNAP_SECRET_KEY`: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters, and should be kept secret.
 * `CATSNAP_OWNER_ID`: an OpenID provider that identifies you as the owner of this Catsnap installation. I recommend using your Google account, in which case you would set this to `https://www.google.com/accounts/o8/id`.
 * `CATSNAP_OWNER_EMAIL`: the email address associated with your OpenID url.
-* `CATSNAP_CLOUDFRONT_DISTRIBUTION_ID`: (optional) the id of your cloudfront distribution, if you made one. Note this is different from the XXXX.cloudfront.net domain; you want to get it from your AWS console.
+* `CATSNAP_CLOUDFRONT_DISTRIBUTION_ID` (optional): the id of your cloudfront distribution, if you made one. Note this is different from the XXXX.cloudfront.net domain; you want to get it from your AWS console.
+* `EMAIL_HOST`, `ERROR_RECIPIENT`, `ERROR_SENDER` (optional, but include all or none): an SMTP host and email addresses to/from which to send error emails
+* `EMAIL_USERNAME` and `EMAIL_PASSWORD` (optional): if the SMTP server in `EMAIL_HOST` requires login credentials, these are those credentials.
 
 Now your Catsnap server is all set up! Navigate to your server and you're ready to start adding images.
 
