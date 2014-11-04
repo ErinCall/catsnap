@@ -34,7 +34,7 @@ class ResizeImage(object):
                                                       RESIZES[size])
 
         print 'resizing to %s' % size
-        image_handler.resize(new_width, new_height, filter='hamming')
+        image_handler.resize(new_width, new_height)
         print 'uploading resized image'
         truck.upload_resize(image_handler.make_blob(), size)
 
