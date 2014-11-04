@@ -81,7 +81,7 @@ class TestImages(TestCase):
         tags = image.get_tags()
         eq_(list(tags), ['mustache', 'gif'])
 
-    @patch('catsnap.table.image.time')
+    @patch('catsnap.table.created_at_bookkeeper.time')
     def test_created_at_is_set_on_creation(self, mock_time):
         now = time.strptime('2011-05-09 13:01:01', '%Y-%m-%d %H:%M:%S')
         mock_time.strftime = time.strftime
@@ -227,7 +227,7 @@ class TestImages(TestCase):
         eq_('small', resize.suffix)
 
 class TestImageContents(TestCase):
-    @patch('catsnap.table.image.time')
+    @patch('catsnap.table.created_at_bookkeeper.time')
     def test_created_at_is_set_on_creation(self, mock_time):
         now = time.strptime('2011-05-09 13:01:01', '%Y-%m-%d %H:%M:%S')
         mock_time.strftime = time.strftime

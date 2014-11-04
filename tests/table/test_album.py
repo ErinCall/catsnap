@@ -10,7 +10,7 @@ from catsnap.table.image import Image
 from catsnap.table.album import Album
 
 class TestAlbums(TestCase):
-    @patch('catsnap.table.album.time')
+    @patch('catsnap.table.created_at_bookkeeper.time')
     def test_created_at_is_set_at_creation_time(self, mock_time):
         now = time.strptime('2011-05-09 13:01:01', '%Y-%m-%d %H:%M:%S')
         mock_time.strftime = time.strftime
