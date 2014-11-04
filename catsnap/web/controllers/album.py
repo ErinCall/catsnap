@@ -48,8 +48,8 @@ def view_album(request_format, album_id):
 
     if request_format == 'html':
         return render_template('view_album.html.jinja',
-                images = image_structs,
+                images=image_structs,
                 album=album)
     else:
-        return images
+        return image_structs
 

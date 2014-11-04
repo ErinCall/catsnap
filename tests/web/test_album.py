@@ -79,3 +79,32 @@ class TestAlbum(TestCase):
         assert dog_link in response.data, response.data
         assert 'my pix' in response.data, response.data
 
+    @with_settings(bucket='cattysnap')
+    def test_get_album_in_json_format(self):
+        session = Client().session()
+        album = Album(name='my pix')
+        session.add(album)
+        session.flush()
+
+        cat = Image(album_id=album.album_id, filename='CA7')
+        dog = Image(album_id=album.album_id, filename='D06')
+        session.add(cat)
+        session.add(dog)
+        session.flush()
+
+        response = self.app.get('/album/{0}.json'.format(album.album_id))
+        eq_(response.status_code, 200, response.data)
+        body = json.loads(response.data)
+        eq_(body, [
+            {
+                'url': '/image/{0}'.format(cat.image_id),
+                'filename': 'CA7',
+                'caption': 'CA7'
+            },
+            {
+                'url': '/image/{0}'.format(dog.image_id),
+                'filename': 'D06',
+                'caption': 'D06'
+            },
+        ])
+
