@@ -32,7 +32,7 @@ $(document).ready(function () {
                 $article.remove();
 
                 $.each(data, function(i, datum) {
-                    var $edit_pane = $('<article class="add">'),
+                    var $edit_pane = $('<article class="image-control">'),
                         $target_row = available_row();
 
                     $target_row.append($edit_pane);
@@ -267,7 +267,7 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
         });
     };
 
-    $('.add form').submit(send_image);
+    $('.image-control form').submit(send_image);
     $('#new-album form').submit(save_album);
     $('input[type="file"]').on('change', function(event) {
         var num_files = $(this).prop('files').length,

@@ -53,17 +53,18 @@ a form {
     padding-bottom: 10px;
 }
 
-.add {
+.image-control {
     max-width: 300px;
     min-width: 300px;
     padding: 5px;
+    margin-right: 10px;
     border-radius: 4px;
     border: 1px solid #eeeeee;
     display: inline-block;
     vertical-align: top;
 }
 
-.add img {
+.image-control img {
     display: block;
     margin: auto;
     max-width: 300px;
@@ -122,7 +123,7 @@ input[type="text"] {
     color: #222222;
 }
 
-.add input[type="text"], .add textarea, .edit {
+.image-control input[type="text"], .image-control textarea, .edit {
     width: 100%;
 }
 
@@ -138,7 +139,7 @@ li.tag span, li.tag a {
     font-size: 14px;
 }
 
-.add li input {
+.image-control li input {
     vertical-align: middle;
     display: inline-block;
 }
