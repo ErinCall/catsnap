@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 
 from functools import wraps
-from flask import g, redirect, abort
+from catsnap.web.formatted_routes import abort
+from flask import g, redirect
 
 
 def is_logged_in():
@@ -15,7 +16,7 @@ def login_required(fn):
             if request_format == 'html':
                 return redirect('/')
             else:
-                abort(401)
+                abort(request_format, 401, "You must log in to do that.")
 
         else:
             return fn(request_format, *args, **kwargs)

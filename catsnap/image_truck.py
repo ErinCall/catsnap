@@ -5,16 +5,18 @@ from __future__ import unicode_literals
 import requests
 import hashlib
 import subprocess
+import tempfile
+import os
 import re
 
 from catsnap import Client
-from catsnap.worker.tasks import Invalidate
 
 class ImageTruck():
     def __init__(self, contents, content_type, source_url):
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
+        self.filename = self.calculate_filename()
 
     @classmethod
     def new_from_url(cls, url):
@@ -36,9 +38,14 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type):
-        contents = stream.read()
-        return cls(contents, content_type, None)
+    def new_from_stream(cls, stream):
+        (_, image_file) = tempfile.mkstemp()
+        with open(image_file, 'w') as fh:
+            fh.write(stream.read())
+        try:
+            return cls.new_from_file(image_file)
+        finally:
+            os.unlink(image_file)
 
     @classmethod
     def new_from_something(cls, path):
@@ -53,18 +60,17 @@ class ImageTruck():
         return cls._url(filename)
 
     def upload(self):
-        filename = self.calculate_filename()
-        key = Client().bucket().new_key(filename)
-        key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(self.contents)
-        key.make_public()
-        Invalidate().delay(filename)
+        self._upload(self.filename, self.contents)
 
     def upload_resize(self, resized_contents, suffix):
-        filename = '%s_%s' % (self.calculate_filename(), suffix)
+        filename = '%s_%s' % (self.filename, suffix)
+        self._upload(filename, resized_contents)
+
+    def _upload(self, filename, contents):
+        from catsnap.worker.tasks import Invalidate
         key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(resized_contents)
+        key.set_contents_from_string(contents)
         key.make_public()
         Invalidate().delay(filename)
 
@@ -72,7 +78,7 @@ class ImageTruck():
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename())
+        return self._url(self.filename)
 
     @classmethod
     def _url(cls, filename):

@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 
-from catsnap.web.formatted_routes import formatted_route
+from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from flask import request, render_template, redirect, g, url_for
+from sqlalchemy.exc import IntegrityError
 from catsnap import Client
 from catsnap.table.album import Album
 from catsnap.image_truck import ImageTruck
@@ -18,9 +19,13 @@ def new_album(request_format):
 @login_required
 def create_album(request_format):
     session = Client().session()
-    album = Album(name=request.form['name'])
+    album = Album(name=request.form['name'].strip())
     session.add(album)
-    session.flush()
+    try:
+        session.flush()
+    except IntegrityError:
+        session.rollback()
+        abort(request_format, 409, "There is already an album with that name.")
 
     if request_format == 'html':
         return redirect(url_for('show_add'))

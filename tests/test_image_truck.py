@@ -6,6 +6,7 @@ from requests.exceptions import HTTPError
 from mock import patch, MagicMock, Mock
 from nose.tools import eq_, raises
 from tests import TestCase, with_settings
+from tests.image_helper import SMALL_JPG
 
 from catsnap import Client
 from catsnap.image_truck import ImageTruck
@@ -61,6 +62,14 @@ class TestImageTruck(TestCase):
         eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
 
+    @patch('catsnap.image_truck.hashlib')
+    def test_filename_is_calculated_on_initialization(self, hashlib):
+        sha = Mock()
+        sha.hexdigest.return_value = 'indigestible'
+        hashlib.sha1.return_value = sha
+        truck = ImageTruck('razors', None, None)
+        eq_(truck.filename, 'indigestible')
+
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
         response = Mock()
@@ -99,7 +108,7 @@ class TestImageTruck(TestCase):
 
     def test_new_from_file__raises_well_for_non_image_files(self):
         try:
-            truck = ImageTruck.new_from_file(__file__)
+            ImageTruck.new_from_file(__file__)
         except Exception, e:
             eq_(e.message, "'%s' doesn't seem to be an image file" % __file__)
             eq_(type(e), TypeError)
@@ -107,12 +116,11 @@ class TestImageTruck(TestCase):
             raise AssertionError('expected an error')
 
     def test_new_from_stream(self):
-        stream = StringIO.StringIO()
-        stream.write('encoded jpg file')
-        stream.seek(0)
-        truck = ImageTruck.new_from_stream(stream, 'image/jpg')
-        eq_(truck.contents, 'encoded jpg file')
-        eq_(truck.content_type, 'image/jpg')
+        with open(SMALL_JPG, 'r') as stream:
+            truck = ImageTruck.new_from_stream(stream)
+            eq_(truck.content_type, 'image/jpeg')
+            stream.seek(0)
+            eq_(truck.contents, stream.read())
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')
@@ -211,3 +219,4 @@ class TestImageTruck(TestCase):
         MockClient.return_value = client
 
         ImageTruck.contents_of_filename('x')
+

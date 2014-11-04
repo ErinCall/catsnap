@@ -15,16 +15,19 @@ app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
 if not app.debug and all(map(lambda x: x in os.environ,
-                             ['SENDGRID_PASSWORD',
-                             'SENDGRID_USERNAME',
+                             ['EMAIL_HOST',
                              'ERROR_RECIPIENT',
                              'ERROR_SENDER'])):
-    mail_handler = SMTPHandler('smtp.sendgrid.net',
+    if 'EMAIL_USERNAME' in os.environ and 'EMAIL_PASSWORD' in os.environ:
+        email_credentials = (os.environ['EMAIL_USERNAME'],
+                             os.environ['EMAIL_PASSWORD'])
+    else:
+        email_credentials = None
+    mail_handler = SMTPHandler(os.environ['EMAIL_HOST'],
                                os.environ['ERROR_SENDER'],
                                [os.environ['ERROR_RECIPIENT']],
                                'Catsnap error',
-                               (os.environ['SENDGRID_USERNAME'],
-                                os.environ['SENDGRID_PASSWORD']))
+                               email_credentials)
     mail_handler.setLevel(logging.ERROR)
     mail_handler.setFormatter(logging.Formatter('''
 Message type:       %(levelname)s
@@ -65,10 +68,13 @@ def before_request():
                 and skew.seconds <= (5*60):
             g.user = 1
 
+delayed_tasks = []
 
 @app.after_request
 def after_request(response):
     Client().session().commit()
+    for (task, args, kwargs) in delayed_tasks:
+        task.delay(*args, **kwargs)
     return response
 
 import catsnap.web.controllers.login

@@ -12,7 +12,7 @@ import os.path
 import catsnap
 
 if 'CATSNAP_CELERY_BROKER_URL' not in os.environ:
-    os.environ['CATSNAP_CELERY_BROKER_URL'] = 'redis://localhost/1'
+    os.environ['CATSNAP_CELERY_BROKER_URL'] = 'memory://'
 
 from catsnap.web import app
 

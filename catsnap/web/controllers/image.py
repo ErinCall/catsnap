@@ -1,16 +1,16 @@
 from __future__ import unicode_literals
 
 import json
-from flask import request, render_template, redirect, g, abort, url_for
+from flask import request, render_template, redirect, g, url_for
+from requests.exceptions import RequestException
 from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck
-from catsnap.resize_image import ResizeImage
-from catsnap.reorient_image import ReorientImage
-from catsnap.image_metadata import ImageMetadata
-from catsnap.table.image import Image, ImageResize
+from catsnap.table.image import Image, ImageResize, ImageContents
 from catsnap.table.album import Album
-from catsnap.web.formatted_routes import formatted_route
+from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
+from catsnap.worker.tasks import process_image
+from catsnap.worker.web import delay
 from catsnap import Client
 
 
@@ -28,41 +28,52 @@ def show_add(request_format):
 @formatted_route('/add', methods=['POST'])
 @login_required
 def add(request_format):
-    tag_names = request.form['tags'].split(' ')
-    url = request.form['url']
+    url = request.form.get('url')
 
     if url:
-        print 'fetching from remote url'
-        truck = ImageTruck.new_from_url(url)
-    elif request.files['file']:
-        image = request.files['file']
-        truck = ImageTruck.new_from_stream(image.stream, image.mimetype)
+        try:
+            trucks = [ImageTruck.new_from_url(url)]
+        except RequestException:
+            abort(request_format, 400, "That url is no good.")
+    elif request.files.get('file[]'):
+        trucks = [ImageTruck.new_from_stream(data.stream)
+                  for data in request.files.getlist('file[]')]
+    elif request.files.get('file'):
+        data = request.files['file']
+        trucks = [ImageTruck.new_from_stream(data.stream)]
     else:
-        abort(400)
-    metadata = ImageMetadata.image_metadata(truck.contents)
-    print 'potentially reorienting'
-    truck.contents = ReorientImage.reorient_image(truck.contents)
-    print 'uploading to s3'
-    truck.upload()
-    session = Client().session()
-    image = Image(filename=truck.calculate_filename(),
-                  source_url=url,
-                  description=request.form.get('description'),
-                  title=request.form.get('title'),
-                  **metadata)
-    album_id = request.form['album']
-    if album_id:
-        image.album_id = album_id
-    session.add(image)
-    image.add_tags(tag_names)
+        abort(request_format, 400, "Please submit either a file or a url.")
 
-    ResizeImage.make_resizes(image, truck)
+    # These loops are sorta awkwardly phrased to avoid lots of round-tripping
+    # to the database. I hope you don't consider the optimization premature.
+    session = Client().session()
+    images = []
+    for truck in trucks:
+        image = Image(filename=truck.filename, source_url=url)
+        album_id = request.form.get('album_id')
+        if album_id:
+            image.album_id = int(album_id)
+        session.add(image)
+        images.append(image)
+
+    session.flush()
+    contentses = []
+    for i in xrange(0, len(images)):
+        (truck, image) = trucks[i], images[i]
+        contents = ImageContents(image_id=image.image_id,
+                                 contents=truck.contents,
+                                 content_type=truck.content_type)
+        session.add(contents)
+        contentses.append(contents)
+    session.flush()
+    for contents in contentses:
+        delay(process_image, contents.image_contents_id)
 
     if request_format == 'html':
         return redirect(url_for('show_image', image_id=image.image_id))
     elif request_format == 'json':
-        return {'url': truck.url()}
-
+        return [{'url': trucks[i].url(), 'image_id': images[i].image_id}
+                for i in xrange(0, len(trucks))]
 
 @formatted_route(
     '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})
@@ -124,7 +135,7 @@ def show_image(request_format, image_id, size):
 @login_required
 def edit_image(request_format, image_id):
     if request_format != 'json':
-        abort(400)
+        abort(request_format, 400, "This endpoint is JSON-only...")
 
     session = Client().session()
     image = session.query(Image).\

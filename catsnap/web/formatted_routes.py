@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import json
 from functools import wraps
-from flask import request, make_response
+from flask import request, make_response, abort as flask_abort
 from catsnap.web import app
 
 def formatted_route(route, defaults={}, **kwargs):
@@ -17,8 +17,9 @@ def formatted_route(route, defaults={}, **kwargs):
                     and request.headers['Accept'] == 'application/json':
                 request_format = 'json'
             if request_format not in ['json', 'html']:
-                return make_response("Unknown format '%s'" % request_format,
-                                     400)
+                abort(request_format,
+                      400,
+                      "Unknown format '{0}'".format(request_format))
 
             response = fn(request_format, *args, **kwargs)
             if request_format == 'json':
@@ -32,3 +33,11 @@ def formatted_route(route, defaults={}, **kwargs):
             return response
         return wrapper
     return decorator
+
+def abort(request_format, code, message=None):
+    if request_format == 'json':
+        flask_abort(make_response(json.dumps({'error': message}),
+                                  code,
+                                  {'Content-Type': 'application/json'}))
+    else:
+        flask_abort(make_response(message, code))

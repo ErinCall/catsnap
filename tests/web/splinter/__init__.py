@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
 import threading
+import logging
 from functools import wraps
 from tests import TestCase as BaseTestCase
 from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
 from splinter.driver.webdriver.firefox import WebDriver
+from selenium.webdriver.remote.remote_connection import LOGGER
 
 web_actors = {}
 
@@ -47,6 +49,7 @@ def setUpPackage():
     web_actors['server'] = test_app
 
     web_actors['browser'] = SingleVisitFirefoxDriver()
+    LOGGER.setLevel(logging.WARNING)
 
 
 def tearDownPackage():

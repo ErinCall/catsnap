@@ -36,6 +36,27 @@ class TestAlbum(TestCase):
         body = json.loads(response.data)
         assert 'album_id' in body, body
 
+    @logged_in
+    def test_whitespace_is_trimmed(self):
+        response = self.app.post('/new_album.json', data={'name': ' photoz '})
+        eq_(response.status_code, 200, response.data)
+
+        session = Client().session()
+        album = session.query(Album).one()
+        eq_(album.name, 'photoz')
+
+    @logged_in
+    def test_album_names_must_be_unique(self):
+        session = Client().session()
+        session.add(Album(name='portrait sesh'))
+        session.flush()
+
+        response = self.app.post('/new_album.json',
+                                 data={'name': 'portrait sesh'})
+        eq_(response.status_code, 409, response.data)
+        body = json.loads(response.data)
+        eq_(body['error'], "There is already an album with that name.")
+
     @with_settings(bucket='cattysnap')
     def test_view_an_album(self):
         session = Client().session()
