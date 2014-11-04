@@ -32,10 +32,10 @@ class ReorientImage(object):
             2: lambda: handler.flop(),
             3: lambda: handler.rotate(180),
             4: lambda: handler.flip(),
-            5: lambda: handler.flip().rotate(270),
-            6: lambda: handler.rotate(270),
-            7: lambda: handler.flop().rotate(270),
-            8: lambda: handler.rotate(90),
+            5: lambda: handler.flip().rotate(90),
+            6: lambda: handler.rotate(90),
+            7: lambda: handler.flop().rotate(90),
+            8: lambda: handler.rotate(270),
         }[int(orientation)]()
 
         return handler.make_blob()
