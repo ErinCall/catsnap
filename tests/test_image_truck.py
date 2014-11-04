@@ -2,14 +2,17 @@ from __future__ import unicode_literals
 
 import StringIO
 import tempfile
-from requests.exceptions import HTTPError
+import ssl
+import urllib3.exceptions
+from urllib3.packages.ssl_match_hostname import CertificateError
+import requests.exceptions
 from mock import patch, MagicMock, Mock
 from nose.tools import eq_, raises
 from tests import TestCase, with_settings
 from tests.image_helper import SMALL_JPG
 
 from catsnap import Client
-from catsnap.image_truck import ImageTruck
+from catsnap.image_truck import ImageTruck, TryHTTPError
 
 class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.Client')
@@ -82,14 +85,39 @@ class TestImageTruck(TestCase):
         eq_(truck.content_type, "party")
         eq_(truck.source_url, "http://some.url")
 
-    @raises(HTTPError)
+    @raises(requests.exceptions.HTTPError)
     @patch('catsnap.image_truck.requests')
-    def test_new_from_url__raises_on_non_200(self, requests):
+    def test_new_from_url__raises_on_non_200(self, mock_requests):
         response = Mock()
-        response.raise_for_status.side_effect = HTTPError
-        requests.get.return_value = response
+        response.raise_for_status.side_effect = requests.exceptions.HTTPError
+        mock_requests.get.return_value = response
 
         ImageTruck.new_from_url('http://some.url')
+
+    @raises(TryHTTPError)
+    @patch('catsnap.image_truck.requests')
+    def test_new_from_url_raises_usefully_for_sni_trouble(self, mock_requests):
+        error = requests.exceptions.SSLError(
+            urllib3.exceptions.SSLError(
+                ssl.SSLError(1, '_ssl.c:503: error:14077410:SSL routines:'
+                                'SSL23_GET_SERVER_HELLO:sslv3 alert handshake '
+                                'failure')))
+
+        mock_requests.get.side_effect = error
+
+        ImageTruck.new_from_url('https://some.server.using.sni/image.jpg')
+
+    @raises(requests.exceptions.SSLError)
+    @patch('catsnap.image_truck.requests')
+    def test_new_from_url_reraises_non_sni_ssl_errors(self, mock_requests):
+        error = requests.exceptions.SSLError(
+            urllib3.exceptions.SSLError(
+                CertificateError("hostname 'catsinthecity.com' doesn't "
+                                 "match 'nossl.edgecastcdn.net'")))
+
+        mock_requests.get.side_effect = error
+
+        ImageTruck.new_from_url('https://catsinthecity.com/image.jpg')
 
     @patch('catsnap.image_truck.subprocess')
     def test_new_from_file(self, subprocess):

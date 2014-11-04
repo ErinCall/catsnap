@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 #It's a big truck. You can just dump stuff on it.
 
 import requests
+from requests.exceptions import SSLError
 import hashlib
 import subprocess
 import tempfile
@@ -20,7 +21,13 @@ class ImageTruck():
 
     @classmethod
     def new_from_url(cls, url):
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except SSLError as e:
+            if 'sslv3 alert handshake failure' in unicode(e):
+                raise TryHTTPError(url)
+            else:
+                raise
         response.raise_for_status()
         return cls(response.content, response.headers['content-type'],
                 url)
@@ -105,3 +112,6 @@ class ImageTruck():
         if key is None:
             raise KeyError(filename)
         return key.get_contents_as_string()
+
+class TryHTTPError(StandardError):
+    pass
