@@ -1,21 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>{%block title%}{%endblock title%} - Catsnap</title>
-	<link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
-	<link href="/public/css/layout.css" rel="stylesheet" media="screen">
+    <title>{%block title%}{%endblock title%} - Catsnap</title>
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/public/css/layout.css" rel="stylesheet" media="screen">
 </head>
 <body>
-	<div class="container">
-		<header>
-			{% block page_title %}
-				<h2>{{ self.title() }}</h2>
-			{% endblock page_title %}
-		</header>
-		{%block content%}{%endblock content%}
-	</div>
-	<script src="/public/js/jquery-2.0.0.min.js"></script>
-	<script src="/public/js/underscore-min.js"></script>
-	{%block scripts%}{%endblock%}
+    <header>
+        <a href="/">
+            <h1>Catsnap</h1>
+        </a>
+        <span class="user-actions">
+            <ul class="nav-pills nav">
+                {% if g.user %}
+                    <li>
+                        <a href="{{ url_for('add') }}">Add images</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('logout') }}" class="form-submitter">
+                            <form method="post" action="{{ url_for('logout') }}">
+                                Log out
+                            </form>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('login') }}" class="form-submitter pill">
+                            <form method="post" action="{{ url_for('login') }}">
+                                Log in
+                                <input type="hidden" value="{{ request.path }}" name="next">
+                            </form>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </span>
+    </header>
+    <div class="container">
+        <div class="page-head">
+            {% block page_title %}
+                <h2>{{ self.title() }}</h2>
+            {% endblock page_title %}
+        </div>
+        {%block content%}{%endblock content%}
+    </div>
+    <script src="/public/js/keycodes.js"></script>
+    <script src="/public/js/jquery-2.0.0.min.js"></script>
+    <script src="/public/js/underscore-min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/application.js"></script>
+    {%block scripts%}{%endblock%}
 </body>
 </html>

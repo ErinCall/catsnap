@@ -3,10 +3,12 @@ from __future__ import unicode_literals
 #It's a big truck. You can just dump stuff on it.
 
 import requests
+from requests.exceptions import SSLError
 import hashlib
 import subprocess
+import tempfile
+import os
 import re
-from boto.cloudfront.exception import CloudFrontServerError
 
 from catsnap import Client
 
@@ -15,10 +17,17 @@ class ImageTruck():
         self.contents = contents
         self.content_type = content_type
         self.source_url = source_url
+        self.filename = self.calculate_filename()
 
     @classmethod
     def new_from_url(cls, url):
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except SSLError as e:
+            if 'sslv3 alert handshake failure' in unicode(e):
+                raise TryHTTPError(url)
+            else:
+                raise
         response.raise_for_status()
         return cls(response.content, response.headers['content-type'],
                 url)
@@ -36,9 +45,14 @@ class ImageTruck():
         return cls(contents, 'image/'+filetype, None)
 
     @classmethod
-    def new_from_stream(cls, stream, content_type):
-        contents = stream.read()
-        return cls(contents, content_type, None)
+    def new_from_stream(cls, stream):
+        (_, image_file) = tempfile.mkstemp()
+        with open(image_file, 'w') as fh:
+            fh.write(stream.read())
+        try:
+            return cls.new_from_file(image_file)
+        finally:
+            os.unlink(image_file)
 
     @classmethod
     def new_from_something(cls, path):
@@ -53,38 +67,25 @@ class ImageTruck():
         return cls._url(filename)
 
     def upload(self):
-        filename = self.calculate_filename()
-        key = Client().bucket().new_key(filename)
-        key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(self.contents)
-        key.make_public()
-        self.invalidate(filename)
+        self._upload(self.filename, self.contents)
 
     def upload_resize(self, resized_contents, suffix):
-        filename = '%s_%s' % (self.calculate_filename(), suffix)
+        filename = '%s_%s' % (self.filename, suffix)
+        self._upload(filename, resized_contents)
+
+    def _upload(self, filename, contents):
+        from catsnap.worker.tasks import Invalidate
         key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
-        key.set_contents_from_string(resized_contents)
+        key.set_contents_from_string(contents)
         key.make_public()
-        self.invalidate(filename)
-
-    def invalidate(self, filename):
-        config = Client().config()
-        try:
-            distro_id = config['cloudfront_distribution_id']
-            Client().get_cloudfront().create_invalidation_request(
-                distro_id, filename)
-        except KeyError:
-            pass
-        except CloudFrontServerError as e:
-            if e.error_code != 'TooManyInvalidationsInProgress':
-                raise
+        Invalidate().delay(filename)
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
 
     def url(self, **kwargs):
-        return self._url(self.calculate_filename())
+        return self._url(self.filename)
 
     @classmethod
     def _url(cls, filename):
@@ -111,3 +112,6 @@ class ImageTruck():
         if key is None:
             raise KeyError(filename)
         return key.get_contents_as_string()
+
+class TryHTTPError(StandardError):
+    pass

@@ -2,14 +2,17 @@ from __future__ import unicode_literals
 
 import StringIO
 import tempfile
-from boto.cloudfront.exception import CloudFrontServerError
-from requests.exceptions import HTTPError
+import ssl
+import urllib3.exceptions
+from urllib3.packages.ssl_match_hostname import CertificateError
+import requests.exceptions
 from mock import patch, MagicMock, Mock
 from nose.tools import eq_, raises
 from tests import TestCase, with_settings
+from tests.image_helper import SMALL_JPG
 
 from catsnap import Client
-from catsnap.image_truck import ImageTruck
+from catsnap.image_truck import ImageTruck, TryHTTPError
 
 class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.Client')
@@ -53,43 +56,6 @@ class TestImageTruck(TestCase):
         key.set_metadata.assert_called_with('Content-Type', 'image/gif')
         key.make_public.assert_called_once()
 
-    @with_settings(cloudfront_distribution_id='CRIPESKAREN')
-    @patch('catsnap.image_truck.Client')
-    def test_toomanyinvalidation_errors_are_ignored(self, MockClient):
-        error = CloudFrontServerError(400, 'Bad Request')
-        error.error_code = 'TooManyInvalidationsInProgress'
-
-        cloudfront = Mock()
-        cloudfront.create_invalidation_request.side_effect = error
-
-        config = Client().config()
-        client = Mock()
-        client.config.return_value = config
-        client.get_cloudfront.return_value = cloudfront
-        MockClient.return_value = client
-
-        truck = ImageTruck('somecontents', 'image/gif', None)
-        truck.invalidate('abad1dea')
-
-    @raises(CloudFrontServerError)
-    @with_settings(cloudfront_distribution_id='CRIPESKAREN')
-    @patch('catsnap.image_truck.Client')
-    def test_unknown_cloudfront_errors_reraise(self, MockClient):
-        error = CloudFrontServerError(400, 'Bad Request')
-        error.error_code = 'CloudFrontHatesYouToday'
-
-        cloudfront = Mock()
-        cloudfront.create_invalidation_request.side_effect = error
-
-        config = Client().config()
-        client = Mock()
-        client.config.return_value = config
-        client.get_cloudfront.return_value = cloudfront
-        MockClient.return_value = client
-
-        truck = ImageTruck('somecontents', 'image/gif', None)
-        truck.invalidate('abad1dea')
-
     @patch('catsnap.image_truck.hashlib')
     def test_calculate_filename(self, hashlib):
         sha = Mock()
@@ -98,6 +64,14 @@ class TestImageTruck(TestCase):
         truck = ImageTruck('razors', None, None)
         eq_(truck.calculate_filename(), 'indigestible')
         hashlib.sha1.assert_called_with('razors')
+
+    @patch('catsnap.image_truck.hashlib')
+    def test_filename_is_calculated_on_initialization(self, hashlib):
+        sha = Mock()
+        sha.hexdigest.return_value = 'indigestible'
+        hashlib.sha1.return_value = sha
+        truck = ImageTruck('razors', None, None)
+        eq_(truck.filename, 'indigestible')
 
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
@@ -111,14 +85,39 @@ class TestImageTruck(TestCase):
         eq_(truck.content_type, "party")
         eq_(truck.source_url, "http://some.url")
 
-    @raises(HTTPError)
+    @raises(requests.exceptions.HTTPError)
     @patch('catsnap.image_truck.requests')
-    def test_new_from_url__raises_on_non_200(self, requests):
+    def test_new_from_url__raises_on_non_200(self, mock_requests):
         response = Mock()
-        response.raise_for_status.side_effect = HTTPError
-        requests.get.return_value = response
+        response.raise_for_status.side_effect = requests.exceptions.HTTPError
+        mock_requests.get.return_value = response
 
         ImageTruck.new_from_url('http://some.url')
+
+    @raises(TryHTTPError)
+    @patch('catsnap.image_truck.requests')
+    def test_new_from_url_raises_usefully_for_sni_trouble(self, mock_requests):
+        error = requests.exceptions.SSLError(
+            urllib3.exceptions.SSLError(
+                ssl.SSLError(1, '_ssl.c:503: error:14077410:SSL routines:'
+                                'SSL23_GET_SERVER_HELLO:sslv3 alert handshake '
+                                'failure')))
+
+        mock_requests.get.side_effect = error
+
+        ImageTruck.new_from_url('https://some.server.using.sni/image.jpg')
+
+    @raises(requests.exceptions.SSLError)
+    @patch('catsnap.image_truck.requests')
+    def test_new_from_url_reraises_non_sni_ssl_errors(self, mock_requests):
+        error = requests.exceptions.SSLError(
+            urllib3.exceptions.SSLError(
+                CertificateError("hostname 'catsinthecity.com' doesn't "
+                                 "match 'nossl.edgecastcdn.net'")))
+
+        mock_requests.get.side_effect = error
+
+        ImageTruck.new_from_url('https://catsinthecity.com/image.jpg')
 
     @patch('catsnap.image_truck.subprocess')
     def test_new_from_file(self, subprocess):
@@ -137,7 +136,7 @@ class TestImageTruck(TestCase):
 
     def test_new_from_file__raises_well_for_non_image_files(self):
         try:
-            truck = ImageTruck.new_from_file(__file__)
+            ImageTruck.new_from_file(__file__)
         except Exception, e:
             eq_(e.message, "'%s' doesn't seem to be an image file" % __file__)
             eq_(type(e), TypeError)
@@ -145,12 +144,11 @@ class TestImageTruck(TestCase):
             raise AssertionError('expected an error')
 
     def test_new_from_stream(self):
-        stream = StringIO.StringIO()
-        stream.write('encoded jpg file')
-        stream.seek(0)
-        truck = ImageTruck.new_from_stream(stream, 'image/jpg')
-        eq_(truck.contents, 'encoded jpg file')
-        eq_(truck.content_type, 'image/jpg')
+        with open(SMALL_JPG, 'r') as stream:
+            truck = ImageTruck.new_from_stream(stream)
+            eq_(truck.content_type, 'image/jpeg')
+            stream.seek(0)
+            eq_(truck.contents, stream.read())
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')
@@ -249,3 +247,4 @@ class TestImageTruck(TestCase):
         MockClient.return_value = client
 
         ImageTruck.contents_of_filename('x')
+

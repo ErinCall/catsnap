@@ -26,7 +26,7 @@
                 </ul>
             </div>
         {% endif %}
-        {% if image.description or user %}
+        {% if image.description or g.user %}
             <div id="description">
                 <span data-attribute="description">
                     {% if image.description %}
@@ -38,19 +38,19 @@
             </div>
         {% endif %}
     </article>
-    {% if tags or user %}
+    {% if tags or g.user %}
         <article id="tags">
             Tags:
             <ul>
                 {% for tag in tags %}
                     <li>
                         <span><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></span>
-                        {% if user %}
+                        {% if g.user %}
                             [<a href="#" class="remove-tag">x</a>]
                         {% endif %}
                     </li>
                 {% endfor %}
-                {% if user %}
+                {% if g.user %}
                     <li id="add-tag">(click to add a tag)</li>
                 {% endif %}
             </ul>
@@ -64,7 +64,7 @@
             {% else %}
                 This image has no album.
             {% endif %}
-            {% if user %}
+            {% if g.user %}
                 <span id="set-album">(click to set album)</span>
                 {% for album in albums %}
                     <span class="data" data-id="{{ album.album_id }}" data-name="{{ album.name |e }}"></span>
@@ -115,6 +115,6 @@
     <script>
         window.image_id = {{ image.image_id }};
         window.album_id = "{{ album.album_id }}";
-        window.logged_in = {{ 'true' if user else 'false' }};
+        window.logged_in = {{ 'true' if g.user else 'false' }};
     </script>
 {% endblock scripts %}

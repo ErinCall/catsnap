@@ -1,17 +1,15 @@
 from __future__ import unicode_literals
 
-import os.path
 from nose.tools import eq_
 from tests import TestCase
+from tests.image_helper import EXIF_JPG, MALFORMED_JPG, SOME_GIF
 
 from catsnap.image_metadata import ImageMetadata
 
 
 class TestImageMetadata(TestCase):
     def test_get_image_metadata(self):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 'test_image_5472x3648.jpg')
-        with open(test_file, 'r') as fh:
+        with open(EXIF_JPG, 'r') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)
@@ -26,9 +24,7 @@ class TestImageMetadata(TestCase):
             })
 
     def test_get_image_metadata_when_there_is_none(self):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 'test_image_500x319.gif')
-        with open(test_file, 'r') as fh:
+        with open(SOME_GIF, 'r') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)
@@ -36,9 +32,7 @@ class TestImageMetadata(TestCase):
         eq_(metadata, {})
 
     def test_handles_oddly_malformed_metadata(self):
-        test_file = os.path.join(os.path.dirname(__file__),
-                                 'test_image_malformed_exif.jpg')
-        with open(test_file, 'r') as fh:
+        with open(MALFORMED_JPG, 'r') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)

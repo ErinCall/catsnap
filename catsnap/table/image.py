@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import time
 from sqlalchemy import (
     Column,
     Integer,
@@ -9,14 +8,16 @@ from sqlalchemy import (
     func,
     or_,
     ForeignKey,
+    LargeBinary,
 )
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
 from catsnap.table.album import Album
+from catsnap.table.created_at_bookkeeper import CreatedAtBookkeeper
 
 
-class Image(Base):
+class Image(CreatedAtBookkeeper):
     __tablename__ = 'image'
 
     image_id = Column(Integer, primary_key=True)
@@ -25,7 +26,6 @@ class Image(Base):
     source_url = Column(String)
     title = Column(String)
     description = Column(String)
-    created_at = Column(DateTime)
     photographed_at = Column(DateTime)
     aperture = Column(String)
     shutter_speed = Column(String)
@@ -49,10 +49,6 @@ class Image(Base):
                 return existing_image
 
         return super(Image, cls).__new__(cls, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        super(Image, self).__init__(*args, **kwargs)
-        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
     @classmethod
     def find_by_filename(cls, filename):
@@ -178,3 +174,11 @@ class ImageResize(Base):
             return existing_resize
 
         return super(ImageResize, cls).__new__(cls, *args, **kwargs)
+
+class ImageContents(CreatedAtBookkeeper):
+    __tablename__ = 'image_contents'
+
+    image_contents_id = Column(Integer, primary_key=True)
+    image_id = Column(Integer, ForeignKey(Image.image_id), nullable=False)
+    contents = Column(LargeBinary, nullable=False)
+    content_type = Column(String, nullable=False)

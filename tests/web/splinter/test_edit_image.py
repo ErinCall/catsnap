@@ -25,7 +25,7 @@ class TestImageEdit(TestCase):
         title = self.browser.find_by_css('h2').first
         assert title, "Didn't find a title"
         title.click()
-        title_edit_field = self.browser.find_by_css('header input')
+        title_edit_field = self.browser.find_by_css('div.page-head input')
         assert title_edit_field, "Didn't find a title-edit field!"
         eq_(title_edit_field.value, 'click on this!')
         title_edit_field.fill('I clicked\n')
@@ -33,7 +33,7 @@ class TestImageEdit(TestCase):
         title = self.browser.find_by_css('h2').first
         assert title, "Didn't find a title after first edit"
         title.click()
-        title_edit_field = self.browser.find_by_css('header input')
+        title_edit_field = self.browser.find_by_css('div.page-head input')
         assert title_edit_field, "didn't find a title-edit field after first edit"
         eq_(title_edit_field.value, 'I clicked')
         title_edit_field.fill("I clicked TWICE\n")

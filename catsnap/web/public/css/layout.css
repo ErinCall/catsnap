@@ -22,3 +22,163 @@ article {
 .data {
 	display: none;
 }
+
+header {
+    background-color: #222222;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+h1 {
+    font-size: 120%;
+    line-height: 20px;
+    display: inline-block;
+}
+
+h3 {
+    margin-top: 10px;
+}
+
+.user-actions {
+    float: right;
+}
+
+a form {
+    margin: 0;
+}
+
+.row {
+    padding-bottom: 10px;
+}
+
+.image-control {
+    max-width: 300px;
+    min-width: 300px;
+    padding: 5px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.image-control img {
+    display: block;
+    margin: auto;
+    max-width: 300px;
+}
+
+.nav-tabs li a {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.nav-tabs.nav.nav-justified {
+    border-bottom: 3px solid #eeeeee;
+}
+
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    margin: 10px;
+}
+
+.url-upload {
+    margin: 10px;
+}
+
+input, label.btn {
+    margin-top: 5px;
+}
+.input {
+    overflow: hidden;
+    padding-right: 5px;
+}
+.upload input[type="submit"] {
+    float: right;
+}
+.input input[type="text"], label.btn {
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.input input[type="file"] {
+    line-height: 15px;
+    cursor: pointer;
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 5px;
+}
+
+input[type="text"] {
+    color: #222222;
+}
+
+.image-control input[type="text"], .image-control textarea, .edit {
+    width: 100%;
+}
+
+.enter-to-submit {
+    display: none !important;
+}
+
+li.tag {
+    font-size: 150%;
+}
+
+li.tag span, li.tag a {
+    font-size: 14px;
+}
+
+.image-control li input {
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.album-menu {
+    margin-left: -30px;
+}
+
+.album-menu select {
+    min-width: 300px;
+    margin-right: 3px;
+}
+
+.modal-content {
+    background-color: #444444;
+}
+
+.thumbnail {
+    max-width: 100px;
+    max-height: 100px;
+    margin: auto;
+}
+
+.thumbnail-box {
+    height: 100px;
+    width: 100px;
+    padding: 0;
+    margin: auto;
+}
+
+.thumbnail-holder {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

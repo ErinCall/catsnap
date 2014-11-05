@@ -1,16 +1,17 @@
 from __future__ import unicode_literals
 
+from collections import OrderedDict
 from wand.image import Image as ImageHandler
 
 from catsnap import Client
 from catsnap.table.image import ImageResize
 
-RESIZES = {
-        'thumbnail': 100,
-        'small': 320,
-        'medium': 500,
-        'large': 1600
-        }
+RESIZES = OrderedDict([
+        ('thumbnail', 100),
+        ('small', 320),
+        ('medium', 500),
+        ('large', 1600),
+    ])
 
 class ResizeImage(object):
     @classmethod
@@ -33,8 +34,7 @@ class ResizeImage(object):
                                                       RESIZES[size])
 
         print 'resizing to %s' % size
-        image_handler.resize(new_width, new_height,
-                             filter='hamming')
+        image_handler.resize(new_width, new_height)
         print 'uploading resized image'
         truck.upload_resize(image_handler.make_blob(), size)
 
@@ -61,12 +61,3 @@ class ResizeImage(object):
             (new_height, new_width) = (new_long_side, new_short_side)
 
         return (new_width, new_height)
-
-    @classmethod
-    def _content_type_from_format(cls, format):
-        return {
-            'JPEG': 'image/jpeg',
-            'PNG': 'image/png',
-            'GIF': 'image/gif',
-                }[format]
-

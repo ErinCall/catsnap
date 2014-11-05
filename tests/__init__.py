@@ -9,9 +9,12 @@ import time
 import subprocess
 import os
 import os.path
-from catsnap.web import app
-
 import catsnap
+
+if 'CATSNAP_CELERY_BROKER_URL' not in os.environ:
+    os.environ['CATSNAP_CELERY_BROKER_URL'] = 'memory://'
+
+from catsnap.web import app
 
 class TestCase(object):
     def setUp(self):
@@ -94,10 +97,11 @@ def with_settings(**settings):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            with patch('catsnap.config.env_config.os.environ', {}) as env:
-                for key, value in settings.iteritems():
-                    env['CATSNAP_' + key.upper()] = value
+            catsnap.Client().config()._argument_config = settings
+            try:
                 fn(*args, **kwargs)
+            finally:
+                catsnap.Client()._config = None
         return wrapper
     return decorator
 
