@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
 
-import os
 from mock import patch, Mock
-from nose.tools import eq_
+from nose.tools import eq_, nottest
 
 from tests import TestCase
 from tests.image_helper import SOME_PNG, EXIF_JPG
@@ -128,10 +127,18 @@ class TestProcessImage(TestCase):
         eq_(image.focal_length, 30.0)
         eq_(image.iso, 200)
 
+    @patch('catsnap.worker.tasks.logger')
+    def test_broken_image_content_ids_just_quit_quietly(self, logger):
+        process_image(8675309)
+        logger.error.assert_called_with('No result found for image_contents_id '
+                                        '8675309. Aborting.')
+
+    @nottest
     def image_data(self):
         with open(SOME_PNG, 'r') as fh:
             return fh.read()
 
+    @nottest
     def setup_contents(self, image_data):
         session = Client().session()
         image = Image(filename='CA7F00D')

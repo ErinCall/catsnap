@@ -5,6 +5,7 @@ import sha
 import logging
 import datetime
 from logging.handlers import SMTPHandler
+import sqlalchemy.exc
 from flask import Flask, render_template, g, session, request
 from flask_openid import OpenID
 from catsnap.table.album import Album
@@ -51,6 +52,7 @@ oid = OpenID(app, safe_roots=[])
 
 @app.before_request
 def before_request():
+    g.delayed_tasks = []
     g.user = None
     if 'openid' in session:
         g.user = 1
@@ -68,13 +70,35 @@ def before_request():
                 and skew.seconds <= (5*60):
             g.user = 1
 
-delayed_tasks = []
-
 @app.after_request
 def after_request(response):
-    Client().session().commit()
-    for (task, args, kwargs) in delayed_tasks:
-        task.delay(*args, **kwargs)
+    session = Client().session()
+    if response.status_code not in xrange(200, 399):
+        session.rollback()
+        return response
+
+    try:
+        session.flush()
+    except sqlalchemy.exc.StatementError:
+        session.rollback()
+        raise
+
+    queued_tasks = []
+    try:
+        for (task, args, kwargs) in g.delayed_tasks:
+            queued_tasks.append(task.delay(*args, **kwargs))
+    except StandardError:
+        for task in queued_tasks:
+            task.revoke()
+        session.rollback()
+        raise
+
+    try:
+        Client().session().commit()
+    except StandardError:
+        for task in queued_tasks:
+            task.revoke()
+        raise
     return response
 
 import catsnap.web.controllers.login
