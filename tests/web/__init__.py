@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from contextlib import contextmanager
+from redis.exceptions import ConnectionError
 from tests import TestCase
 from nose.tools import eq_
 from mock import Mock
@@ -62,8 +63,7 @@ class TestAfterRequestHandler(TestCase):
 
             mock_rollback.assert_has_calls([])
 
-    def test_errors_sending_delayed_task_cause_rollback(self):
-        class DeliberateError(StandardError): pass
+    def test_error_enqueuing_a_task_causes_rollback(self):
         session = Client().session()
         with session_cleanup():
             mock_rollback = Mock()
@@ -78,8 +78,35 @@ class TestAfterRequestHandler(TestCase):
 
             mock_rollback.assert_called_with()
 
+    def test_error_enqueuing_a_task_revokes_previous_tasks(self):
+        enqueued = Mock()
+        enqueueable = Mock()
+        enqueueable.delay.return_value = enqueued
+        unenqueueable = Mock()
+        unenqueueable.delay.side_effect = DeliberateError(
+            "I'm not sure how much longer I can hold this")
+
+        with delay_on_request([enqueueable, unenqueueable]):
+            with raises(DeliberateError):
+                self.app.get('/trigger_for_test')
+
+        enqueued.revoke.assert_called_with()
+
+    def test_connection_errors_on_enqueue_attempt_no_further_connection(self):
+        enqueued = Mock()
+        enqueueable = Mock()
+        enqueueable.delay.return_value = enqueued
+        unenqueueable = Mock()
+        unenqueueable.delay.side_effect = ConnectionError(
+            "I spent the last few years building up an immunity "
+            "to iocane powder.")
+        with delay_on_request([enqueueable, unenqueueable]):
+            with raises(ConnectionError):
+                self.app.get('trigger_for_test')
+
+        enqueued.revoke.assert_has_calls([])
+
     def test_errors_during_commit_cancel_delayed_tasks(self):
-        class DeliberateError(StandardError): pass
         session = Client().session()
         with session_cleanup():
             mock_commit = Mock()
@@ -134,3 +161,7 @@ def delay_on_request(tasks, after=None):
         yield
     finally:
         del(app.url_map._rules_by_endpoint['trigger_for_test'])
+
+class DeliberateError(StandardError):
+    pass
+

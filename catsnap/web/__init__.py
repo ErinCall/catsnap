@@ -83,18 +83,21 @@ def after_request(response):
         session.rollback()
         raise
 
+    queued_tasks = []
     try:
-        delay_results = [task.delay(*args, **kwargs)
-                         for (task, args, kwargs) in delayed_tasks]
+        for (task, args, kwargs) in g.delayed_tasks:
+            queued_tasks.append(task.delay(*args, **kwargs))
     except StandardError:
+        for task in queued_tasks:
+            task.revoke()
         session.rollback()
         raise
 
     try:
         Client().session().commit()
     except StandardError:
-        for delay_result in delay_results:
-            delay_result.revoke()
+        for task in queued_tasks:
+            task.revoke()
         raise
     return response
 
