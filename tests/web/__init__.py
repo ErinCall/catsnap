@@ -6,25 +6,33 @@ from nose.tools import eq_
 from mock import Mock
 import sqlalchemy.exc
 from catsnap import Client
+from catsnap.web import app
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.worker.web import delay
 from catsnap.table.album import Album
 
-class TestRequestHandlers(TestCase):
+class TestAfterRequestHandler(TestCase):
     def test_unsuccessful_responses_trigger_rollbacks(self):
         session = Client().session()
+        def trigger_error(request_format):
+            abort(request_format, 500, "No Mr. Bond, I expect you to die.")
+
         with session_cleanup():
             mock_rollback = Mock()
             session.rollback = mock_rollback
-            response = self.app.get('/trigger_an_error')
+            with delay_on_request([], after=trigger_error):
+                response = self.app.get('/trigger_for_test')
             eq_(response.status_code, 500)
 
             mock_rollback.assert_called_with()
 
     def test_unsuccessful_responses_prevent_sending_delayed_jobs(self):
         do_the_thing = Mock()
-        delay(do_the_thing)
-        response = self.app.get('/trigger_an_error')
+        def trigger_error(request_format):
+            abort(request_format, 500, "Hasta la vista, baby.")
+
+        with delay_on_request([do_the_thing], after=trigger_error):
+            response = self.app.get('/trigger_for_test')
         eq_(response.status_code, 500)
 
         do_the_thing.delay.assert_has_calls([])
@@ -64,10 +72,9 @@ class TestRequestHandlers(TestCase):
             do_the_thing = Mock()
             do_the_thing.delay.side_effect = DeliberateError(
                 'You must lower me into the steel.')
-            delay(do_the_thing)
-
-            with raises(DeliberateError):
-                self.app.get('/public/css/layout.css')
+            with delay_on_request([do_the_thing]):
+                with raises(DeliberateError):
+                    self.app.get('/trigger_for_test')
 
             mock_rollback.assert_called_with()
 
@@ -82,10 +89,10 @@ class TestRequestHandlers(TestCase):
             result = Mock()
             do_the_thing = Mock()
             do_the_thing.delay.return_value = result
-            delay(do_the_thing)
 
-            with raises(DeliberateError):
-                self.app.get('/public/css/layout.css')
+            with delay_on_request([do_the_thing]):
+                with raises(DeliberateError):
+                    self.app.get('/trigger_for_test')
 
             mock_commit.assert_called_with()
             result.revoke.assert_called_with()
@@ -113,6 +120,17 @@ def session_cleanup():
         session.rollback = rollback
         session.flush = flush
 
-@formatted_route('/trigger_an_error')
-def trigger_an_error(request_format):
-    abort(request_format, 500, "No Mr. Bond, I expect you to die.")
+@contextmanager
+def delay_on_request(tasks, after=None):
+    try:
+        @formatted_route('/trigger_for_test')
+        def trigger_for_test(request_format):
+            for task in tasks:
+                delay(task)
+            if after is not None:
+                after(request_format)
+            return ''
+
+        yield
+    finally:
+        del(app.url_map._rules_by_endpoint['trigger_for_test'])

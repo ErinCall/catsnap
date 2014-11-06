@@ -52,6 +52,7 @@ oid = OpenID(app, safe_roots=[])
 
 @app.before_request
 def before_request():
+    g.delayed_tasks = []
     g.user = None
     if 'openid' in session:
         g.user = 1
@@ -68,8 +69,6 @@ def before_request():
                 and skew.days == 0 \
                 and skew.seconds <= (5*60):
             g.user = 1
-
-delayed_tasks = []
 
 @app.after_request
 def after_request(response):
