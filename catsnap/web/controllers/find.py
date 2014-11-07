@@ -7,7 +7,7 @@ from catsnap.web.formatted_routes import formatted_route
 
 @formatted_route('/find', methods=['GET'])
 def find(request_format):
-    tag_names = request.args['tags'].split(' ')
+    tag_names = request.args['tags'].strip().split(' ')
     image_structs = []
     image_data = Tag.get_image_data(tag_names)
     for filename, image_id, caption in image_data:
