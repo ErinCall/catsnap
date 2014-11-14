@@ -74,12 +74,10 @@ class ImageTruck():
         self._upload(filename, resized_contents)
 
     def _upload(self, filename, contents):
-        from catsnap.worker.tasks import Invalidate
         key = Client().bucket().new_key(filename)
         key.set_metadata('Content-Type', self.content_type)
         key.set_contents_from_string(contents)
         key.make_public()
-        Invalidate().delay(filename)
 
     def calculate_filename(self):
         return hashlib.sha1(self.contents).hexdigest()
