@@ -24,7 +24,7 @@ class Invalidate(worker.Task):
             pass
         except CloudFrontServerError as e:
             if e.error_code == 'TooManyInvalidationsInProgress':
-                self.retry(e)
+                self.retry(exc=e)
             else:
                 raise
 

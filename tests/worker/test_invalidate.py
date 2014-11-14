@@ -1,9 +1,8 @@
 from __future__ import unicode_literals
 
-from mock import patch, MagicMock, Mock
+from mock import patch, Mock
 from nose.tools import raises
 from boto.cloudfront.exception import CloudFrontServerError
-from celery.app.task import Context
 from tests import TestCase, with_settings
 
 from catsnap import Client
@@ -29,7 +28,7 @@ class TestInvalidate(TestCase):
         invalidate.retry = Mock()
         invalidate('abad1dea')
 
-        invalidate.retry.assert_called_with(error)
+        invalidate.retry.assert_called_with(exc=error)
 
     @raises(CloudFrontServerError)
     @with_settings(cloudfront_distribution_id='SHEESHJESSICA')
