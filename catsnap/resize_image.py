@@ -26,6 +26,7 @@ class ResizeImage(object):
 
     @classmethod
     def _resize_image(cls, image, image_handler, truck, size):
+        from catsnap.worker.tasks import Invalidate
         session = Client().session()
 
         (width, height) = image_handler.size
@@ -42,6 +43,7 @@ class ResizeImage(object):
                              width=new_width,
                              height=new_height,
                              suffix=size)
+        Invalidate().delay(image.image_id, suffix=size)
         session.add(resize)
         session.flush()
 

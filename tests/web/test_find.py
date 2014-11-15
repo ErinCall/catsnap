@@ -21,6 +21,16 @@ class TestIndex(TestCase):
 
     @with_settings(bucket='cattysnap')
     @patch('catsnap.web.controllers.find.Tag')
+    def test_search_strings_have_whitespace_trimmed(self, Tag):
+        Tag.get_image_data.return_value = []
+        response = self.app.get('/find?tags= pet ')
+
+        eq_(response.status_code, 200, response.data)
+
+        Tag.get_image_data.assert_called_with(['pet'])
+
+    @with_settings(bucket='cattysnap')
+    @patch('catsnap.web.controllers.find.Tag')
     def test_find_a_tag__json_format(self, Tag):
         image_structs = [ ('CA7', 1, 'pet cool'),
                           ('D06', 2, 'pet'     )]

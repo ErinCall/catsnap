@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, absolute_import
 
+import time
+from datetime import timedelta
 from sqlalchemy.orm.exc import NoResultFound
 from boto.cloudfront.exception import CloudFrontServerError
 from celery.utils.log import get_task_logger
@@ -14,7 +16,25 @@ from catsnap import Client
 logger = get_task_logger(__name__)
 
 class Invalidate(worker.Task):
-    def run(self, filename):
+    def run(self, image_id, suffix=None):
+        session = Client().session()
+        now = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+        try:
+            image = session.query(Image).\
+                filter((Image.created_at - timedelta(hours=1)) < now).\
+                filter(Image.image_id == image_id).\
+                one()
+        except NoResultFound:
+            session.rollback()
+            logger.error('No unexpired result found for image_id {0}. '
+                         'Skipping.'.format(image_id))
+            return
+
+        filename = image.filename
+        print repr(suffix)
+        if suffix is not None:
+            filename = '{0}_{1}'.format(filename, suffix)
+
         config = Client().config()
         try:
             distro_id = config['cloudfront_distribution_id']
@@ -24,7 +44,7 @@ class Invalidate(worker.Task):
             pass
         except CloudFrontServerError as e:
             if e.error_code == 'TooManyInvalidationsInProgress':
-                self.retry(e)
+                self.retry(exc=e)
             else:
                 raise
 
@@ -52,6 +72,7 @@ def process_image(self, image_contents_id):
     ResizeImage.make_resizes(image, truck)
     print "uploading original image"
     truck.upload()
+    Invalidate().delay(image.image_id)
 
     for attr, value in metadata.iteritems():
         setattr(image, attr, value)
