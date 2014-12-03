@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
 from mock import patch, Mock
-from nose.tools import eq_, nottest
-
+from nose.tools import eq_, nottest, raises
 from tests import TestCase
 from tests.image_helper import SOME_PNG, EXIF_JPG
+
+from sqlalchemy.orm.exc import NoResultFound
 from catsnap import Client
 from catsnap.table.image import Image, ImageContents
 from catsnap.worker.tasks import process_image
@@ -129,9 +130,14 @@ class TestProcessImage(TestCase):
 
     @patch('catsnap.worker.tasks.logger')
     def test_broken_image_content_ids_just_quit_quietly(self, logger):
-        process_image(8675309)
+        try:
+            process_image(8675309)
+        except NoResultFound:
+            pass # after exceeding the max retry limit
+        else:
+            raise AssertionError("Expected a NoResultFound error!")
         logger.error.assert_called_with('No result found for image_contents_id '
-                                        '8675309. Aborting.')
+                                        '8675309. Retrying.')
 
     @nottest
     def image_data(self):
