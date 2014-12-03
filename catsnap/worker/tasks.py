@@ -57,9 +57,9 @@ def process_image(self, image_contents_id):
             one()
     except NoResultFound:
         session.rollback()
-        logger.error('No result found for image_contents_id {0}. Aborting.'.
+        logger.error('No result found for image_contents_id {0}. Retrying.'.
                      format(image_contents_id))
-        return
+        raise self.retry(countdown=6, max_retries=1)
 
     image = session.query(Image).\
         filter(Image.image_id == contents.image_id).\
