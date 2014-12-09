@@ -95,13 +95,12 @@
         $form = $('<form class="navbar-form">');
         $select = $('<select class="form-control name="album">');
         $form.append($select);
-        $blank_option = $('<option/>');
-        $blank_option.text('(no album)');
+        $blank_option = $('<option>(no album)</option>');
         $blank_option.val('');
         $select.append($blank_option);
         _.each(_.keys(albums), function(album_id) {
             var $option;
-            $option = $('<option/>');
+            $option = $('<option>');
             $option.text(albums[album_id]);
             $option.val(album_id);
             if (album_id === window.album_id) {
@@ -116,9 +115,7 @@
         $parent.text('');
         $parent.append($form);
 
-        $new_album_link = $('<a/>');
-        $new_album_link.attr('href', '/new_album');
-        $new_album_link.text('create a new album');
+        $new_album_link = $('<a href="/new_album">create a new album</a>');
         $parent.append(' or ');
         $parent.append($new_album_link);
     };
