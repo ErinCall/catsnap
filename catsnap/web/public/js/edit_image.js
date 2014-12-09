@@ -16,8 +16,9 @@
             $this = $(this);
 
         attribute = $this.data('attribute');
-        $form = $("<form/>");
-        $edit = $("<" + edit_element + "/>").val($this.text().trim());
+        $form = $('<form class="navbar-form">');
+        $edit = $("<" + edit_element + ' class="form-control">');
+        $edit.val($this.text().trim());
         $edit.blur(function (event) {
             _.bind(stop_editing, $form,
                     event, attribute, display_element, edit_element, on_success)();
@@ -91,9 +92,8 @@
             })
         }
 
-        $form = $('<form/>');
-        $select = $('<select/>');
-        $select.attr('name', 'album');
+        $form = $('<form class="navbar-form">');
+        $select = $('<select class="form-control name="album">');
         $form.append($select);
         $blank_option = $('<option/>');
         $blank_option.text('(no album)');
@@ -175,8 +175,8 @@
         var $form,
             $edit,
             $this = $(this);
-        $form = $('<form/>');
-        $edit = $('<input/>');
+        $form = $('<form class="navbar-form">');
+        $edit = $('<input class="form-control">');
         $form.append($edit);
         $this.text('');
         $this.append($form);

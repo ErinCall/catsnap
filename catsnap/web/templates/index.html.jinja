@@ -4,10 +4,9 @@
 {% endblock title %}
 {% block content %}
     <article>
-        <form method="get" action="{{ url_for('find') }}">
-            <label for="tags">Search: </label>
-            <input type="text" name="tags" id="tags" />
-            <input type="submit" name="find_button" id="find_button" value="Find" />
+        <form method="get" action="{{ url_for('find') }}" class="navbar-form">
+            <input class="form-control" type="text" name="tags" id="tags" />
+            <input class="form-control" type="submit" name="find_button" id="find_button" value="Find" />
         </form>
     </article>
     <article>
