@@ -89,7 +89,7 @@
             _.each($parent.find('.data'), function(element) {
                 var $element = $(element);
                 albums[$element.data('id')] = $element.data('name');
-            })
+            });
         }
 
         $form = $('<form class="navbar-form">');
