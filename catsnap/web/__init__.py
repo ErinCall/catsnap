@@ -79,7 +79,7 @@ def after_request(response):
 
     try:
         session.flush()
-    except sqlalchemy.exc.StatementError:
+    except (sqlalchemy.exc.DataError, sqlalchemy.exc.StatementError):
         session.rollback()
         raise
 
