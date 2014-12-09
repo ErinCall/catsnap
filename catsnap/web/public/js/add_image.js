@@ -18,6 +18,7 @@ $(document).ready(function () {
             $article = $this.parent('article');
 
         event.preventDefault();
+        $this.find('input').addClass('disabled').attr('disabled', true);
         form_data.append('album_id', $('select[name="album"]').val());
 
         $article.find('div.alert').remove();
@@ -44,6 +45,7 @@ $(document).ready(function () {
             error: function(data, status, errorThrown) {
                 $article.find('form').show();
                 $article.find('img').remove();
+                $this.find('input').removeClass('disabled').attr('disabled', false);
                 show_error.call($article, data);
             }
         });
@@ -109,6 +111,7 @@ $(document).ready(function () {
 
         $target_row.append($article);
         $article.find('input').val(null);
+        $article.find('input').removeClass('disabled').attr('disabled', false);
         $article.find('input[type="submit"]').val('Go');
         $article.find('label').text('Select');
         $article.show();
