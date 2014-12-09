@@ -16,6 +16,8 @@ broker_url = Client().config().celery_broker_url
 
 worker = Celery('catsnap.worker', broker=broker_url)
 worker.conf.CELERY_TASK_SERIALIZER = 'json'
+worker.conf.CELERY_ACCEPT_CONTENT = ['json']
+
 if all(map(lambda x: x in os.environ,
            ['EMAIL_HOST', 'ERROR_RECIPIENT', 'ERROR_SENDER'])):
     worker.conf.CELERY_SEND_TASK_ERROR_EMAILS = True

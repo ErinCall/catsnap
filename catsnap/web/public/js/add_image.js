@@ -18,6 +18,7 @@ $(document).ready(function () {
             $article = $this.parent('article');
 
         event.preventDefault();
+        $this.find('input').addClass('disabled').attr('disabled', true);
         form_data.append('album_id', $('select[name="album"]').val());
 
         $article.find('div.alert').remove();
@@ -36,7 +37,7 @@ $(document).ready(function () {
                         $target_row = available_row();
 
                     $target_row.append($edit_pane);
-                    _.bind(receive_image_data, $edit_pane)(datum);
+                    receive_image_data.call($edit_pane, datum);
                 });
 
                 append_add_pane($new_add_pane);
@@ -44,7 +45,8 @@ $(document).ready(function () {
             error: function(data, status, errorThrown) {
                 $article.find('form').show();
                 $article.find('img').remove();
-                _.bind(show_error, $article)(data);
+                $this.find('input').removeClass('disabled').attr('disabled', false);
+                show_error.call($article, data);
             }
         });
     };
@@ -64,7 +66,7 @@ $(document).ready(function () {
                        'placeholder="Title" class="form-control">'));
 
         $ul = $('<ul><li class="tag"></li></ul>');
-        $ul.children('li').append(_.bind(tag_link, this)());
+        $ul.children('li').append(tag_link.call(this));
         $form.append($ul);
 
         $form.append($('<textarea placeholder="Description" ' +
@@ -98,7 +100,7 @@ $(document).ready(function () {
                 $save_button.removeClass('disabled');
             },
             error: function(data, status, errorThrown) {
-                _.bind(show_error, $article)(errorThrown);
+                show_error.call($article, errorThrown);
                 $save_button.removeClass('disabled');
             }
         });
@@ -109,6 +111,7 @@ $(document).ready(function () {
 
         $target_row.append($article);
         $article.find('input').val(null);
+        $article.find('input').removeClass('disabled').attr('disabled', false);
         $article.find('input[type="submit"]').val('Go');
         $article.find('label').text('Select');
         $article.show();
@@ -162,7 +165,7 @@ $(document).ready(function () {
                         $name_span.append(tag_name);
                         $this_li.append($name_span);
 
-                        new_tag_link = _.bind(tag_link, $container)();
+                        new_tag_link = tag_link.call($container);
                         $next_li.append(new_tag_link);
                         $container.find('ul').append($next_li);
                     }].concat(success_events),

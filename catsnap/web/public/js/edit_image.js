@@ -16,8 +16,9 @@
             $this = $(this);
 
         attribute = $this.data('attribute');
-        $form = $("<form/>");
-        $edit = $("<" + edit_element + "/>").val($this.text().trim());
+        $form = $('<form class="navbar-form">');
+        $edit = $("<" + edit_element + ' class="form-control">');
+        $edit.val($this.text().trim());
         $edit.blur(function (event) {
             _.bind(stop_editing, $form,
                     event, attribute, display_element, edit_element, on_success)();
@@ -88,20 +89,18 @@
             _.each($parent.find('.data'), function(element) {
                 var $element = $(element);
                 albums[$element.data('id')] = $element.data('name');
-            })
+            });
         }
 
-        $form = $('<form/>');
-        $select = $('<select/>');
-        $select.attr('name', 'album');
+        $form = $('<form class="navbar-form">');
+        $select = $('<select class="form-control name="album">');
         $form.append($select);
-        $blank_option = $('<option/>');
-        $blank_option.text('(no album)');
+        $blank_option = $('<option>(no album)</option>');
         $blank_option.val('');
         $select.append($blank_option);
         _.each(_.keys(albums), function(album_id) {
             var $option;
-            $option = $('<option/>');
+            $option = $('<option>');
             $option.text(albums[album_id]);
             $option.val(album_id);
             if (album_id === window.album_id) {
@@ -116,9 +115,7 @@
         $parent.text('');
         $parent.append($form);
 
-        $new_album_link = $('<a/>');
-        $new_album_link.attr('href', '/new_album');
-        $new_album_link.text('create a new album');
+        $new_album_link = $('<a href="/new_album">create a new album</a>');
         $parent.append(' or ');
         $parent.append($new_album_link);
     };
@@ -175,8 +172,8 @@
         var $form,
             $edit,
             $this = $(this);
-        $form = $('<form/>');
-        $edit = $('<input/>');
+        $form = $('<form class="navbar-form">');
+        $edit = $('<input class="form-control">');
         $form.append($edit);
         $this.text('');
         $this.append($form);
