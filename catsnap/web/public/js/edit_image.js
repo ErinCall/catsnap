@@ -93,7 +93,7 @@
         }
 
         $form = $('<form class="navbar-form">');
-        $select = $('<select class="form-control name="album">');
+        $select = $('<select class="form-control" name="album">');
         $form.append($select);
         $blank_option = $('<option>(no album)</option>');
         $blank_option.val('');
