@@ -82,11 +82,11 @@ a form {
 .file-upload {
     position: relative;
     overflow: hidden;
-    margin: 10px;
+    /*margin: 10px;*/
 }
 
 .url-upload {
-    margin: 10px;
+    /*margin: 10px;*/
 }
 
 input, label.btn {
@@ -95,9 +95,6 @@ input, label.btn {
 .input {
     overflow: hidden;
     padding-right: 5px;
-}
-.upload input[type="submit"] {
-    float: right;
 }
 .input input[type="text"], label.btn {
     width: 100%;

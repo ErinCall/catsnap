@@ -36,7 +36,7 @@
 
     <section class="row">
         <article class="image-control">
-            <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" >
+            <form method="post" action="{{ url_for('add') }}" enctype="multipart/form-data" class="form-inline">
                 <ul class="nav nav-tabs nav-justified" role="tablist">
                     <li class="active">
                         <a href="#file-upload" role="tab" data-toggle="tab">From File</a>
@@ -47,18 +47,18 @@
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane upload url-upload" id="url-upload">
-                        <input type="submit" value="Go" class="btn btn-default" name="url-submit">
-                        <div class="input">
+                        <span class="input">
                             <input type="text" name="url" id="url" class="form-control">
-                        </div>
+                        </span>
+                        <input type="submit" value="Go" class="btn btn-default" name="url-submit">
                     </div>
 
                     <div class="tab-pane active upload file-upload" id="file-upload">
-                        <input type="submit" value="Go" class="btn btn-default" name="file-submit">
-                        <div class="input">
+                        <span class="input">
                             <label class="btn btn-default" for="file">Select</label>
                             <input type="file" id="file[]" name="file[]" multiple>
-                        </div>
+                        </span>
+                        <input type="submit" value="Go" class="btn btn-default" name="file-submit">
                     </div>
                 </div>
             </form>
