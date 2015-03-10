@@ -36,7 +36,7 @@ def formatted_route(route, defaults={}, **kwargs):
 
 def abort(request_format, code, message=None):
     if request_format == 'json':
-        flask_abort(make_response(json.dumps({'error': message}),
+        flask_abort(make_response(json.dumps({'error': message, 'status': 'error'}),
                                   code,
                                   {'Content-Type': 'application/json'}))
     else:

@@ -2,119 +2,139 @@
 {% block title %}
     {{ image.caption() |e}}
 {% endblock title %}
-{% block page_title %}
-    <h2 data-attribute="title">{{ self.title() }}</h2>
-{% endblock page_title %}
+{% block page_title %}{% endblock page_title %}
+
+{% block header_extras %}
+    {% if g.user %}
+        <li>
+            <a href="#" id="edit">Edit</a>
+        </li>
+    {% endif %}
+{% endblock header_extras %}
+
 {% block content %}
     <article id="image">
+        {% if album %}
+            <div class="container-fluid view">
+                <div class="album-nav col-xs-10 col-xs-offset-1">
+                    <div class="col-xs-2 prev-container">
+                        {% if prev %}
+                            <a class="prev" href="{{ url_for('show_image', image_id=prev.image_id) }}">
+                                <span aria-hidden="true">&larr;</span> {{ prev.caption() }}
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-8 album-title">
+                        {% if album %}
+                            <a href="{{ url_for('view_album', album_id=album.album_id) }}">{{ album.name }}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-2 next-container">
+                        {% if next %}
+                            <a class="next" href="{{ url_for('show_image', image_id=next.image_id) }}">
+                                {{ next.caption() }} <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         <div class="image-container">
-            <a href="{{ url }}">
-                <img src="{{ url }}"
-                    title="{{ image.caption() |e}}"
-                    alt="{{ image.caption() |e}}" />
-            </a>
-        </div>
-        {% if resizes %}
-            <div>
-                <ul>
-                    {% for resize in resizes %}
-                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">
-                            {{resize.suffix |e}} {{resize.width |e}}x{{resize.height |e}}
-                        </a></li>
+            <form action="/image/{{image.image_id}}" id="image-edit" method="PATCH">
+                <div>
+                    <label for="album_id" class="edit edit-album">Album: </label>
+                    <select name="album_id" id="album_id" class="edit edit-album form-control">
+                        <option value="">(No Album)</option>
+                        {% for album in albums %}
+                            <option value="{{ album.album_id }}">{{ album.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="title" class="edit edit-title">Title: </label>
+                    <input type="text" class="edit edit-title form-control" value="{{ image.title or '' }}" name="title" id="title">
+                </div>
+                <h2 class="view" id="caption">{{ self.title() }}</h2>
+                <a href="{{ url }}">
+                    <img src="{{ url }}"
+                        title="{{ image.caption() |e}}"
+                        alt="{{ image.caption() |e}}" />
+                </a>
+                <div class="btn-group btn-group-justified image-options view">
+                    {% if resizes %}
+                        <div class="dropdown btn-group btn-group-justified">
+                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                Sizes <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for resize in resizes %}
+                                    <li role="presentation"><a role="menuitem" href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
+                                {% endfor %}
+                                <li role="presentation" class="resize"><a role="menuitem" href="{{ url_for('show_image', image_id=image.image_id, size='original') }}">original</a></li>
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="dropdown btn-group btn-group-justified">
+                        <button class="btn
+                                       btn-default
+                                       dropdown-toggle
+                                       {% if not tags %}
+                                         disabled
+                                       {% endif %}
+                                       " type="button" data-toggle="dropdown" id="tag-button">
+                            Tags <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu view-tags">
+                            {% for tag in tags %}
+                                <li role="presentation" class="tag"><a role="menuitem" href="{{ url_for('find', tags=tag) }}">{{tag}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if metadata_fields %}
+                        <div class="dropdown btn-group btn-group-justified">
+                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                Metadata <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                {% for (field, field_name) in metadata_fields %}
+                                    <li role="presentation" class="metadata">{{field_name}}: {{getattr(image, field)}}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div id="image-description" class="view">
+                    {%if image.description %}
+                        {%for paragraph in image.description.split('\n') %}
+                            <p class="image-description">{{ paragraph }}</p>
+                        {%endfor %}
+                    {%endif %}
+                </div>
+                <textarea class="edit form-control" name="description" id="description">{{image.description or '' }}</textarea>
+            </form>
+
+            <div class="edit" data-image-id="{{ image.image_id }}">
+                <ul class="edit-tags">
+                    {% for tag in tags %}
+                        <li>
+                            <button class="btn btn-xs btn-default remove-tag"><span class="glyphicon glyphicon-remove-sign" aria-label="remove"></span></button>
+                            <a href="#" class="remove-tag">{{tag}}</a>
+                        </li>
                     {% endfor %}
-                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
+                    <li>
+                        <button class="btn btn-xs btn-default add-tag"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                        <a href="#" class="add-tag">Add tag</a>
+                    </li>
                 </ul>
             </div>
-        {% endif %}
-        {% if image.description or g.user %}
-            <div id="description">
-                <span data-attribute="description">
-                    {% if image.description %}
-                        {{image.description |e}}
-                    {% else %}
-                        (click to add description)
-                    {% endif %}
-                </span>
-            </div>
-        {% endif %}
-    </article>
-    {% if tags or g.user %}
-        <article id="tags">
-            Tags:
-            <ul>
-                {% for tag in tags %}
-                    <li>
-                        <span><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></span>
-                        {% if g.user %}
-                            [<a href="#" class="remove-tag">x</a>]
-                        {% endif %}
-                    </li>
-                {% endfor %}
-                {% if g.user %}
-                    <li id="add-tag">(click to add a tag)</li>
-                {% endif %}
-            </ul>
-        </article>
-    {% endif %}
-    <article id="album">
-        <div>
-            {% if album %}
-                This image appears in the album
-                '<a href="{{ url_for('view_album', album_id=album.album_id) }}">{{album.name |e}}</a>'.
-            {% else %}
-                This image has no album.
-            {% endif %}
-            {% if g.user %}
-                <span id="set-album">(click to set album)</span>
-                {% for album in albums %}
-                    <span class="data" data-id="{{ album.album_id }}" data-name="{{ album.name |e }}"></span>
-                {% endfor %}
-            {% endif %}
-        </div><div>
-            {% if prev %}
-                <a href="{{ url_for('show_image', image_id=prev.image_id) }}">Previous: {{ prev.caption() }}</a>
-            {% endif %}
-        </div><div>
-            {% if next %}
-                <a href="{{ url_for('show_image', image_id=next.image_id) }}">Next: {{ next.caption() }}</a>
-            {% endif %}
+
         </div>
-    </article>
-    <article id="metadata">
-        <dl>
-            {% if image.camera %}
-                <dt>Camera</dt>
-                <dd>{{ image.camera |e}}</dd>
-            {% endif %}
-            {% if image.photographed_at %}
-                <dt>Taken at</dt>
-                <dd>{{ image.photographed_at |e}}</dd>
-            {% endif %}
-            {% if image.focal_length %}
-                <dt>Focal Length</dt>
-                <dd>{{ image.focal_length |e}}</dd>
-            {% endif %}
-            {% if image.aperture %}
-                <dt>Aperture</dt>
-                <dd>{{ image.aperture |e}}</dd>
-            {% endif %}
-            {% if image.shutter_speed %}
-                <dt>Shutter Speed</dt>
-                <dd>{{ image.shutter_speed |e}}</dd>
-            {% endif %}
-            {% if image.iso %}
-                <dt>ISO</dt>
-                <dd>{{ image.iso |e}}</dd>
-            {% endif %}
-        </dl>
     </article>
 {% endblock content %}
 
 {% block scripts %}
-    <script src="/public/js/edit_image.js"></script>
-    <script>
-        window.image_id = {{ image.image_id }};
-        window.album_id = "{{ album.album_id }}";
-        window.logged_in = {{ 'true' if g.user else 'false' }};
-    </script>
+    <script src="/public/js/image.js"></script>
 {% endblock scripts %}

@@ -3,14 +3,16 @@
     Search For An Image
 {% endblock title %}
 {% block content %}
-    <article>
+    <article class="container-fluid">
         <form method="get" action="{{ url_for('find') }}" class="navbar-form">
             <input class="form-control" type="text" name="tags" id="tags" />
             <input class="form-control" type="submit" name="find_button" id="find_button" value="Find" />
         </form>
     </article>
-    <article>
-        Or view an album:
+    <article class="container-fluid">
+        <p>
+            Or view an album:
+        </p>
         <ul>
         {% for album in albums %}
             <li>

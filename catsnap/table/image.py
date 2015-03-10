@@ -33,6 +33,15 @@ class Image(CreatedAtBookkeeper):
     focal_length = Column(Integer)
     camera = Column(String)
 
+    metadata_fields = [
+        ('camera', 'Camera'),
+        ('photographed_at', 'Photo Taken'),
+        ('focal_length', 'Focal Length'),
+        ('aperture', 'Aperture'),
+        ('shutter_speed', 'Shutter Speed'),
+        ('iso', 'ISO'),
+    ]
+
     def __new__(cls, *args, **kwargs):
         filename = None
         if args:

@@ -92,10 +92,10 @@ $(document).ready(function () {
         $save_button.addClass('disabled');
         $.ajax(editing_url($article), {
             type: "PATCH",
-            data: {attributes: JSON.stringify({
+            data: {
                 title: $title_input.val(),
                 description: $description_input.val(),
-            })},
+            },
             success: function(data) {
                 $save_button.removeClass('disabled');
             },

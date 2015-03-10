@@ -12,6 +12,7 @@
         </a>
         <span class="user-actions">
             <ul class="nav-pills nav">
+                {% block header_extras %}{% endblock %}
                 {% if g.user %}
                     <li>
                         <a href="{{ url_for('add') }}">Add images</a>
@@ -37,7 +38,7 @@
         </span>
     </header>
     <div class="container">
-        <div class="page-head">
+        <div class="page-head container-fluid">
             {% block page_title %}
                 <h2>{{ self.title() }}</h2>
             {% endblock page_title %}

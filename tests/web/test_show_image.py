@@ -31,7 +31,7 @@ class TestShowImage(TestCase):
         assert 'https://s3.amazonaws.com/snapcats/deadbeef' in response.data,\
                 response.data
 
-        assert 'appears in the album' in response.data, response.data
+        assert 'one time I saw a dead cow' in response.data, response.data
         assert 'cow shots' in response.data, response.data
         assert str(prev_image.image_id) in response.data, response.data
         assert str(next_image.image_id) in response.data, response.data

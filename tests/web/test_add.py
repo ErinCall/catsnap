@@ -98,10 +98,10 @@ class TestAdd(TestCase):
         eq_(response.status_code, 400, response.data)
         print response.data
         body = json.loads(response.data)
-        eq_(body, {'error': "Catsnap couldn't establish an HTTPS connection "
+        eq_(body['error'],  "Catsnap couldn't establish an HTTPS connection "
                             "to that image. An HTTP connection may succeed "
                             "(this is a problem on Catsnap's end, not "
-                            "something you did wrong)."})
+                            "something you did wrong).")
 
     @logged_in
     @patch('catsnap.web.controllers.image.process_image')

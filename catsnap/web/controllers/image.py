@@ -118,7 +118,9 @@ def show_image(request_format, image_id, size):
                                album=album,
                                albums=albums,
                                url=url,
-                               tags=tags,
+                               tags=list(tags),
+                               metadata_fields=filter(lambda (x,_): getattr(image, x), Image.metadata_fields),
+                               getattr=getattr,
                                resizes=resizes,
                                size=size)
     elif request_format == 'json':
@@ -148,18 +150,19 @@ def edit_image(request_format, image_id):
         filter(Image.image_id == image_id).\
         one()
 
-    if 'attributes' in request.form:
-        attributes = json.loads(request.form['attributes'])
-        for attribute, value in attributes.iteritems():
-            if hasattr(image, attribute):
+    for attribute, value in request.form.iteritems():
+        if attribute in ['add_tag', 'remove_tag']:
+            continue
+
+        if hasattr(image, attribute):
+            if attribute in ['album_id', 'title', 'description']:
                 if not value:
                     value = None
                 setattr(image, attribute, value)
             else:
-                return {
-                    'status': 'error',
-                    'error_description': "No such attribute '%s'" % attribute
-                }
+                abort(request_format, 400, "'{0}' is read-only".format(attribute))
+        else:
+            abort(request_format, 400, "No such attribute '{0}'".format(attribute))
 
     if 'add_tag' in request.form:
         tag = request.form['add_tag']
@@ -173,9 +176,15 @@ def edit_image(request_format, image_id):
     try:
         session.flush()
     except IntegrityError:
-        return {
-            'status': 'error',
-            'error_description': "No such album_id '%s'" % image.album_id
-        }
+        abort(request_format, 404, "No such album_id '{0}'".format(image.album_id))
 
-    return {'status': 'ok'}
+    return {
+        'status': 'ok',
+        'image': {
+            'album_id': image.album_id,
+            'title': image.title,
+            'caption': image.caption(),
+            'description': image.description,
+            'tags': list(image.get_tags()),
+        }
+    }
