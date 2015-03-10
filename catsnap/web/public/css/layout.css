@@ -9,14 +9,34 @@ a:hover {
 	color: #2277a2;
 }
 
+.container {
+    margin-left: 0px;
+    width: 100%;
+}
+
+.container-fluid h2, .container-fluid p, .container-fluid ul {
+    margin-left: 10px;
+}
+
 .image-container {
-	float:left;
-	margin-right: 5%;
-	margin-bottom: 5%;
+    display: table;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: auto;
+}
+
+.image-container h2 {
+    word-wrap: break-word;
+}
+
+.image-description {
+    margin-top: 10px;
+    font-size: 120%;
 }
 
 article {
 	clear:left;
+    width: 100%;
 }
 
 header {

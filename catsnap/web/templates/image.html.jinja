@@ -2,119 +2,26 @@
 {% block title %}
     {{ image.caption() |e}}
 {% endblock title %}
-{% block page_title %}
-    <h2 data-attribute="title">{{ self.title() }}</h2>
-{% endblock page_title %}
+{% block page_title %}{% endblock page_title %}
+
 {% block content %}
     <article id="image">
         <div class="image-container">
+            <h2>{{self.title()}}</h2>
             <a href="{{ url }}">
                 <img src="{{ url }}"
                     title="{{ image.caption() |e}}"
                     alt="{{ image.caption() |e}}" />
             </a>
+            {%if image.description %}
+                {%for paragraph in image.description.split('\n') %}
+                    <p class="image-description">{{ paragraph }}</p>
+                {%endfor %}
+            {%endif %}
         </div>
-        {% if resizes %}
-            <div>
-                <ul>
-                    {% for resize in resizes %}
-                        <li><a href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">
-                            {{resize.suffix |e}} {{resize.width |e}}x{{resize.height |e}}
-                        </a></li>
-                    {% endfor %}
-                    <li><a href="{{ url_for('show_image', image_id=image.image_id, size='original')}}">original</a>
-                </ul>
-            </div>
-        {% endif %}
-        {% if image.description or g.user %}
-            <div id="description">
-                <span data-attribute="description">
-                    {% if image.description %}
-                        {{image.description |e}}
-                    {% else %}
-                        (click to add description)
-                    {% endif %}
-                </span>
-            </div>
-        {% endif %}
-    </article>
-    {% if tags or g.user %}
-        <article id="tags">
-            Tags:
-            <ul>
-                {% for tag in tags %}
-                    <li>
-                        <span><a href="{{ url_for('find', tags=tag)}}">{{tag |e}}</a></span>
-                        {% if g.user %}
-                            [<a href="#" class="remove-tag">x</a>]
-                        {% endif %}
-                    </li>
-                {% endfor %}
-                {% if g.user %}
-                    <li id="add-tag">(click to add a tag)</li>
-                {% endif %}
-            </ul>
-        </article>
-    {% endif %}
-    <article id="album">
-        <div>
-            {% if album %}
-                This image appears in the album
-                '<a href="{{ url_for('view_album', album_id=album.album_id) }}">{{album.name |e}}</a>'.
-            {% else %}
-                This image has no album.
-            {% endif %}
-            {% if g.user %}
-                <span id="set-album">(click to set album)</span>
-                {% for album in albums %}
-                    <span class="data" data-id="{{ album.album_id }}" data-name="{{ album.name |e }}"></span>
-                {% endfor %}
-            {% endif %}
-        </div><div>
-            {% if prev %}
-                <a href="{{ url_for('show_image', image_id=prev.image_id) }}">Previous: {{ prev.caption() }}</a>
-            {% endif %}
-        </div><div>
-            {% if next %}
-                <a href="{{ url_for('show_image', image_id=next.image_id) }}">Next: {{ next.caption() }}</a>
-            {% endif %}
-        </div>
-    </article>
-    <article id="metadata">
-        <dl>
-            {% if image.camera %}
-                <dt>Camera</dt>
-                <dd>{{ image.camera |e}}</dd>
-            {% endif %}
-            {% if image.photographed_at %}
-                <dt>Taken at</dt>
-                <dd>{{ image.photographed_at |e}}</dd>
-            {% endif %}
-            {% if image.focal_length %}
-                <dt>Focal Length</dt>
-                <dd>{{ image.focal_length |e}}</dd>
-            {% endif %}
-            {% if image.aperture %}
-                <dt>Aperture</dt>
-                <dd>{{ image.aperture |e}}</dd>
-            {% endif %}
-            {% if image.shutter_speed %}
-                <dt>Shutter Speed</dt>
-                <dd>{{ image.shutter_speed |e}}</dd>
-            {% endif %}
-            {% if image.iso %}
-                <dt>ISO</dt>
-                <dd>{{ image.iso |e}}</dd>
-            {% endif %}
-        </dl>
     </article>
 {% endblock content %}
 
 {% block scripts %}
-    <script src="/public/js/edit_image.js"></script>
-    <script>
-        window.image_id = {{ image.image_id }};
-        window.album_id = "{{ album.album_id }}";
-        window.logged_in = {{ 'true' if g.user else 'false' }};
-    </script>
+    <script src="/public/js/image.js"></script>
 {% endblock scripts %}
