@@ -4,7 +4,7 @@ import json
 from tests import TestCase, with_settings
 from nose.tools import eq_
 from catsnap import Client
-from catsnap.table.image import Image
+from catsnap.table.image import Image, ImageResize
 from catsnap.table.album import Album
 
 class TestShowImage(TestCase):
@@ -35,6 +35,42 @@ class TestShowImage(TestCase):
         assert 'cow shots' in response.data, response.data
         assert str(prev_image.image_id) in response.data, response.data
         assert str(next_image.image_id) in response.data, response.data
+
+    @with_settings(bucket='snapcats')
+    def test_view_an_image__defaults_to_medium(self):
+        session = Client().session()
+        image = Image(filename='deadbeef',
+                      description='one time I saw a dead cow',
+                      title='dead beef')
+        session.add(image)
+        session.flush()
+
+        for (size, suffix) in [(100, 'thumbnail'), (320, 'small'), (500, 'medium'), (1600, 'large')]:
+            session.add(ImageResize(image_id=image.image_id, width=size, height=size, suffix=suffix))
+        session.flush()
+
+        response = self.app.get('/image/%d' % image.image_id)
+        assert 'https://s3.amazonaws.com/snapcats/deadbeef_medium' in response.data,\
+                response.data
+
+    # if no medium exists, assume it's because the original is smaller than a
+    # "medium," and thus the original is an appropriate size.
+    @with_settings(bucket='snapcats')
+    def test_view_an_image__defaults_to_original_if_no_medium_exists(self):
+        session = Client().session()
+        image = Image(filename='deadbeef',
+                      description='one time I saw a dead cow',
+                      title='dead beef')
+        session.add(image)
+        session.flush()
+
+        for (size, suffix) in [(100, 'thumbnail'), (320, 'small')]:
+            session.add(ImageResize(image_id=image.image_id, width=size, height=size, suffix=suffix))
+        session.flush()
+
+        response = self.app.get('/image/%d' % image.image_id)
+        assert 'src="https://s3.amazonaws.com/snapcats/deadbeef"' in response.data,\
+                response.data
 
     @with_settings(bucket='snapcats')
     def test_get_image_info_as_json(self):

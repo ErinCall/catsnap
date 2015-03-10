@@ -105,10 +105,10 @@ def show_image(request_format, image_id, size):
         order_by(ImageResize.width.asc()).\
         all()
     url = ImageTruck.url_for_filename(image.filename)
-    if resizes and size != 'original':
-        if size not in map(lambda r: r.suffix, resizes):
-            size = resizes[0].suffix
-        url = '%s_%s' % (url, size)
+
+    if resizes and size in [r.suffix for r in resizes]:
+        url = '{0}_{1}'.format(url, size)
+
     tags = image.get_tags()
     if request_format == 'html':
         return render_template('image.html.jinja',
