@@ -5,6 +5,8 @@ from sqlalchemy import (
     Integer,
     String,
     DateTime,
+    select,
+    alias,
     func,
     or_,
     ForeignKey,
@@ -108,34 +110,59 @@ class Image(CreatedAtBookkeeper):
     def neighbors(self):
         if self.album_id is None:
             return (None, None)
+# SELECT
+#     image.*
+# FROM (
+#     select max(image.image_id) as image_id
+#     from image
+#     where image.album_id = 1 and image.image_id < 1614
+#     union all
+#     select min(image.image_id) as image_id
+#     from image
+#     where image.album_id = 1 and image.image_id > 1614
+# ) as neighbors
+# left outer join image using (image_id)
+# ;
+        session = Client().session()
+        neighbors_query = alias(select([
+                func.max(Image.image_id).label('image_id')]).
+            where(Image.album_id == self.album_id).
+            where(Image.image_id < self.image_id).
+            union(select([func.min(Image.image_id)]).
+                where(Image.album_id == self.album_id).
+                where(Image.image_id > self.image_id)),
+            'neighbors')
+
+        # query = session.query(image_query).\
+        #     select_from(neighbors_query).\
+        #     outerjoin(Image, Image.image_id == neighbors_query.c.image_id)
+
+        column_names = [c.name for c in Image.__table__.columns]
+        query = select(['image.{0}'.format(c) for c in column_names]).\
+            select_from(neighbors_query.\
+            outerjoin(Image, Image.image_id == neighbors_query.c.image_id))
+
+        records = session.execute(query).fetchall()
+        print records
+
+        neighbors = map(lambda r: Image(**dict(zip(column_names, r.values()))) if any(r) else None, records)
+        if len(neighbors) == 2:
+            return (neighbors[0], neighbors[1])
+        elif len(neighbors) == 1 and neighbors[0].image_id > self.image_id:
+            return (None, neighbors[0])
+        elif len(neighbors) == 1 and neighbors[0].image_id < self.image_id:
+            return (neighbors[0], None)
         else:
-            session = Client().session()
-            neighbors = session.query(Image).\
-                filter(Image.album_id == self.album_id).\
-                filter(or_(
-                    Image.image_id == session.query(func.max(Image.image_id)).
-                        filter(Image.image_id < self.image_id).
-                        filter(Image.album_id == self.album_id),
-                    Image.image_id == session.query(func.min(Image.image_id)).
-                        filter(Image.image_id > self.image_id).
-                        filter(Image.album_id == self.album_id)
-                )).\
-                order_by(Image.created_at).\
-                all()
-            if len(neighbors) == 2:
-                return (neighbors[0], neighbors[1])
-            elif len(neighbors) == 1 and neighbors[0].image_id > self.image_id:
-                return (None, neighbors[0])
-            elif len(neighbors) == 1 and neighbors[0].image_id < self.image_id:
-                return (neighbors[0], None)
-            else:
-                return (None, None)
+            return (None, None)
 
     def caption(self):
         get_tags = lambda: list(self.get_tags())
         return self.make_caption(title=self.title,
                 get_tags=get_tags,
                 filename=self.filename)
+
+    def __repr__(self):
+        return "<Image filename={0}>".format(self.filename)
 
     @classmethod
     def make_caption(cls, filename, title, get_tags):

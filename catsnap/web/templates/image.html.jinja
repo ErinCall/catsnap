@@ -7,6 +7,24 @@
 {% block content %}
     <article id="image">
         <div class="image-container">
+            {% if prev or next %}
+                <ul class="pager">
+                    {% if prev %}
+                        <li class="previous">
+                            <a href="{{ url_for('show_image', image_id=prev.image_id) }}">
+                                <span aria-hidden="true">&larr;</span> {{ prev.caption() }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if next %}
+                        <li class="next">
+                            <a href="{{ url_for('show_image', image_id=next.image_id) }}">
+                                {{ next.caption() }} <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% endif %}
             <h2>{{self.title()}}</h2>
             <a href="{{ url }}">
                 <img src="{{ url }}"

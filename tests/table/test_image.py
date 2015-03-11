@@ -179,6 +179,48 @@ class TestImages(TestCase):
 
         eq_((prev, next), image.neighbors())
 
+    def test_neighbors_with_this_weird_dev_data(self):
+        session = Client().session()
+        album = Album(name="pickytures")
+        session.add(album)
+        session.flush()
+        image_data = [
+            ('1630',  '2014-10-22 01:01:54', '2013-02-09 17:58:48'),
+            ('1631',  '2014-10-22 01:01:59', '2013-02-09 16:25:21'),
+('1632',  '2014-10-30 21:00:16', '2013-02-10 08:40:33'),
+            ('1633',  '2014-10-22 01:02:11', '2013-02-09 14:37:03'),
+            ('1634',  '2014-10-22 01:02:19', '2013-02-09 14:31:34'),
+            ('1636',  '2014-11-04 17:27:30', '2012-07-08 15:24:39'),
+            ('1638',  '2014-11-04 17:24:17', '2012-07-08 15:09:29'),
+            ('1639',  '2014-11-04 17:27:30', '2012-07-08 15:37:53'),
+            ('1641',  '2014-11-04 17:27:30', '2012-07-08 15:25:51'),
+            ('1642',  '2014-11-04 17:27:30', '2012-07-08 15:25:59'),
+            ('1643',  '2014-11-04 17:24:17', '2012-07-08 15:09:36'),
+        ]
+        images = {}
+        for (filename, created_at, photographed_at) in image_data:
+            image = Image(image_id=int(filename),
+                          filename=filename,
+                          created_at=created_at,
+                          photographed_at=photographed_at,
+                          album_id=album.album_id
+            )
+            images[filename] = image
+            session.add(image)
+        session.flush()
+
+        eq_(images['1630'].neighbors(), (None, images['1631']))
+
+        for i in range(1, len(image_data) - 1):
+            image = images[image_data[i][0]]
+            left_neighbor = images[image_data[i - 1][0]]
+            right_neighbor = images[image_data[i + 1][0]]
+            print image.filename
+            eq_(image.neighbors(), (left_neighbor, right_neighbor))
+
+        eq_(images['1643'].neighbors(), (images['1642'], None))
+        raise Exception('hey')
+
     def test_neighbors_skips_over_images_from_other_albums(self):
         session = Client().session()
         hobbiton = Album(name='Hobbiton')
