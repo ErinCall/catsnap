@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import json
 from tests import TestCase
+from catsnap import Client
+from catsnap.table.image import Image
 from catsnap.web.formatted_routes import formatted_route
 from nose.tools import eq_
 
@@ -29,6 +31,10 @@ class TestFormattedRoute(TestCase):
     @formatted_route('/test/fancy/formatted/route/<lizard>')
     def fancy_action(request_format, lizard):
         return json.dumps({'request_format': request_format, 'lizard': lizard})
+
+    @formatted_route('/test/bad/image/id', methods=['GET'])
+    def bad_image_id_action(self):
+        Client().session().query(Image).filter(Image.image_id == 1).one()
 
     def test_defaults_to_html_format(self):
         response = self.app.get('/test/formatted/route')
@@ -68,3 +74,7 @@ class TestFormattedRoute(TestCase):
     def test_json_actions_can_return_objects(self):
         response = self.app.get('/test/lazy/json/route.json')
         eq_(response.data, '{"current status": "lazy"}')
+
+    def test_returns_404_on_no_result_found(self):
+        response = self.app.get('/test/bad/image/id.json')
+        eq_(response.status_code, 404)
