@@ -7,7 +7,7 @@ from catsnap.table.image import Image
 from catsnap.table.album import Album
 from nose.tools import eq_
 
-class TestUploadImage(TestCase):
+class TestViewAlbum(TestCase):
     @with_settings(bucket='humptydump')
     def test_view_an_album(self):
         session = Client().session()
