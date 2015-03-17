@@ -4,57 +4,57 @@
 $(document).ready(function () {
   'use strict';
 
-  var send_image,
-      receive_image_data,
-      show_error,
-      tag_link,
-      append_add_pane,
-      save_attributes,
-      editing_url,
-      save_album,
-      available_row,
-      check_for_image;
+  var sendImage,
+      receiveImageData,
+      showError,
+      tagLink,
+      appendAddPane,
+      saveAttributes,
+      editingUrl,
+      saveAlbum,
+      availableRow,
+      checkForImage;
 
-  send_image = function(event) {
-  var $this = $(this),
-      form_data = new FormData(this),
-      $article = $this.parent('article');
+  sendImage = function(event) {
+    var $this = $(this),
+        formData = new FormData(this),
+        $article = $this.parent('article');
 
     event.preventDefault();
     $this.find('input').addClass('disabled').attr('disabled', true);
-    form_data.append('album_id', $('select[name="album"]').val());
+    formData.append('album_id', $('select[name="album"]').val());
 
     $article.find('div.alert').remove();
 
     $.ajax($this.attr('action') + '.json', {
       type: $this.attr('method'),
-      data: form_data,
+      data: formData,
       contentType: false,
       processData: false,
       success: function(data) {
-        var $new_add_pane = $article.clone(true);
+        var $newAddPane = $article.clone(true);
         $article.remove();
 
         $.each(data, function(i, datum) {
-          var $edit_pane = $('<article class="image-control">'),
-              $target_row = available_row();
+          var $editPane = $('<article class="image-control">'),
+              $targetRow = availableRow();
 
-          $target_row.append($edit_pane);
-          receive_image_data.call($edit_pane, datum);
+          $targetRow.append($editPane);
+          receiveImageData.call($editPane, datum);
         });
 
-        append_add_pane($new_add_pane);
+        appendAddPane($newAddPane);
       },
       error: function(data, status, errorThrown) {
         $article.find('form').show();
         $article.find('img').remove();
         $this.find('input').removeClass('disabled').attr('disabled', false);
-        show_error.call($article, data);
+        showError.call($article, data);
       }
     });
   };
 
-  receive_image_data = function(data) {
+  receiveImageData = function(data) {
     var delay = 2000, //milliseconds
         $form,
         $ul;
@@ -62,57 +62,57 @@ $(document).ready(function () {
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
     this.data('image_id', data.image_id);
     this.data('url', data.url);
-    window.setTimeout(_.bind(check_for_image, this, delay), delay);
+    window.setTimeout(_.bind(checkForImage, this, delay), delay);
 
     $form = $('<form method="post" action="#">');
     $form.append($('<input type="text" name="title" ' +
              'placeholder="Title" class="form-control">'));
 
     $ul = $('<ul><li class="tag"></li></ul>');
-    $ul.children('li').append(tag_link.call(this));
+    $ul.children('li').append(tagLink.call(this));
     $form.append($ul);
 
     $form.append($('<textarea placeholder="Description" ' +
              'class="form-control" name="description">'));
     $form.append($('<input type="submit" value="Save" ' +
              'class="btn btn-default edit" name="save">'));
-    $form.submit(save_attributes);
+    $form.submit(saveAttributes);
     $form.find('input').blur(function() {
       $(this).parent('form').submit();
     });
     this.append($form);
   };
 
-  save_attributes = function(event) {
+  saveAttributes = function(event) {
     var $form = $(this),
-        $save_button = $form.find('input[type="submit"]'),
-        $title_input = $form.find('input[name="title"]'),
-        $description_input = $form.find('textarea[name="description"]'),
+        $saveButton = $form.find('input[type="submit"]'),
+        $titleInput = $form.find('input[name="title"]'),
+        $descriptionInput = $form.find('textarea[name="description"]'),
         $article = $form.parent('article');
 
     event.preventDefault();
 
-    $save_button.addClass('disabled');
-    $.ajax(editing_url($article), {
+    $saveButton.addClass('disabled');
+    $.ajax(editingUrl($article), {
       type: "PATCH",
       data: {
-        title: $title_input.val(),
-        description: $description_input.val(),
+        title: $titleInput.val(),
+        description: $descriptionInput.val(),
       },
       success: function(data) {
-        $save_button.removeClass('disabled');
+        $saveButton.removeClass('disabled');
       },
       error: function(data, status, errorThrown) {
-        show_error.call($article, errorThrown);
-        $save_button.removeClass('disabled');
+        showError.call($article, errorThrown);
+        $saveButton.removeClass('disabled');
       }
     });
   };
 
-  append_add_pane = function($article) {
-    var $target_row = available_row();
+  appendAddPane = function($article) {
+    var $targetRow = availableRow();
 
-    $target_row.append($article);
+    $targetRow.append($article);
     $article.find('input').val(null);
     $article.find('input').removeClass('disabled').attr('disabled', false);
     $article.find('input[type="submit"]').val('Go');
@@ -120,106 +120,106 @@ $(document).ready(function () {
     $article.show();
   };
 
-  available_row = function() {
-    var $last_row = $('.row').last();
-    if ($last_row.find('article').length >= 3) {
-      $last_row.parent().append($('<section class="row">'));
+  availableRow = function() {
+    var $lastRow = $('.row').last();
+    if ($lastRow.find('article').length >= 3) {
+      $lastRow.parent().append($('<section class="row">'));
     }
     return $('.row').last();
   };
 
-  tag_link = function() {
+  tagLink = function() {
     var $container = this,
         $a = $('<a href="#">Add tag</a>');
 
     $a.click(function(event) {
-      var tag_name,
-          abort_editing,
-          submit_tag,
-          $this_li = $(this).parent(),
-          $tag_input,
+      var tagName,
+          abortEditing,
+          submitTag,
+          $thisLi = $(this).parent(),
+          $tagInput,
           $form;
       event.preventDefault();
       $a.hide();
 
-      submit_tag = function(event, success_events) {
+      submitTag = function(event, successEvents) {
         event.preventDefault();
-        tag_name = $form.find('input[type=text]').val().trim();
-        if (tag_name === "") {
-          abort_editing();
+        tagName = $form.find('input[type=text]').val().trim();
+        if (tagName === "") {
+          abortEditing();
           return;
         }
         $form.find('input').attr('disabled', true);
-        if (typeof(success_events) === 'undefined') {
-          success_events = [];
+        if (typeof(successEvents) === 'undefined') {
+          successEvents = [];
         }
 
-        $.ajax(editing_url($container), {
+        $.ajax(editingUrl($container), {
           type: "PATCH",
-          data: {add_tag: tag_name},
+          data: {add_tag: tagName},
           success: [function(data) {
-            var $next_li = $('<li class="tag">'),
-                $name_span = $('<span class="tag">'),
-                new_tag_link;
+            var $nextLi = $('<li class="tag">'),
+                $nameSpan = $('<span class="tag">'),
+                newTagLink;
 
             $a.remove();
             $form.remove();
 
-            $name_span.append(tag_name);
-            $this_li.append($name_span);
+            $nameSpan.append(tagName);
+            $thisLi.append($nameSpan);
 
-            new_tag_link = tag_link.call($container);
-            $next_li.append(new_tag_link);
-            $container.find('ul').append($next_li);
-          }].concat(success_events),
-          error: _.bind(show_error, $container),
+            newTagLink = tagLink.call($container);
+            $nextLi.append(newTagLink);
+            $container.find('ul').append($nextLi);
+          }].concat(successEvents),
+          error: _.bind(showError, $container),
         });
       };
       $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
-      $tag_input = $('<input type="text" class="edit form-control" name="tag"/>');
-      $form.prepend($tag_input);
-      $form.submit(submit_tag);
-      $tag_input.blur(_.bind(submit_tag, $form));
-      $tag_input.keydown(function(event) {
+      $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
+      $form.prepend($tagInput);
+      $form.submit(submitTag);
+      $tagInput.blur(_.bind(submitTag, $form));
+      $tagInput.keydown(function(event) {
         if (event.which === KeyCodes.ENTER) {
           event.preventDefault();
           $form.trigger('submit', function() {
-            $this_li.siblings().find('a').click();
+            $thisLi.siblings().find('a').click();
           });
         } else if (event.which == KeyCodes.ESCAPE) {
-          abort_editing();
+          abortEditing();
         }
       });
 
-      abort_editing = function () {
+      abortEditing = function () {
         $a.show();
 /* In Firefox (at least), if there's an autocompletion box up when the input
 is removed, the input goes away correctly but the autocompletion box hangs
 around. Blurring the element first seems to be a sufficient workaround.
 Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
 */
-        $tag_input.off('blur');
-        $tag_input.blur();
-        $tag_input.remove();
+        $tagInput.off('blur');
+        $tagInput.blur();
+        $tagInput.remove();
       };
 
-      $this_li.append($form);
-      $a.parent().append($this_li);
+      $thisLi.append($form);
+      $a.parent().append($thisLi);
       $form.find('input').focus();
     });
     return $a;
   };
 
-  show_error = function(data) {
+  showError = function(data) {
     var message = data.responseJSON.error;
     this.find('div.alert').remove();
     this.prepend($('<div class="alert alert-warning">' + message + '</div>'));
   };
 
-  check_for_image = function(previous_timeout) {
+  checkForImage = function(previousTimeout) {
     var $container = this,
         url = this.data('url'),
-        new_timeout = previous_timeout * 1.4,
+        newTimeout = previousTimeout * 1.4,
         $a = $('<a href="/image/' + this.data('image_id') +'">'),
         $img = $('<img>');
 
@@ -227,7 +227,7 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
       $img.off('error');
       $img.error(function() {
         window.setTimeout(_.bind(
-          check_for_image, $container, new_timeout), new_timeout);
+          checkForImage, $container, newTimeout), newTimeout);
       });
       $img.attr('src', url);
     });
@@ -239,49 +239,49 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
     $img.attr('src', url + '_thumbnail');
   };
 
-  editing_url = function($element) {
+  editingUrl = function($element) {
     return "/image/" + $element.data('image_id') + '.json';
   };
 
-  save_album = function(event) {
+  saveAlbum = function(event) {
     var $form = $(this),
-        $modal_header = $('#new-album').find('.modal-header'),
-        $album_input = $form.find('input[type="text"]'),
-        album_name = $album_input.val();
+        $modalHeader = $('#new-album').find('.modal-header'),
+        $albumInput = $form.find('input[type="text"]'),
+        albumName = $albumInput.val();
 
     event.preventDefault();
 
     $.ajax($form.attr('action') + '.json', {
       type: "POST",
-      data: {name: album_name},
+      data: {name: albumName},
       success: function(data) {
-        var $album_dropdown = $('#album'),
+        var $albumDropdown = $('#album'),
             $modal = $('#new-album'),
             $option;
 
         $option = $('<option>');
-        $option.text(album_name);
+        $option.text(albumName);
         $option.val(data.album_id);
-        $album_dropdown.append($option);
-        $album_dropdown.val(data.album_id);
+        $albumDropdown.append($option);
+        $albumDropdown.val(data.album_id);
 
-        $modal_header.find('div.alert').remove();
-        $album_input.val('');
+        $modalHeader.find('div.alert').remove();
+        $albumInput.val('');
         $modal.modal('hide');
       },
-      error: _.bind(show_error, $modal_header),
+      error: _.bind(showError, $modalHeader),
     });
   };
 
-  $('.image-control form').submit(send_image);
-  $('#new-album form').submit(save_album);
+  $('.image-control form').submit(sendImage);
+  $('#new-album form').submit(saveAlbum);
   $('input[type="file"]').on('change', function(event) {
-    var num_files = $(this).prop('files').length,
-        display_text = $(this).val();
+    var numFiles = $(this).prop('files').length,
+        displayText = $(this).val();
 
-    if (num_files > 1) {
-      display_text = display_text + ', ' + (num_files - 1) + ' more';
+    if (numFiles > 1) {
+      displayText = displayText + ', ' + (numFiles - 1) + ' more';
     }
-    $(this).siblings('label').text(display_text);
+    $(this).siblings('label').text(displayText);
   });
 });
