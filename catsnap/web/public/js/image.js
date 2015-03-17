@@ -1,4 +1,5 @@
 /* jshint jquery:true, browser:true */
+/* global KeyCodes */
 
 $(document).ready(function() {
   'use strict';
@@ -161,12 +162,12 @@ $(document).ready(function() {
     $form = $('<form><input type="submit" class="enter-to-submit"></form>');
     $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag">');
     $tagInput.keydown(function(event) {
-      if (event.which === window.KeyCodes.TAB) {
+      if (event.which === KeyCodes.TAB) {
         event.preventDefault();
         $form.triggerHandler('submit', function() {
             $addLi.find('a').click();
         });
-      } else if (event.which === window.KeyCodes.ESCAPE) {
+      } else if (event.which === KeyCodes.ESCAPE) {
         abortEditing();
       }
     });

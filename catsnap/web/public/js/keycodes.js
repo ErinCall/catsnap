@@ -1,3 +1,4 @@
+/* jshint browser:true */
 // drawn from http://mikemurko.com/general/jquery-keycode-cheatsheet/
 
 (function() {
