@@ -1,11 +1,11 @@
 $(document).ready(function () {
-    'use strict';
+  'use strict';
 
-    $('img.maybe-unavailable').error(function() {
-        var $img = $(this),
-            url = $img.attr('src');
+  $('img.maybe-unavailable').error(function() {
+    var $img = $(this),
+        url = $img.attr('src');
 
-        $img.off('error');
-        $img.attr('src', url.replace('_thumbnail', ''));
-    });
+    $img.off('error');
+    $img.attr('src', url.replace('_thumbnail', ''));
+  });
 });
