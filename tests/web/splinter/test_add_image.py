@@ -21,9 +21,9 @@ class UploadTestCase(TestCase):
 
         self.visit_url('/add')
         self.browser.click_link_by_text('From Url')
-        url_field = self.browser.find_by_css('input[name="url"]')
+        url_field = self.browser.find_by_id('url')
         url_field.fill('http://cdn.mlkshk.com/r/118S7')
-        self.browser.find_by_css('input[name="url-submit"]').click()
+        self.browser.find_by_name('url-submit').click()
 
     @nottest
     def mock_truck(self):
@@ -326,7 +326,6 @@ class TestAddTagsAfterUpload(UploadTestCase):
         self.browser.click_link_by_text('Add tag')
         tag_input = self.browser.find_by_name('tag').first
         tag_input.fill(' \n')
-        sleep(0.25)
 
         assert self.browser.is_element_not_present_by_name('tag'), \
             "the tag-name input wasn't cleared!"

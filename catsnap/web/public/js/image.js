@@ -93,8 +93,7 @@ $(document).ready(function() {
   }
 
   function showTagInput(event) {
-    var tagName,
-        abortEditing,
+    var abortEditing,
         submitTag,
         $addLi = $($(event.target).parents('li')[0]),
         $newLi,
@@ -103,46 +102,9 @@ $(document).ready(function() {
         $form;
     event.preventDefault();
 
-    submitTag = function submitTag(event, successHandlers) {
-      event.preventDefault();
-      if (typeof(successHandlers) === 'undefined') {
-        successHandlers = [];
-      }
-
-      tagName = $tagInput.val().trim();
-      if (tagName === '') {
-        abortEditing();
-        return;
-      }
-
-      $form.find('input').attr('disabled', true);
-
-      $.ajax('/image/' + imageId + '.json', {
-        type: 'PATCH',
-        data: {add_tag: tagName},
-        success: [function(data) {
-          var $button = $('<button class="btn btn-xs btn-default remove-tag">'),
-              $xSign = $('<span class="glyphicon glyphicon-remove-sign" aria-label="remove">'),
-              $tag = $('<a href="#" class="remove-tag">'),
-              $viewLi = $('<li role="presentation" class="tag"></li>'),
-              $tagLink = $('<a role="menuitem">');
-          $tag.text(tagName);
-          $form.remove();
-          $button.append($xSign);
-          $newLi.append($button);
-          $newLi.append($tag);
-          $addLi.show();
-          $('#tag-button').removeClass('disabled');
-
-
-          $tagLink.text(tagName);
-          $tagLink.attr('href', "/find?tags=" + tagName);
-          $viewLi.append($tagLink);
-          $('.view-tags').append($viewLi);
-        }].concat(successHandlers),
-        error: window.alert
-      });
-    };
+    $newLi = $('<li>');
+    $form = $('<form><input type="submit" class="enter-to-submit"></form>');
+    $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag">');
 
     abortEditing = function abortEditing() {
       /* In Firefox (at least), if there's an autocompletion box up when the input
@@ -156,11 +118,30 @@ $(document).ready(function() {
       $addLi.show();
     };
 
+    submitTag = window.catsnap.generateSubmitTag(
+        $form, $addLi.parents('div.edit'), abortEditing, window.alert, function(data) {
+      var $button = $('<button class="btn btn-xs btn-default remove-tag">'),
+          $xSign = $('<span class="glyphicon glyphicon-remove-sign" aria-label="remove">'),
+          $tag = $('<a href="#" class="remove-tag">'),
+          $viewLi = $('<li role="presentation" class="tag"></li>'),
+          $tagLink = $('<a role="menuitem">'),
+          tagName = $tagInput.val().trim();
+      $tag.text(tagName);
+      $form.remove();
+      $button.append($xSign);
+      $newLi.append($button);
+      $newLi.append($tag);
+      $addLi.show();
+      $('#tag-button').removeClass('disabled');
+
+      $tagLink.text(tagName);
+      $tagLink.attr('href', "/find?tags=" + tagName);
+      $viewLi.append($tagLink);
+      $('.view-tags').append($viewLi);
+    });
+
     $addLi.hide();
 
-    $newLi = $('<li>');
-    $form = $('<form><input type="submit" class="enter-to-submit"></form>');
-    $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag">');
     $tagInput.keydown(function(event) {
       if (event.which === KeyCodes.TAB) {
         event.preventDefault();

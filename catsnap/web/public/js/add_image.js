@@ -10,7 +10,6 @@ $(document).ready(function () {
       tagLink,
       appendAddPane,
       saveAttributes,
-      editingUrl,
       saveAlbum,
       availableRow,
       checkForImage;
@@ -60,7 +59,7 @@ $(document).ready(function () {
         $ul;
 
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
-    this.data('image_id', data.image_id);
+    this.data('image-id', data.image_id);
     this.data('url', data.url);
     window.setTimeout(_.bind(checkForImage, this, delay), delay);
 
@@ -93,7 +92,7 @@ $(document).ready(function () {
     event.preventDefault();
 
     $saveButton.addClass('disabled');
-    $.ajax(editingUrl($article), {
+    $.ajax(window.catsnap.editingUrl($article), {
       type: "PATCH",
       data: {
         title: $titleInput.val(),
@@ -142,44 +141,41 @@ $(document).ready(function () {
       event.preventDefault();
       $a.hide();
 
-      submitTag = function(event, successEvents) {
-        event.preventDefault();
-        tagName = $form.find('input[type=text]').val().trim();
-        if (tagName === "") {
-          abortEditing();
-          return;
-        }
-        $form.find('input').attr('disabled', true);
-        if (typeof(successEvents) === 'undefined') {
-          successEvents = [];
-        }
-
-        $.ajax(editingUrl($container), {
-          type: "PATCH",
-          data: {add_tag: tagName},
-          success: [function(data) {
-            var $nextLi = $('<li class="tag">'),
-                $nameSpan = $('<span class="tag">'),
-                newTagLink;
-
-            $a.remove();
-            $form.remove();
-
-            $nameSpan.append(tagName);
-            $thisLi.append($nameSpan);
-
-            newTagLink = tagLink.call($container);
-            $nextLi.append(newTagLink);
-            $container.find('ul').append($nextLi);
-          }].concat(successEvents),
-          error: _.bind(showError, $container),
-        });
-      };
       $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
       $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
       $form.prepend($tagInput);
+
+      abortEditing = function () {
+/* In Firefox (at least), if there's an autocompletion box up when the input
+is removed, the input goes away correctly but the autocompletion box hangs
+around. Blurring the element first seems to be a sufficient workaround.
+Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
+*/
+        $tagInput.off('blur');
+        $tagInput.blur();
+        $tagInput.remove();
+        $a.show();
+      };
+
+      submitTag = window.catsnap.generateSubmitTag(
+          $form, $container, abortEditing, showError.bind($container), function(data) {
+        var $nextLi = $('<li class="tag">'),
+            $nameSpan = $('<span class="tag">'),
+            newTagLink;
+
+        $a.remove();
+        $form.remove();
+
+        $nameSpan.append(tagName);
+        $thisLi.append($nameSpan);
+
+        newTagLink = tagLink.call($container);
+        $nextLi.append(newTagLink);
+        $container.find('ul').append($nextLi);
+      });
+
+      $tagInput.blur(submitTag);
       $form.submit(submitTag);
-      $tagInput.blur(_.bind(submitTag, $form));
       $tagInput.keydown(function(event) {
         if (event.which === KeyCodes.ENTER) {
           event.preventDefault();
@@ -190,18 +186,6 @@ $(document).ready(function () {
           abortEditing();
         }
       });
-
-      abortEditing = function () {
-        $a.show();
-/* In Firefox (at least), if there's an autocompletion box up when the input
-is removed, the input goes away correctly but the autocompletion box hangs
-around. Blurring the element first seems to be a sufficient workaround.
-Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
-*/
-        $tagInput.off('blur');
-        $tagInput.blur();
-        $tagInput.remove();
-      };
 
       $thisLi.append($form);
       $a.parent().append($thisLi);
@@ -220,7 +204,7 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
     var $container = this,
         url = this.data('url'),
         newTimeout = previousTimeout * 1.4,
-        $a = $('<a href="/image/' + this.data('image_id') +'">'),
+        $a = $('<a href="/image/' + this.data('image-id') +'">'),
         $img = $('<img>');
 
     $img.error(function() {
@@ -237,10 +221,6 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
       $container.prepend($a);
     });
     $img.attr('src', url + '_thumbnail');
-  };
-
-  editingUrl = function($element) {
-    return "/image/" + $element.data('image_id') + '.json';
   };
 
   saveAlbum = function(event) {
