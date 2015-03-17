@@ -127,7 +127,7 @@ $(document).ready(function () {
 
     tag_link = function() {
         var $container = this,
-            $a = $('<a href=#>Add tag</a>');
+            $a = $('<a href="#">Add tag</a>');
 
         $a.click(function(event) {
             var tag_name,
