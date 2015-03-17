@@ -139,7 +139,7 @@ def show_image(request_format, image_id, size):
         }
 
 
-@formatted_route('/image/<image_id>', methods=['PATCH'])
+@formatted_route('/image/<int:image_id>', methods=['PATCH'])
 @login_required
 def edit_image(request_format, image_id):
     if request_format != 'json':
