@@ -146,11 +146,11 @@ $(document).ready(function() {
 
     $.ajax('/image/reprocess/' + imageId + '.json', {
       type: 'POST',
-      success: function(data) {},
+      success: function() {},
       error: function(data) {
-        alert(data);
+        window.alert(data);
         $('#reprocess').click(reprocessImage).attr('href', '#').text('Reprocess');
       }
-    })
-  })
+    });
+  });
 });

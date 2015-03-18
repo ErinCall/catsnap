@@ -182,12 +182,12 @@ $(document).ready(function () {
       $thisLi.append($form);
       $a.parent().append($thisLi);
       $form.find('input').focus();
-    };
+    }
 
     $addButton.click(startEditing);
     $a.click(startEditing);
 
-    return [$addButton, ' ', $a]
+    return [$addButton, ' ', $a];
   };
 
   showError = function(data) {
