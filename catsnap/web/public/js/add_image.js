@@ -4,7 +4,8 @@
 $(document).ready(function () {
   'use strict';
 
-  var sendImage,
+  var catsnap = window.catsnap,
+      sendImage,
       receiveImageData,
       showError,
       tagLink,
@@ -145,17 +146,7 @@ $(document).ready(function () {
       $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
       $form.prepend($tagInput);
 
-      abortEditing = function () {
-/* In Firefox (at least), if there's an autocompletion box up when the input
-is removed, the input goes away correctly but the autocompletion box hangs
-around. Blurring the element first seems to be a sufficient workaround.
-Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
-*/
-        $tagInput.off('blur');
-        $tagInput.blur();
-        $tagInput.remove();
-        $a.show();
-      };
+      abortEditing = catsnap.generateAbortEditing($tagInput, $a, $tagInput);
 
       submitTag = window.catsnap.generateSubmitTag(
           $form, $container, abortEditing, showError.bind($container), function(data) {

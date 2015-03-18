@@ -4,6 +4,8 @@
 $(document).ready(function() {
   'use strict';
 
+  var catsnap = window.catsnap;
+
   /*
   * This is basically .load(), except load events happen too soon when the image comes from cache.
   * Looping through the images and manually firing load() is a workaround from stackoverflow:
@@ -106,19 +108,9 @@ $(document).ready(function() {
     $form = $('<form><input type="submit" class="enter-to-submit"></form>');
     $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag">');
 
-    abortEditing = function abortEditing() {
-      /* In Firefox (at least), if there's an autocompletion box up when the input
-      is removed, the input goes away correctly but the autocompletion box hangs
-      around. Blurring the element first seems to be a sufficient workaround.
-      Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
-      */
-      $tagInput.off('blur');
-      $tagInput.blur();
-      $newLi.remove();
-      $addLi.show();
-    };
+    abortEditing = catsnap.generateAbortEditing($tagInput, $addLi, $newLi);
 
-    submitTag = window.catsnap.generateSubmitTag(
+    submitTag = catsnap.generateSubmitTag(
         $form, $addLi.parents('div.edit'), abortEditing, window.alert, function(data) {
       var $button = $('<button class="btn btn-xs btn-default remove-tag">'),
           $xSign = $('<span class="glyphicon glyphicon-remove-sign" aria-label="remove">'),

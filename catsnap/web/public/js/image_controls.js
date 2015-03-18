@@ -4,6 +4,11 @@
 $(document).ready(function () {
   'use strict';
 
+  if (typeof window.catsnap === 'undefined') {
+    window.catsnap = {};
+  }
+  var catsnap = window.catsnap;
+
   function generateSubmitTag($form, $imageIdElement, abortEditing, onError, onSuccess) {
     return function submitTag(event, successHandlers) {
       var tagName,
@@ -32,14 +37,25 @@ $(document).ready(function () {
     };
   }
 
+  function generateAbortEditing($tagInput, $showMe, $removeMe) {
+    return function abortEditing () {
+/* In Firefox (at least), if there's an autocompletion box up when the input
+is removed, the input goes away correctly but the autocompletion box hangs
+around. Blurring the element first seems to be a sufficient workaround.
+Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
+*/
+      $tagInput.off('blur');
+      $tagInput.blur();
+      $removeMe.remove();
+      $showMe.show();
+    };
+  }
+
   function editingUrl ($element) {
     return "/image/" + $element.data('image-id') + '.json';
   }
 
-  if (typeof window.catsnap === 'undefined') {
-    window.catsnap = {};
-  }
-
-  window.catsnap.generateSubmitTag = generateSubmitTag;
-  window.catsnap.editingUrl = editingUrl;
+  catsnap.generateSubmitTag = generateSubmitTag;
+  catsnap.generateAbortEditing = generateAbortEditing;
+  catsnap.editingUrl = editingUrl;
 });
