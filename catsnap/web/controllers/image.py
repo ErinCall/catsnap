@@ -105,10 +105,10 @@ def show_image(request_format, image_id, size):
         order_by(ImageResize.width.asc()).\
         all()
     url = ImageTruck.url_for_filename(image.filename)
-    if resizes and size != 'original':
-        if size not in map(lambda r: r.suffix, resizes):
-            size = resizes[0].suffix
-        url = '%s_%s' % (url, size)
+
+    if resizes and size in [r.suffix for r in resizes]:
+        url = '{0}_{1}'.format(url, size)
+
     tags = image.get_tags()
     if request_format == 'html':
         return render_template('image.html.jinja',
@@ -118,7 +118,9 @@ def show_image(request_format, image_id, size):
                                album=album,
                                albums=albums,
                                url=url,
-                               tags=tags,
+                               tags=list(tags),
+                               metadata_fields=filter(lambda (x,_): getattr(image, x), Image.metadata_fields),
+                               getattr=getattr,
                                resizes=resizes,
                                size=size)
     elif request_format == 'json':
@@ -137,7 +139,7 @@ def show_image(request_format, image_id, size):
         }
 
 
-@formatted_route('/image/<image_id>', methods=['PATCH'])
+@formatted_route('/image/<int:image_id>', methods=['PATCH'])
 @login_required
 def edit_image(request_format, image_id):
     if request_format != 'json':
@@ -148,18 +150,19 @@ def edit_image(request_format, image_id):
         filter(Image.image_id == image_id).\
         one()
 
-    if 'attributes' in request.form:
-        attributes = json.loads(request.form['attributes'])
-        for attribute, value in attributes.iteritems():
-            if hasattr(image, attribute):
+    for attribute, value in request.form.iteritems():
+        if attribute in ['add_tag', 'remove_tag']:
+            continue
+
+        if hasattr(image, attribute):
+            if attribute in ['album_id', 'title', 'description']:
                 if not value:
                     value = None
                 setattr(image, attribute, value)
             else:
-                return {
-                    'status': 'error',
-                    'error_description': "No such attribute '%s'" % attribute
-                }
+                abort(request_format, 400, "'{0}' is read-only".format(attribute))
+        else:
+            abort(request_format, 400, "No such attribute '{0}'".format(attribute))
 
     if 'add_tag' in request.form:
         tag = request.form['add_tag']
@@ -173,9 +176,35 @@ def edit_image(request_format, image_id):
     try:
         session.flush()
     except IntegrityError:
-        return {
-            'status': 'error',
-            'error_description': "No such album_id '%s'" % image.album_id
-        }
+        abort(request_format, 404, "No such album_id '{0}'".format(image.album_id))
 
-    return {'status': 'ok'}
+    return {
+        'status': 'ok',
+        'image': {
+            'album_id': image.album_id,
+            'title': image.title,
+            'caption': image.caption(),
+            'description': image.description,
+            'tags': list(image.get_tags()),
+        }
+    }
+
+@formatted_route('/image/reprocess/<int:image_id>', methods=['POST'])
+@login_required
+def reprocess_image(request_format, image_id):
+    session = Client().session()
+    image = session.query(Image).filter(Image.image_id == image_id).one()
+
+    truck = ImageTruck.new_from_image(image)
+    contents = ImageContents(image_id=image.image_id,
+                             contents=truck.contents,
+                             content_type=truck.content_type)
+
+    session.add(contents)
+    session.flush()
+    delay(process_image, contents.image_contents_id)
+
+    if request_format == 'json':
+        return {'status': 'ok'}
+    else:
+        return redirect(url_for('show_image', image_id=image.image_id))

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from selenium.webdriver.common.keys import Keys
-from time import sleep
 from tests import with_settings
 from tests.image_helper import SOME_GIF
 from tests.web.splinter import TestCase, logged_in
@@ -9,6 +8,7 @@ from catsnap import Client
 from catsnap.table.image import Image
 from catsnap.table.album import Album
 from catsnap.table.image_tag import ImageTag
+from catsnap.table.tag import Tag
 from mock import patch, Mock
 from nose.tools import eq_, nottest
 
@@ -21,9 +21,9 @@ class UploadTestCase(TestCase):
 
         self.visit_url('/add')
         self.browser.click_link_by_text('From Url')
-        url_field = self.browser.find_by_css('input[name="url"]')
+        url_field = self.browser.find_by_id('url')
         url_field.fill('http://cdn.mlkshk.com/r/118S7')
-        self.browser.find_by_css('input[name="url-submit"]').click()
+        self.browser.find_by_name('url-submit').click()
 
     @nottest
     def mock_truck(self):
@@ -267,32 +267,10 @@ class TestAlbumFunctions(UploadTestCase):
 class TestAddTagsAfterUpload(UploadTestCase):
     @logged_in
     @with_settings(bucket='frootypoo')
-    def test_tab_from_tag_input_focuses_descr_and_saves(self):
+    def test_tab_from_tag_input_focuses_next_tag_input_and_saves(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
-        self.browser.find_by_name('tag').first.fill('cute\t')
-        # there is no .is_focused or anything, so we'll do it inside-out:
-        # look for a focused textarea and assert that it's the right one.
-        description = self.browser.find_by_css('textarea:focus').first
-        eq_(description['name'], "description", "wrong textarea was focused")
-
-        session = Client().session()
-        image = session.query(Image).one()
-        eq_(list(image.get_tags()), ["cute"])
-
-        assert self.browser.find_link_by_text('Add tag').first, \
-            "A new add-tag link wasn't appended!"
-
-    @logged_in
-    @with_settings(bucket='frootypoo')
-    def test_enter_from_tag_input_focuses_next_tag_input_and_saves(self):
-        self.upload_one_image()
-        self.browser.click_link_by_text('Add tag')
-        self.browser.find_by_name('tag').first.fill('chipmunk\n')
-        # wait for the submit event to happen. Normally Selenium handles the
-        # wait for us when we seek a focused input, but since the in-progress
-        # input has focus until the new one is ready, that doesn't work.
-        sleep(0.25)
+        self.browser.find_by_name('tag').first.fill('chipmunk\t')
         # there is no .is_focused or anything, so we'll do it inside-out:
         # look for a focused input and assert that it's the right one.
         next_tag = self.browser.find_by_css('input:focus').first
@@ -326,7 +304,6 @@ class TestAddTagsAfterUpload(UploadTestCase):
         self.browser.click_link_by_text('Add tag')
         tag_input = self.browser.find_by_name('tag').first
         tag_input.fill(' \n')
-        sleep(0.25)
 
         assert self.browser.is_element_not_present_by_name('tag'), \
             "the tag-name input wasn't cleared!"
@@ -335,6 +312,24 @@ class TestAddTagsAfterUpload(UploadTestCase):
 
         tags = Client().session().query(ImageTag).all()
         eq_(tags, [])
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_remove_tag(self):
+        self.upload_one_image()
+        self.browser.click_link_by_text('Add tag')
+        tag_input = self.browser.find_by_name('tag').first
+        tag_input.fill('intens\n')
+
+        tags = Client().session().query(Tag.name).all()
+        eq_(tags, [('intens',)])
+        image_tags = Client().session().query(ImageTag).all()
+        eq_(len(image_tags), 1)
+
+        self.browser.click_link_by_text('intens')
+
+        image_tags = Client().session().query(ImageTag).all()
+        eq_(image_tags, [])
 
 class TestEditAttributes(UploadTestCase):
     @logged_in

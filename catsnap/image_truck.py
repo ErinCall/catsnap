@@ -55,6 +55,20 @@ class ImageTruck():
             os.unlink(image_file)
 
     @classmethod
+    def new_from_image(cls, image):
+        (_, image_file) = tempfile.mkstemp()
+        key = Client().bucket().get_key(image.filename)
+        if key is None:
+            raise KeyError(filename)
+
+        key.get_contents_to_filename(image_file)
+
+        try:
+            return cls.new_from_file(image_file)
+        finally:
+            os.unlink(image_file)
+
+    @classmethod
     def new_from_something(cls, path):
         url = requests.utils.urlparse(path)
         if url.scheme:

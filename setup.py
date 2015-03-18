@@ -3,10 +3,10 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="5.0.3",
+      version="5.1.0",
       description="catalog and store images",
       author="Andrew Lorente",
-      author_email="andrew.lorente@gmail.com",
+      author_email="hello@andrewlorente.com",
       url="https://git.andrewlorente.com/AndrewLorente/catsnap/blob/master/README.rst",
       packages=['catsnap',
                 'catsnap.document',

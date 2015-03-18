@@ -102,6 +102,7 @@ class MutexSession(object):
                 finally:
                     mutex.release()
             return function
+
         for function_name in [
                 'add',
                 'flush',
@@ -109,6 +110,7 @@ class MutexSession(object):
                 'rollback',
                 'query',
                 'execute',
+                'refresh',
                 'delete']:
             function = define_function(function_name)
             setattr(self, function_name, function)

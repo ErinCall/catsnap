@@ -12,6 +12,7 @@ from tests import TestCase, with_settings
 from tests.image_helper import SMALL_JPG
 
 from catsnap import Client
+from catsnap.table.image import Image
 from catsnap.image_truck import ImageTruck, TryHTTPError
 
 class TestImageTruck(TestCase):
@@ -149,6 +150,30 @@ class TestImageTruck(TestCase):
             eq_(truck.content_type, 'image/jpeg')
             stream.seek(0)
             eq_(truck.contents, stream.read())
+
+    @patch('catsnap.image_truck.Client')
+    @patch('catsnap.image_truck.subprocess')
+    def test_new_from_image(self, subprocess, MockClient):
+        subprocess.check_output.return_value = \
+                'space-centurion.png: PNG image data, 1280 x 800, ' \
+                '8-bit/color RGB, non-interlaced'
+
+        def get_contents_to_filename(filename):
+            with open(filename, 'w') as fh:
+                fh.write('brain, skull, etc')
+        key = Mock()
+        key.get_contents_to_filename.side_effect = get_contents_to_filename
+        bucket = Mock()
+        bucket.get_key.return_value = key
+        client = Mock()
+        client.bucket.return_value = bucket
+        MockClient.return_value = client
+
+        image = Image(filename='faceface')
+        truck = ImageTruck.new_from_image(image)
+        eq_(truck.contents, 'brain, skull, etc')
+
+        bucket.get_key.assert_called_with('faceface')
 
     @patch('catsnap.image_truck.ImageTruck.new_from_url')
     @patch('catsnap.image_truck.ImageTruck.new_from_file')

@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import json
 from functools import wraps
+from sqlalchemy.orm.exc import NoResultFound
 from flask import request, make_response, abort as flask_abort
 from catsnap.web import app
 
@@ -21,7 +22,10 @@ def formatted_route(route, defaults={}, **kwargs):
                       400,
                       "Unknown format '{0}'".format(request_format))
 
-            response = fn(request_format, *args, **kwargs)
+            try:
+                response = fn(request_format, *args, **kwargs)
+            except NoResultFound:
+                abort(request_format, 404, 'Not Found')
             if request_format == 'json':
                 if type(response) in [list, dict]:
                     response = json.dumps(response)
@@ -36,7 +40,7 @@ def formatted_route(route, defaults={}, **kwargs):
 
 def abort(request_format, code, message=None):
     if request_format == 'json':
-        flask_abort(make_response(json.dumps({'error': message}),
+        flask_abort(make_response(json.dumps({'error': message, 'status': 'error'}),
                                   code,
                                   {'Content-Type': 'application/json'}))
     else:

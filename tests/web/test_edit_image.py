@@ -26,12 +26,19 @@ class TestUpdateImage(TestCase):
         session.flush()
 
         response = self.app.patch('/image/%d.json' % image.image_id, data={
-            'attributes': json.dumps({
-                'album_id': str(album.album_id),
-            })
+            'album_id': album.album_id,
         })
         body = json.loads(response.data)
-        eq_(body['status'], 'ok')
+        eq_(body, {
+            'status': 'ok',
+            'image': {
+                'title': 'dead beef',
+                'description': 'one time I saw a dead cow',
+                'album_id': str(album.album_id),
+                'caption': 'dead beef',
+                'tags': [],
+            }
+        })
 
         del image
         image = session.query(Image).one()
@@ -45,13 +52,26 @@ class TestUpdateImage(TestCase):
         session.flush()
 
         response = self.app.patch('/image/%d.json' % image.image_id, data={
-            'attributes': json.dumps({
-                'rochambeau': 'fleur de lis',
-            })
+            'rochambeau': 'fleur de lis',
         })
         body = json.loads(response.data)
         eq_(body['status'], 'error')
-        eq_(body['error_description'], "No such attribute 'rochambeau'")
+        eq_(body['error'], "No such attribute 'rochambeau'")
+        eq_(response.status_code, 400)
+
+    @logged_in
+    def test_illegal_attributes_generate_an_error(self):
+        session = Client().session()
+        image = Image(filename='deadbeef')
+        session.add(image)
+        session.flush()
+
+        response = self.app.patch('/image/%d.json' % image.image_id, data={
+            'filename': 'something evil',
+        })
+        body = json.loads(response.data)
+        eq_(body['status'], 'error')
+        eq_(body['error'], "'filename' is read-only")
 
     @logged_in
     def test_invalid_album_id_generates_an_error(self):
@@ -61,14 +81,12 @@ class TestUpdateImage(TestCase):
         session.flush()
 
         response = self.app.patch('/image/%d.json' % image.image_id, data={
-            'attributes': json.dumps({
-                'album_id': 5,
-            })
+            'album_id': 5,
         })
 
         body = json.loads(response.data)
         eq_(body['status'], 'error')
-        eq_(body['error_description'], "No such album_id '5'")
+        eq_(body['error'], "No such album_id '5'")
 
     @logged_in
     def test_clear_album_id(self):
@@ -81,9 +99,7 @@ class TestUpdateImage(TestCase):
         session.flush()
 
         response = self.app.patch('/image/%d.json' % image.image_id, data={
-            'attributes': json.dumps({
-                'album_id': '',
-            })
+            'album_id': '',
         })
 
         body = json.loads(response.data)
@@ -94,9 +110,7 @@ class TestUpdateImage(TestCase):
 
     def test_login_is_required(self):
         response = self.app.patch('/image/1.json', data={
-            'attributes': json.dumps({
-                'title': 'BUTTFARTS',
-            }),
+            'title': 'BUTTFARTS',
         })
         eq_(response.status_code, 401)
 

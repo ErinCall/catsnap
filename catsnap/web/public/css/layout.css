@@ -1,26 +1,132 @@
 body {
-	background-color: #333333;
-	color: #eeeeee;
+    background-color: #333333;
+    color: #eeeeee;
 }
 a {
-	color: #22aaee;
+    color: #22aaee;
 }
 a:hover {
-	color: #2277a2;
+    color: #2277a2;
+}
+
+.container {
+    margin-left: 0px;
+    width: 100%;
+}
+
+.container-fluid h2, .container-fluid p, .container-fluid ul {
+    margin-left: 10px;
 }
 
 .image-container {
-	float:left;
-	margin-right: 5%;
-	margin-bottom: 5%;
+    display: table;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.image-container h2 {
+    word-wrap: break-word;
+}
+
+.image-description {
+    margin-top: 10px;
+    font-size: 120%;
+}
+
+.prev, .next {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.prev {
+    text-overflow: ellipsis;
+}
+
+.next {
+    text-overflow: "… →";
+}
+
+.prev-container, .next-container, .album-title {
+    padding: 20px;
+    height: 65px;
+}
+
+.album-title {
+    text-align: center;
+    border-right: 1px solid #444;
+    border-left: 1px solid #444;
+}
+
+.album-nav {
+    border-top: 1px solid #444;
+    border-right: 2px solid #eee;
+    border-bottom: 2px solid #eee;
+    border-left: 2px solid #eee;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    background-color: black;
+}
+
+#image-edit h2 {
+    margin-bottom: 15px;
+}
+
+#image-edit .form-group {
+    width: 100%;
+}
+
+#image .edit {
+    display: none;
+}
+
+#image-edit textarea {
+    width: 100%;
+    font-size: 120%;
+    line-height: 180%;
+}
+
+.edit-title, .edit-album {
+    height: 50px;
+    font-size: 30px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+input.edit-title, select.edit-album {
+    width: 60%;
 }
 
 article {
-	clear:left;
+    clear:left;
+    width: 100%;
 }
 
-.data {
-	display: none;
+.image-options .btn {
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    background-color: black;
+    color: #eeeeee;
+}
+
+.dropdown-menu li {
+    color: #222222;
+    padding-left: 10px;
+}
+
+.metadata {
+    /*
+        This is just meant to say "excessively large." It's overridden
+        by the max-width set on all children of the image's parent.
+        Works in Chrome, FF, and Safari; no idea what it does in IE.
+    */
+    width: 10000px;
+}
+
+.edit-tags {
+    list-style-type: none;
 }
 
 header {
@@ -51,6 +157,7 @@ a form {
 
 .row {
     padding-bottom: 10px;
+    margin-left: 25px;
 }
 
 .image-control {
@@ -89,22 +196,26 @@ a form {
     margin: 10px;
 }
 
-input, label.btn {
+.upload input, .upload label.btn {
     margin-top: 5px;
 }
+
 .input {
     overflow: hidden;
     padding-right: 5px;
 }
+
 .upload input[type="submit"] {
     float: right;
 }
+
 .input input[type="text"], label.btn {
     width: 100%;
     padding-right: 0;
     padding-left: 0;
     margin-bottom: 0;
 }
+
 .input input[type="file"] {
     line-height: 15px;
     cursor: pointer;
@@ -119,11 +230,11 @@ input, label.btn {
     top: 5px;
 }
 
-input[type="text"] {
+input[type="text"], textarea {
     color: #222222;
 }
 
-.image-control input[type="text"], .image-control textarea, .edit {
+.image-control input[type="text"], .image-control textarea, .image-control .edit {
     width: 100%;
 }
 
@@ -145,7 +256,7 @@ li.tag span, li.tag a {
 }
 
 .album-menu {
-    margin-left: -30px;
+    margin-left: 10px;
 }
 
 .album-menu select {
