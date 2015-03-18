@@ -8,6 +8,7 @@ from catsnap import Client
 from catsnap.table.image import Image
 from catsnap.table.album import Album
 from catsnap.table.image_tag import ImageTag
+from catsnap.table.tag import Tag
 from mock import patch, Mock
 from nose.tools import eq_, nottest
 
@@ -311,6 +312,24 @@ class TestAddTagsAfterUpload(UploadTestCase):
 
         tags = Client().session().query(ImageTag).all()
         eq_(tags, [])
+
+    @logged_in
+    @with_settings(bucket='frootypoo')
+    def test_remove_tag(self):
+        self.upload_one_image()
+        self.browser.click_link_by_text('Add tag')
+        tag_input = self.browser.find_by_name('tag').first
+        tag_input.fill('intens\n')
+
+        tags = Client().session().query(Tag.name).all()
+        eq_(tags, [('intens',)])
+        image_tags = Client().session().query(ImageTag).all()
+        eq_(len(image_tags), 1)
+
+        self.browser.click_link_by_text('intens')
+
+        image_tags = Client().session().query(ImageTag).all()
+        eq_(image_tags, [])
 
 class TestEditAttributes(UploadTestCase):
     @logged_in

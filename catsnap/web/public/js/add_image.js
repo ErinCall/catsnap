@@ -67,7 +67,7 @@ $(document).ready(function () {
     $form.append($('<input type="text" name="title" ' +
              'placeholder="Title" class="form-control">'));
 
-    $ul = $('<ul><li class="tag"></li></ul>');
+    $ul = $('<ul class="edit-tags"><li class="tag"></li></ul>');
     $ul.children('li').append(tagLink.call(this));
     $form.append($ul);
 
@@ -129,34 +129,44 @@ $(document).ready(function () {
 
   tagLink = function() {
     var $container = this,
+        $span = $('<span>'),
+        $addButton = $('<button class="btn btn-xs btn-default add-tag"><span class="glyphicon glyphicon-plus-sign"></span></button>'),
         $a = $('<a href="#">Add tag</a>');
 
-    $a.click(function(event) {
+    function startEditing(event) {
       var abortEditing,
           submitTag,
           $thisLi = $(this).parent(),
           $tagInput,
           $form;
       event.preventDefault();
-      $a.hide();
+      $thisLi.find('*').hide();
 
       $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
       $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
       $form.prepend($tagInput);
 
-      abortEditing = catsnap.generateAbortEditing($tagInput, $a, $tagInput);
+      abortEditing = catsnap.generateAbortEditing($tagInput, $a.add($addButton), $tagInput);
 
       submitTag = window.catsnap.generateSubmitTag(
           $form, $container, abortEditing, showError.bind($container), function() {
         var $nextLi = $('<li class="tag">'),
-            $nameSpan = $('<span class="tag">'),
+            $removeButton = $('<button class="btn btn-xs btn-default remove-tag">'),
+            $xSign = $('<span class="glyphicon glyphicon-remove-sign" aria-label="remove">'),
+            $tag = $('<a href="#">'),
+            tagName = $tagInput.val().trim(),
+            removeTag,
             newTagLink;
 
-        $a.remove();
-        $form.remove();
+        $thisLi.find('*').remove();
 
-        $nameSpan.append(tagName);
-        $thisLi.append($nameSpan);
+        removeTag = catsnap.generateRemoveTag($container, $thisLi.remove);
+
+        $tag.text(tagName);
+        $removeButton.append($xSign);
+        $thisLi.append([$removeButton, ' ', $tag]);
+        $removeButton.click(removeTag);
+        $tag.click(removeTag);
 
         newTagLink = tagLink.call($container);
         $nextLi.append(newTagLink);
@@ -172,8 +182,12 @@ $(document).ready(function () {
       $thisLi.append($form);
       $a.parent().append($thisLi);
       $form.find('input').focus();
-    });
-    return $a;
+    };
+
+    $addButton.click(startEditing);
+    $a.click(startEditing);
+
+    return [$addButton, ' ', $a]
   };
 
   showError = function(data) {

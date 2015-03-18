@@ -3,7 +3,8 @@
 $(document).ready(function() {
   'use strict';
 
-  var catsnap = window.catsnap;
+  var catsnap = window.catsnap,
+      removeTag;
 
   /*
   * This is basically .load(), except load events happen too soon when the image comes from cache.
@@ -72,26 +73,15 @@ $(document).ready(function() {
     });
   }
 
-  function removeTag(event) {
-    event.preventDefault();
-    var $li = $(event.target).parent(),
-        imageId = $li.parents('div.edit').data('image-id'),
-        tagName = $li.find('a').text();
-
-    $.ajax('/image/' + imageId + '.json', {
-      type: "PATCH",
-      data: {
-        'remove_tag': tagName,
-      },
-      success: function(data) {
-        $li.remove();
-        $('.view li.tag').filter(function(index, element) {return element.textContent === tagName;}).remove();
-        if ($('.view li.tag').length === 0) {
-          $('#tag-button').addClass('disabled');
-        }
-      }
-    });
-  }
+  removeTag = catsnap.generateRemoveTag($('div.edit'), function($li, tagName) {
+    $li.remove();
+    $('.view li.tag').filter(function(index, element) {
+      return element.textContent === tagName;
+    }).remove();
+    if ($('.view li.tag').length === 0) {
+      $('#tag-button').addClass('disabled');
+    }
+  });
 
   function showTagInput(event) {
     var abortEditing,

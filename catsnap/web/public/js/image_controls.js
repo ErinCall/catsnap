@@ -9,6 +9,22 @@ $(document).ready(function () {
   }
   var catsnap = window.catsnap;
 
+  function generateRemoveTag($imageIdElement, onSuccess) {
+    return function removeTag(event) {
+      event.preventDefault();
+      var $li = $(event.target).parent(),
+          tagName = $li.find('a').text();
+
+      $.ajax(editingUrl($imageIdElement), {
+        type: "PATCH",
+        data: {remove_tag: tagName},
+        success: function() {
+          onSuccess($li, tagName);
+        }
+      });
+    };
+  }
+
   function generateSubmitTag($form, $imageIdElement, abortEditing, onError, onSuccess) {
     return function submitTag(event, successHandlers) {
       var tagName,
@@ -47,7 +63,7 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
       $tagInput.off('blur');
       $tagInput.blur();
       $removeMe.remove();
-      $showMe.show();
+      $showMe.show().find('*').show();
     };
   }
 
@@ -66,6 +82,7 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
     });
   }
 
+  catsnap.generateRemoveTag = generateRemoveTag;
   catsnap.generateSubmitTag = generateSubmitTag;
   catsnap.generateAbortEditing = generateAbortEditing;
   catsnap.editingUrl = editingUrl;
