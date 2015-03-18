@@ -138,4 +138,19 @@ $(document).ready(function() {
   $('#image-edit').submit(saveEdits);
   $('.add-tag').click(showTagInput);
   $(document).on('click', '.remove-tag', removeTag);
+
+  $('#reprocess').click(function reprocessImage(event) {
+    event.preventDefault();
+    var imageId = $(event.target).data('image-id');
+    $('#reprocess').text('Reprocessing...').off('click').removeAttr('href');
+
+    $.ajax('/image/reprocess/' + imageId + '.json', {
+      type: 'POST',
+      success: function(data) {},
+      error: function(data) {
+        alert(data);
+        $('#reprocess').click(reprocessImage).attr('href', '#').text('Reprocess');
+      }
+    })
+  })
 });

@@ -7,6 +7,9 @@
 {% block header_extras %}
     {% if g.user %}
         <li>
+            <a href="#" id="reprocess" data-image-id="{{ image.image_id }}">Reprocess</a>
+        </li>
+        <li>
             <a href="#" id="edit">Edit</a>
         </li>
     {% endif %}

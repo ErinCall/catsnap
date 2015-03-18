@@ -188,3 +188,23 @@ def edit_image(request_format, image_id):
             'tags': list(image.get_tags()),
         }
     }
+
+@formatted_route('/image/reprocess/<int:image_id>', methods=['POST'])
+@login_required
+def reprocess_image(request_format, image_id):
+    session = Client().session()
+    image = session.query(Image).filter(Image.image_id == image_id).one()
+
+    truck = ImageTruck.new_from_image(image)
+    contents = ImageContents(image_id=image.image_id,
+                             contents=truck.contents,
+                             content_type=truck.content_type)
+
+    session.add(contents)
+    session.flush()
+    delay(process_image, contents.image_contents_id)
+
+    if request_format == 'json':
+        return {'status': 'ok'}
+    else:
+        return redirect(url_for('show_image', image_id=image.image_id))
