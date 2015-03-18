@@ -1,5 +1,4 @@
 /* jshint jquery:true, browser:true */
-/* global KeyCodes */
 
 $(document).ready(function() {
   'use strict';
@@ -100,7 +99,6 @@ $(document).ready(function() {
         $addLi = $($(event.target).parents('li')[0]),
         $newLi,
         $tagInput,
-        imageId = $addLi.parents('div.edit').data('image-id'),
         $form;
     event.preventDefault();
 
@@ -111,7 +109,7 @@ $(document).ready(function() {
     abortEditing = catsnap.generateAbortEditing($tagInput, $addLi, $newLi);
 
     submitTag = catsnap.generateSubmitTag(
-        $form, $addLi.parents('div.edit'), abortEditing, window.alert, function(data) {
+        $form, $addLi.parents('div.edit'), abortEditing, window.alert, function() {
       var $button = $('<button class="btn btn-xs btn-default remove-tag">'),
           $xSign = $('<span class="glyphicon glyphicon-remove-sign" aria-label="remove">'),
           $tag = $('<a href="#" class="remove-tag">'),

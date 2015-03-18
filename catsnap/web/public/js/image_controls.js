@@ -1,5 +1,5 @@
 /* jshint jquery:true, browser:true */
-/* global KeyCodes, _ */
+/* global KeyCodes */
 
 $(document).ready(function () {
   'use strict';

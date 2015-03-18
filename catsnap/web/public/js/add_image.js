@@ -1,5 +1,4 @@
 /* jshint jquery:true, browser:true */
-/* global KeyCodes, _ */
 
 $(document).ready(function () {
   'use strict';
@@ -45,7 +44,7 @@ $(document).ready(function () {
 
         appendAddPane($newAddPane);
       },
-      error: function(data, status, errorThrown) {
+      error: function(data) {
         $article.find('form').show();
         $article.find('img').remove();
         $this.find('input').removeClass('disabled').attr('disabled', false);
@@ -62,7 +61,7 @@ $(document).ready(function () {
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
     this.data('image-id', data.image_id);
     this.data('url', data.url);
-    window.setTimeout(_.bind(checkForImage, this, delay), delay);
+    window.setTimeout(checkForImage.bind(this, delay), delay);
 
     $form = $('<form method="post" action="#">');
     $form.append($('<input type="text" name="title" ' +
@@ -99,7 +98,7 @@ $(document).ready(function () {
         title: $titleInput.val(),
         description: $descriptionInput.val(),
       },
-      success: function(data) {
+      success: function() {
         $saveButton.removeClass('disabled');
       },
       error: function(data, status, errorThrown) {
@@ -133,8 +132,7 @@ $(document).ready(function () {
         $a = $('<a href="#">Add tag</a>');
 
     $a.click(function(event) {
-      var tagName,
-          abortEditing,
+      var abortEditing,
           submitTag,
           $thisLi = $(this).parent(),
           $tagInput,
@@ -149,7 +147,7 @@ $(document).ready(function () {
       abortEditing = catsnap.generateAbortEditing($tagInput, $a, $tagInput);
 
       submitTag = window.catsnap.generateSubmitTag(
-          $form, $container, abortEditing, showError.bind($container), function(data) {
+          $form, $container, abortEditing, showError.bind($container), function() {
         var $nextLi = $('<li class="tag">'),
             $nameSpan = $('<span class="tag">'),
             newTagLink;
@@ -169,7 +167,7 @@ $(document).ready(function () {
       $form.submit(submitTag);
       catsnap.tagKeyListeners($form, abortEditing, function() {
         $thisLi.siblings().find('a').click();
-      })
+      });
 
       $thisLi.append($form);
       $a.parent().append($thisLi);
@@ -194,8 +192,7 @@ $(document).ready(function () {
     $img.error(function() {
       $img.off('error');
       $img.error(function() {
-        window.setTimeout(_.bind(
-          checkForImage, $container, newTimeout), newTimeout);
+        window.setTimeout(checkForImage.bind($container, newTimeout), newTimeout);
       });
       $img.attr('src', url);
     });
@@ -233,13 +230,13 @@ $(document).ready(function () {
         $albumInput.val('');
         $modal.modal('hide');
       },
-      error: _.bind(showError, $modalHeader),
+      error: showError.bind($modalHeader),
     });
   };
 
   $('.image-control form').submit(sendImage);
   $('#new-album form').submit(saveAlbum);
-  $('input[type="file"]').on('change', function(event) {
+  $('input[type="file"]').on('change', function() {
     var numFiles = $(this).prop('files').length,
         displayText = $(this).val();
 
