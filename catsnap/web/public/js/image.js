@@ -134,15 +134,8 @@ $(document).ready(function() {
 
     $addLi.hide();
 
-    $tagInput.keydown(function(event) {
-      if (event.which === KeyCodes.TAB) {
-        event.preventDefault();
-        $form.triggerHandler('submit', function() {
-            $addLi.find('a').click();
-        });
-      } else if (event.which === KeyCodes.ESCAPE) {
-        abortEditing();
-      }
+    catsnap.tagKeyListeners($form, abortEditing, function() {
+      $addLi.find('a').click();
     });
     $tagInput.show();
     $form.submit(submitTag);

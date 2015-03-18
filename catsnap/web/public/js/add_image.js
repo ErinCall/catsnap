@@ -167,16 +167,9 @@ $(document).ready(function () {
 
       $tagInput.blur(submitTag);
       $form.submit(submitTag);
-      $tagInput.keydown(function(event) {
-        if (event.which === KeyCodes.ENTER) {
-          event.preventDefault();
-          $form.trigger('submit', function() {
-            $thisLi.siblings().find('a').click();
-          });
-        } else if (event.which == KeyCodes.ESCAPE) {
-          abortEditing();
-        }
-      });
+      catsnap.tagKeyListeners($form, abortEditing, function() {
+        $thisLi.siblings().find('a').click();
+      })
 
       $thisLi.append($form);
       $a.parent().append($thisLi);

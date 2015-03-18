@@ -55,7 +55,19 @@ Bug reported: https://bugzilla.mozilla.org/show_bug.cgi?id=1091954
     return "/image/" + $element.data('image-id') + '.json';
   }
 
+  function tagKeyListeners($form, abortEditing, onTab) {
+    $form.on('keydown', 'input[type=text]', function(event) {
+      if (event.which === KeyCodes.TAB) {
+        event.preventDefault();
+        $form.triggerHandler('submit', onTab);
+      } else if (event.which == KeyCodes.ESCAPE) {
+        abortEditing();
+      }
+    });
+  }
+
   catsnap.generateSubmitTag = generateSubmitTag;
   catsnap.generateAbortEditing = generateAbortEditing;
   catsnap.editingUrl = editingUrl;
+  catsnap.tagKeyListeners = tagKeyListeners;
 });
