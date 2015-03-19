@@ -67,6 +67,7 @@ def process_image(self, image_contents_id):
 
     truck = ImageTruck(
         contents.contents, contents.content_type, image.source_url)
+    truck.filename = image.filename
     metadata = ImageMetadata.image_metadata(truck.contents)
     truck.contents = ReorientImage.reorient_image(truck.contents)
     ResizeImage.make_resizes(image, truck)
