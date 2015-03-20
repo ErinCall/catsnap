@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     LargeBinary,
 )
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
@@ -137,10 +138,14 @@ class Image(CreatedAtBookkeeper):
                         order_by(getattr(Image.photographed_at, order)(), getattr(Image.image_id, order)()).
                         limit(1))
 
-            prev = neighbor_query('__lt__', 'desc').all()
-            next = neighbor_query('__gt__', 'asc').all()
-            prev = prev[0] if prev else None
-            next = next[0] if next else None
+            try:
+                prev = neighbor_query('__lt__', 'desc').one()
+            except NoResultFound:
+                prev = None
+            try:
+                next = neighbor_query('__gt__', 'asc').one()
+            except NoResultFound:
+                next = None
 
             return (prev, next)
 
