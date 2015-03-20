@@ -17,10 +17,11 @@ class ResizeImage(object):
     @classmethod
     def make_resizes(cls, image, truck):
         contents = truck.contents
-        image_handler = ImageHandler(blob=contents)
-        long_side = max(image_handler.size)
 
         for size, new_long_side in RESIZES.iteritems():
+            image_handler = ImageHandler(blob=contents)
+            long_side = max(image_handler.size)
+
             if new_long_side < long_side:
                 cls._resize_image(image, image_handler, truck, size)
 
