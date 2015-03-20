@@ -186,6 +186,32 @@ class TestImages(TestCase):
 
         eq_(images[-1].neighbors(), (images[-2], None))
 
+    def test_neighbors_sorts_by_photographed_at_if_present(self):
+        session = Client().session()
+        album = Album(name='Light me up')
+
+        session.add(album)
+        session.flush()
+
+        album_id = album.album_id
+
+        images = [
+            Image(filename='a', album_id=album_id, photographed_at='2015-03-20 15:00:00', image_id=0),
+            Image(filename='b', album_id=album_id, photographed_at='2015-03-20 15:30:00', image_id=1), # should sort last
+            Image(filename='c', album_id=album_id, photographed_at='2015-03-20 15:20:00', image_id=2), # should sort later
+            Image(filename='d', album_id=album_id, photographed_at='2015-03-20 15:00:00', image_id=3),
+            Image(filename='e', album_id=album_id, photographed_at='2015-03-20 15:00:00', image_id=4),
+        ]
+        for image in images:
+            session.add(image)
+        session.flush()
+
+        eq_(images[0].neighbors(), (None, images[3]))
+        eq_(images[1].neighbors(), (images[2], None))
+        eq_(images[2].neighbors(), (images[4], images[1]))
+        eq_(images[3].neighbors(), (images[0], images[4]))
+        eq_(images[4].neighbors(), (images[3], images[2]))
+
     def test_neighbors_skips_over_images_from_other_albums(self):
         session = Client().session()
         hobbiton = Album(name='Hobbiton')
