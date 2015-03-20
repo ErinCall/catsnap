@@ -63,6 +63,8 @@ class TestEditImage(TestCase):
 
         eq_(caption.text, 'Goofy Picture')
 
+        eq_(self.browser.title, 'Goofy Picture - Catsnap')
+
         session.refresh(silly)
         eq_(silly.title, 'Goofy Picture')
 

@@ -59,6 +59,7 @@ $(document).ready(function() {
       data: formData,
       success: function(data) {
         $('#caption').text(data.image.caption);
+        $('title').text($('title').text().replace(/\n/g, '').replace(/^.* -/, data.image.caption + ' -'));
         if (data.image.description) {
           var paras = data.image.description.split('\n').map(function(line) {
             return $('<p class="image-description view">').text(line);
