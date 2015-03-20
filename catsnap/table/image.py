@@ -129,7 +129,7 @@ class Image(CreatedAtBookkeeper):
                         filter(Image.image_id > self.image_id).
                         filter(Image.album_id == self.album_id)
                 )).\
-                order_by(Image.created_at).\
+                order_by(Image.image_id).\
                 all()
             if len(neighbors) == 2:
                 return (neighbors[0], neighbors[1])

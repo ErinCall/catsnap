@@ -13,4 +13,5 @@ class CreatedAtBookkeeper(Base):
 
     def __init__(self, *args, **kwargs):
         super(CreatedAtBookkeeper, self).__init__(*args, **kwargs)
-        self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+        if not self.created_at:
+            self.created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())

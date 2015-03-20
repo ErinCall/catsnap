@@ -166,18 +166,25 @@ class TestImages(TestCase):
         session.add(album)
         session.flush()
 
-        session.add(Image(filename='babeface'))
-        session.add(Image(filename='cafebabe', album_id=album.album_id))
-        prev = Image(filename='1ace', album_id=album.album_id)
-        session.add(prev)
-        image = Image(filename='f1acc1d', album_id=album.album_id)
-        session.add(image)
-        next = Image(filename='bab1e5', album_id=album.album_id)
-        session.add(next)
-        session.add(Image(filename='acebabe', album_id=album.album_id))
+        images = [
+            Image(filename='cafebabe', album_id=album.album_id, created_at='2015-03-20 15:00:00'),
+            Image(filename='1ace',     album_id=album.album_id, created_at='2015-03-20 15:30:00'),
+            Image(filename='f1acc1d',  album_id=album.album_id, created_at='2015-03-20 15:20:00'),
+            Image(filename='bab1e5',   album_id=album.album_id, created_at='2015-03-20 15:00:00'),
+            Image(filename='acebabe',  album_id=album.album_id, created_at='2015-03-20 15:00:00'),
+        ]
+        for image in images:
+            session.add(image)
         session.flush()
 
-        eq_((prev, next), image.neighbors())
+        eq_(images[0].neighbors(), (None, images[1]))
+
+        # this awkward list(enumerate()) construct avoids the indexes being left-shifted from
+        # their corresponding values (as would happen with `enumerate(images[1:-2])`)
+        for (i, image) in list(enumerate(images))[1:-2]:
+            eq_(image.neighbors(), (images[i - 1], images[i + 1]))
+
+        eq_(images[-1].neighbors(), (images[-2], None))
 
     def test_neighbors_skips_over_images_from_other_albums(self):
         session = Client().session()
