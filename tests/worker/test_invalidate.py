@@ -77,7 +77,7 @@ class TestInvalidate(TestCase):
         Invalidate().run(image.image_id)
 
         cloudfront.create_invalidation_request.assert_called_with(
-            'JEEZAMANDA', 'c1a115')
+            'JEEZAMANDA', ['c1a115'])
 
     @with_settings(cloudfront_distribution_id='FETCHISNTGOINGTOHAPPEN')
     def test_invalidate_an_image__with_a_resize_suffix(self):
@@ -94,7 +94,7 @@ class TestInvalidate(TestCase):
         Invalidate().run(image.image_id, suffix="teensy")
 
         cloudfront.create_invalidation_request.assert_called_with(
-            'FETCHISNTGOINGTOHAPPEN', 'f131d_teensy')
+            'FETCHISNTGOINGTOHAPPEN', ['f131d_teensy'])
 
     @with_settings(cloudfront_distribution_id='SHEESHJESSICA')
     @patch('catsnap.worker.tasks.Client')

@@ -39,7 +39,7 @@ class Invalidate(worker.Task):
         try:
             distro_id = config['cloudfront_distribution_id']
             Client().get_cloudfront().create_invalidation_request(
-                distro_id, filename)
+                distro_id, [filename])
         except KeyError:
             pass
         except CloudFrontServerError as e:
