@@ -120,53 +120,29 @@ class Image(CreatedAtBookkeeper):
             return (None, None)
         else:
             session = Client().session()
-            neighbors = session.query(Image).\
-                filter(Image.album_id == self.album_id).\
-                filter(or_(
-                    Image.image_id == session.query(Image.image_id).
-                        filter(or_(
-                            Image.photographed_at < self.photographed_at if self.photographed_at is not None else False,
-                            and_(
-                                Image.photographed_at.op('is not distinct from')(self.photographed_at),
-                                Image.image_id < self.image_id
-                            )
-                        )).
-                        filter(Image.album_id == self.album_id).
-                        order_by(Image.photographed_at.desc(), Image.image_id.desc()).
-                        limit(1),
-                    Image.image_id == session.query(Image.image_id).
-                        filter(or_(
-                            Image.photographed_at > self.photographed_at if self.photographed_at is not None else False,
-                            and_(
-                                Image.photographed_at.op('is not distinct from')(self.photographed_at),
-                                Image.image_id > self.image_id
-                            )
-                        )).
-                        filter(Image.album_id == self.album_id).
-                        order_by(Image.photographed_at, Image.image_id).
-                        limit(1)
-                )).\
-                order_by(Image.photographed_at).\
-                all()
 
-            if len(neighbors) == 2:
-                return (neighbors[0], neighbors[1])
-            elif len(neighbors) == 1 and (
-                    neighbors[0].photographed_at > self.photographed_at or (
-                        neighbors[0].photographed_at == self.photographed_at and
-                        neighbors[0].image_id > self.image_id
-                        )
-                    ):
-                return (None, neighbors[0])
-            elif len(neighbors) == 1 and (
-                    neighbors[0].photographed_at < self.photographed_at or (
-                        neighbors[0].photographed_at == self.photographed_at and
-                        neighbors[0].image_id < self.image_id
-                        )
-                    ):
-                return (neighbors[0], None)
-            else:
-                return (None, None)
+            def neighbor_query(comparator, order):
+                return session.query(Image).\
+                    filter(Image.album_id == self.album_id).\
+                    filter(Image.image_id == session.query(Image.image_id).
+                        filter(or_(
+                            getattr(Image.photographed_at, comparator)(self.photographed_at)
+                                    if self.photographed_at is not None else False,
+                            and_(
+                                Image.photographed_at.op('is not distinct from')(self.photographed_at),
+                                getattr(Image.image_id, comparator)(self.image_id)
+                            )
+                        )).
+                        filter(Image.album_id == self.album_id).
+                        order_by(getattr(Image.photographed_at, order)(), getattr(Image.image_id, order)()).
+                        limit(1))
+
+            prev = neighbor_query('__lt__', 'desc').all()
+            next = neighbor_query('__gt__', 'asc').all()
+            prev = prev[0] if prev else None
+            next = next[0] if next else None
+
+            return (prev, next)
 
     def caption(self):
         get_tags = lambda: list(self.get_tags())
