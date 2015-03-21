@@ -49,7 +49,11 @@
                     <select name="album_id" id="album_id" class="edit edit-album form-control">
                         <option value="">(No Album)</option>
                         {% for album in albums %}
-                            <option value="{{ album.album_id }}">{{ album.name }}</option>
+                            <option value="{{ album.album_id }}"
+                                {% if album.album_id == image.album_id %}
+                                    selected="true"
+                                {% endif %}
+                            >{{ album.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

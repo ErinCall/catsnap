@@ -294,7 +294,7 @@ class TestEditImage(TestCase):
         session.add(highlights)
         session.flush()
 
-        pic = Image(filename="acebabe")
+        pic = Image(filename="acebabe", album_id=pix.album_id)
         session.add(pic)
         session.flush()
 
@@ -304,6 +304,9 @@ class TestEditImage(TestCase):
 
         album_dropdown = self.browser.find_by_css('select.edit-album')
         assert album_dropdown.visible, "Album select wasn't visible!"
+        album_options = album_dropdown.find_by_css('option')
+
+        eq_(album_options[1]['selected'], 'true')
 
         album_dropdown.select(str(highlights.album_id))
         self.browser.click_link_by_text('Stop Editing')
