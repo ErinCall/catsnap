@@ -138,14 +138,13 @@ $(document).ready(function () {
 
   tagLink = function() {
     var $container = this,
-        $span = $('<span>'),
         $addButton = $('<button class="btn btn-xs btn-default add-tag"><span class="glyphicon glyphicon-plus-sign"></span></button>'),
         $a = $('<a href="#">Add tag</a>');
 
     function startEditing(event) {
       var abortEditing,
           submitTag,
-          $thisLi = $(this).parent(),
+          $thisLi = $(event.target).parent(),
           $tagInput,
           $form;
       event.preventDefault();
