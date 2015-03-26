@@ -1,4 +1,5 @@
 /* jshint jquery:true, browser:true */
+/* global KeyCodes */
 
 $(document).ready(function () {
   'use strict';
@@ -55,17 +56,25 @@ $(document).ready(function () {
 
   receiveImageData = function(data) {
     var delay = 2000, //milliseconds
+        $titleInput = $('<input type="text" name="title" placeholder="Title" class="form-control">'),
         $form,
         $ul;
 
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
     this.data('image-id', data.image_id);
     this.data('url', data.url);
+
+    $titleInput.on('keydown', function(event) {
+      if (event.which === KeyCodes.ENTER) {
+        event.preventDefault();
+        $form.submit();
+      }
+    });
+
     window.setTimeout(checkForImage.bind(this, delay), delay);
 
     $form = $('<form method="post" action="#">');
-    $form.append($('<input type="text" name="title" ' +
-             'placeholder="Title" class="form-control">'));
+    $form.append($titleInput);
 
     $ul = $('<ul class="edit-tags"><li class="tag"></li></ul>');
     $ul.children('li').append(tagLink.call(this));
