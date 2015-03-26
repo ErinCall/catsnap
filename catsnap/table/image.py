@@ -6,10 +6,12 @@ from sqlalchemy import (
     String,
     DateTime,
     func,
+    and_,
     or_,
     ForeignKey,
     LargeBinary,
 )
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 from catsnap import Client
@@ -119,26 +121,33 @@ class Image(CreatedAtBookkeeper):
             return (None, None)
         else:
             session = Client().session()
-            neighbors = session.query(Image).\
-                filter(Image.album_id == self.album_id).\
-                filter(or_(
-                    Image.image_id == session.query(func.max(Image.image_id)).
-                        filter(Image.image_id < self.image_id).
-                        filter(Image.album_id == self.album_id),
-                    Image.image_id == session.query(func.min(Image.image_id)).
-                        filter(Image.image_id > self.image_id).
-                        filter(Image.album_id == self.album_id)
-                )).\
-                order_by(Image.created_at).\
-                all()
-            if len(neighbors) == 2:
-                return (neighbors[0], neighbors[1])
-            elif len(neighbors) == 1 and neighbors[0].image_id > self.image_id:
-                return (None, neighbors[0])
-            elif len(neighbors) == 1 and neighbors[0].image_id < self.image_id:
-                return (neighbors[0], None)
-            else:
-                return (None, None)
+
+            def neighbor_query(comparator, order):
+                return session.query(Image).\
+                    filter(Image.album_id == self.album_id).\
+                    filter(Image.image_id == session.query(Image.image_id).
+                        filter(or_(
+                            getattr(Image.photographed_at, comparator)(self.photographed_at)
+                                    if self.photographed_at is not None else False,
+                            and_(
+                                Image.photographed_at.op('is not distinct from')(self.photographed_at),
+                                getattr(Image.image_id, comparator)(self.image_id)
+                            )
+                        )).
+                        filter(Image.album_id == self.album_id).
+                        order_by(getattr(Image.photographed_at, order)(), getattr(Image.image_id, order)()).
+                        limit(1))
+
+            try:
+                prev = neighbor_query('__lt__', 'desc').one()
+            except NoResultFound:
+                prev = None
+            try:
+                next = neighbor_query('__gt__', 'asc').one()
+            except NoResultFound:
+                next = None
+
+            return (prev, next)
 
     def caption(self):
         get_tags = lambda: list(self.get_tags())
