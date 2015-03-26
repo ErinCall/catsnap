@@ -142,8 +142,8 @@ $(document).ready(function () {
       event.preventDefault();
       $thisLi.find('*').hide();
 
-      $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
-      $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
+      $form = $('<form><input type="submit" class="enter-to-submit"></form>');
+      $tagInput = $('<input type="text" class="edit form-control" name="tag" autocapitalize="none">');
       $form.prepend($tagInput);
 
       abortEditing = catsnap.generateAbortEditing($tagInput, $a.add($addButton), $tagInput);

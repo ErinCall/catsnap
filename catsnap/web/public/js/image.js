@@ -95,7 +95,7 @@ $(document).ready(function() {
 
     $newLi = $('<li>');
     $form = $('<form><input type="submit" class="enter-to-submit"></form>');
-    $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag">');
+    $tagInput = $('<input type="text" class="edit form-control" name="tag" id="tag" autocapitalize="none">');
 
     abortEditing = catsnap.generateAbortEditing($tagInput, $addLi, $newLi);
 
