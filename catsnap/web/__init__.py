@@ -7,7 +7,6 @@ import datetime
 from logging.handlers import SMTPHandler
 import sqlalchemy.exc
 from flask import Flask, render_template, g, session, request
-from flask_openid import OpenID
 from catsnap.table.album import Album
 from catsnap import Client
 
@@ -48,7 +47,6 @@ stderr_handler.setLevel(logging.WARNING)
 app.logger.addHandler(stderr_handler)
 
 app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
-oid = OpenID(app, safe_roots=[])
 
 @app.before_request
 def before_request():
