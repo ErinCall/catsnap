@@ -22,7 +22,7 @@
                     </li>
                 {% else %}
                     <li>
-                        <a href="{{ url_for('login') }}" class="pill">Log in</a>
+                        <a href="{{ url_for('login', next=request.path) }}" class="pill">Log in</a>
                     </li>
                 {% endif %}
             </ul>

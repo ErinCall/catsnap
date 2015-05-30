@@ -10,7 +10,7 @@ from catsnap import Client
 
 @app.route('/login', methods=['GET'])
 def login():
-    return render_template('login.html.jinja')
+    return render_template('login.html.jinja', next=request.args.get('next', ''))
 
 @app.route('/login', methods=['POST'])
 def do_login():
@@ -25,7 +25,7 @@ def do_login():
 
         if bcrypt.hashpw(given_password, password_hash) == password_hash:
             session['logged_in'] = True
-            return redirect('/')
+            return redirect(request.form.get('next', '/'))
         else:
             return render_template('login.html.jinja',
                                    error='Incorrect password.')
