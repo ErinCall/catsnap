@@ -336,11 +336,14 @@ class TestEditAttributes(UploadTestCase):
     @with_settings(bucket='frootypoo')
     def test_submit_title(self):
         self.upload_one_image()
+        self.browser.click_link_by_text('Add tag')
+        self.browser.find_by_name('tag').first.fill('chipmunk\n')
         title_input = self.browser.find_by_name('title').first
         title_input.fill('Tiny chipmunk dancing\n')
 
         image = Client().session().query(Image).one()
         eq_(image.title, "Tiny chipmunk dancing")
+        eq_(list(image.get_tags()), ["chipmunk"])
 
     @logged_in
     @with_settings(bucket='frootypoo')

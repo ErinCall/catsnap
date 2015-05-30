@@ -1,4 +1,5 @@
 /* jshint jquery:true, browser:true */
+/* global KeyCodes */
 
 $(document).ready(function () {
   'use strict';
@@ -55,17 +56,25 @@ $(document).ready(function () {
 
   receiveImageData = function(data) {
     var delay = 2000, //milliseconds
+        $titleInput = $('<input type="text" name="title" placeholder="Title" class="form-control">'),
         $form,
         $ul;
 
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
     this.data('image-id', data.image_id);
     this.data('url', data.url);
+
+    $titleInput.on('keydown', function(event) {
+      if (event.which === KeyCodes.ENTER) {
+        event.preventDefault();
+        $form.submit();
+      }
+    });
+
     window.setTimeout(checkForImage.bind(this, delay), delay);
 
     $form = $('<form method="post" action="#">');
-    $form.append($('<input type="text" name="title" ' +
-             'placeholder="Title" class="form-control">'));
+    $form.append($titleInput);
 
     $ul = $('<ul class="edit-tags"><li class="tag"></li></ul>');
     $ul.children('li').append(tagLink.call(this));
@@ -129,21 +138,20 @@ $(document).ready(function () {
 
   tagLink = function() {
     var $container = this,
-        $span = $('<span>'),
         $addButton = $('<button class="btn btn-xs btn-default add-tag"><span class="glyphicon glyphicon-plus-sign"></span></button>'),
         $a = $('<a href="#">Add tag</a>');
 
     function startEditing(event) {
       var abortEditing,
           submitTag,
-          $thisLi = $(this).parent(),
+          $thisLi = $(event.target).parent(),
           $tagInput,
           $form;
       event.preventDefault();
       $thisLi.find('*').hide();
 
-      $form = $('<form><input type="submit" class="enter-to-submit"/></form>');
-      $tagInput = $('<input type="text" class="edit form-control" name="tag"/>');
+      $form = $('<form><input type="submit" class="enter-to-submit"></form>');
+      $tagInput = $('<input type="text" class="edit form-control" name="tag" autocapitalize="none">');
       $form.prepend($tagInput);
 
       abortEditing = catsnap.generateAbortEditing($tagInput, $a.add($addButton), $tagInput);
