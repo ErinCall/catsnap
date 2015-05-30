@@ -1,32 +1,40 @@
 from __future__ import unicode_literals
 
-from flask import g, redirect, render_template, request, session
+import bcrypt
+from flask import session, redirect, render_template, request
+from werkzeug.exceptions import BadRequest
 from catsnap.web import app
-from catsnap.web import oid
+from catsnap.web.utils import login_required
+from catsnap.web.formatted_routes import formatted_route
 from catsnap import Client
 
-@app.route('/login', methods=['GET', 'POST'])
-@oid.loginhandler
+@app.route('/login', methods=['GET'])
 def login():
-    if g.user is not None:
-        return redirect(oid.get_next_url())
-    if request.method == 'POST':
-        return oid.try_login(Client().config().owner_id,
-                             ask_for=['email'])
+    return render_template('login.html.jinja')
 
-    return render_template('login.html.jinja', next=oid.get_next_url(),
-                           error=oid.fetch_error())
+@app.route('/login', methods=['POST'])
+def do_login():
+    try:
+        password_hash = Client().config().password_hash
+        if type(password_hash) == unicode:
+            password_hash = password_hash.encode('utf-8')
 
-@oid.after_login
-def login_redirect(openid_response):
-    if 'owner_email' not in Client().config() or \
-            openid_response.email == Client().config().owner_email:
-        g.user = 1
-        session['openid'] = openid_response.identity_url
-    return redirect(oid.get_next_url())
+        given_password = request.form['password'].strip()
+        if type(given_password) == unicode:
+            given_password = given_password.encode('utf-8')
 
-@app.route('/logout', methods=['GET', 'POST'])
+        if bcrypt.hashpw(given_password, password_hash) == password_hash:
+            session['logged_in'] = True
+            return redirect('/')
+        else:
+            return render_template('login.html.jinja',
+                                   error='Incorrect password.')
+    except BadRequest:
+        return render_template('login.html.jinja',
+                               error='You must enter a password.')
+
+@app.route('/logout', methods=['GET'])
 def logout():
-    if 'openid' in session:
-        session.pop('openid')
+    if 'logged_in' in session:
+        session.pop('logged_in')
     return redirect('/')

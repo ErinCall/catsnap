@@ -30,5 +30,6 @@ setup(name="catsnap",
           "mock==1.0.1",
           "nose==1.1.2",
           "splinter==0.5.3",
+          "bcrypt==1.1.1",
       ],
       )

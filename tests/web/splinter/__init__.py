@@ -8,6 +8,7 @@ from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
 from splinter.driver.webdriver.firefox import WebDriver
+from splinter.exceptions import ElementDoesNotExist
 from selenium.webdriver.remote.remote_connection import LOGGER
 
 web_actors = {}
@@ -60,7 +61,7 @@ def tearDownPackage():
 @app.route('/become_logged_in')
 def become_logged_in():
     g.user = 1
-    session['openid'] = 'booya'
+    session['logged_in'] = True
     return redirect('/')
 
 

@@ -54,7 +54,7 @@ oid = OpenID(app, safe_roots=[])
 def before_request():
     g.delayed_tasks = []
     g.user = None
-    if 'openid' in session:
+    if 'logged_in' in session:
         g.user = 1
     elif 'X-Catsnap-Signature' in request.headers:
         passed_signature = request.headers['X-Catsnap-Signature']

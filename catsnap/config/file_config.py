@@ -115,14 +115,9 @@ class FileConfig(Config):
                 read_method=getpass.getpass),
             FileSetting(
                 section='catsnap',
-                name='owner_id',
-                message='Enter your openid url%s: ',
-                override_message=" (leave blank to keep using '%s')"),
-            FileSetting(
-                section='catsnap',
-                name='owner_email',
-                message='Enter your email address%s: ',
-                override_message=" (leave blank to keep using '%s')"),
+                name='password_hash',
+                message='Enter your bcrypted password%s: ',
+                override_message=" (leave blank to keep using '%s'"),
             FileSetting(
                 section='catsnap',
                 name='cloudfront_distribution_id',

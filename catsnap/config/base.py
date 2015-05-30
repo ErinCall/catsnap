@@ -4,8 +4,7 @@ class Config(object):
     CREDENTIAL_SETTINGS = ('aws_access_key_id', 'aws_secret_access_key')
     ALL_SETTINGS = CREDENTIAL_SETTINGS + ('bucket',
                                           'extension',
-                                          'owner_id',
-                                          'owner_email',
+                                          'password_hash',
                                           'celery_broker_url',
                                           'api_host',
                                           'cloudfront_distribution_id',
