@@ -56,47 +56,51 @@ $(document).ready(function () {
 
   receiveImageData = function(data) {
     var delay = 2000, //milliseconds
-        $titleInput = $('<input type="text" name="title" placeholder="Title" class="form-control">'),
-        $form,
+        $titleInput,
+        $titleForm,
+        $descriptionArea,
+        $descriptionForm,
         $ul;
 
     this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
     this.data('image-id', data.image_id);
     this.data('url', data.url);
 
-    $titleInput.on('keydown', function(event) {
-      if (event.which === KeyCodes.ENTER) {
-        event.preventDefault();
-        $form.submit();
-      }
-    });
-
     window.setTimeout(checkForImage.bind(this, delay), delay);
 
-    $form = $('<form method="post" action="#">');
-    $form.append($titleInput);
+    $titleInput = $('<input type="text" placeholder="Title" ' +
+                    'name="title" class="form-control">');
+    $descriptionArea = $('<textarea placeholder="Description" ' +
+                         'class="form-control" name="description">');
+
+    $($titleInput).add($descriptionArea).blur(function() {
+      $(this).parent('form').submit();
+    });
+
+    $titleForm = $('<form method="post" action="#">');
+    $titleForm.submit(saveAttributes);
+    $titleForm.append($titleInput);
+    this.append($titleForm);
 
     $ul = $('<ul class="edit-tags"><li class="tag"></li></ul>');
     $ul.children('li').append(tagLink.call(this));
-    $form.append($ul);
+    this.append($ul);
 
-    $form.append($('<textarea placeholder="Description" ' +
-             'class="form-control" name="description">'));
-    $form.append($('<input type="submit" value="Save" ' +
+    $descriptionForm = $('<form method="post" action="#">');
+    $descriptionForm.append($descriptionArea);
+    $descriptionForm.append($('<input type="submit" value="Save" ' +
              'class="btn btn-default edit" name="save">'));
-    $form.submit(saveAttributes);
-    $form.find('input').blur(function() {
-      $(this).parent('form').submit();
-    });
-    this.append($form);
+    $descriptionForm.submit(saveAttributes);
+
+    this.append($descriptionForm);
   };
 
   saveAttributes = function(event) {
     var $form = $(this),
-        $saveButton = $form.find('input[type="submit"]'),
-        $titleInput = $form.find('input[name="title"]'),
-        $descriptionInput = $form.find('textarea[name="description"]'),
-        $article = $form.parent('article');
+        $article = $form.parent('article'),
+        $saveButton = $article.find('input[type="submit"]'),
+        $titleInput = $article.find('input[name="title"]'),
+        $descriptionInput = $article.find('textarea[name="description"]');
 
     event.preventDefault();
 
