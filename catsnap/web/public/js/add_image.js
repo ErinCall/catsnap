@@ -158,7 +158,7 @@ $(document).ready(function () {
       $tagInput = $('<input type="text" class="edit form-control" name="tag" autocapitalize="none">');
       $form.prepend($tagInput);
 
-      abortEditing = catsnap.generateAbortEditing($tagInput, $a.add($addButton), $tagInput);
+      abortEditing = catsnap.generateAbortEditing($tagInput, $a.add($addButton), $form);
 
       submitTag = window.catsnap.generateSubmitTag(
           $form, $container, abortEditing, showError.bind($container), function() {
