@@ -143,7 +143,7 @@ $(document).ready(function () {
   tagLink = function() {
     var $container = this,
         $addButton = $('<button class="btn btn-xs btn-default add-tag"><span class="glyphicon glyphicon-plus-sign"></span></button>'),
-        $a = $('<a href="#">Add tag</a>');
+        $a = $('<a href="#" class="add-tag">Add tag</a>');
 
     function startEditing(event) {
       var abortEditing,
@@ -188,7 +188,7 @@ $(document).ready(function () {
       $tagInput.blur(submitTag);
       $form.submit(submitTag);
       catsnap.tagKeyListeners($form, abortEditing, function() {
-        $thisLi.siblings().find('a').click();
+        $thisLi.siblings().find('a.add-tag').click();
       });
 
       $thisLi.append($form);
