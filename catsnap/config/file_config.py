@@ -120,6 +120,11 @@ class FileConfig(Config):
                 override_message=" (leave blank to keep using '%s'"),
             FileSetting(
                 section='catsnap',
+                name='twitter_username',
+                message='Enter your twitter username (optional)%s: ',
+                override_message=" (leave blank to keep using '%s'"),
+            FileSetting(
+                section='catsnap',
                 name='cloudfront_distribution_id',
                 message='enter your cloudfront distribution id%s',
                 override_message=" (leave blank to keep using '%s')"),

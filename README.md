@@ -45,6 +45,7 @@ Outside your deploy process, you'll need to add some Catsnap configuration. In k
 * `CATSNAP_BUCKET`: the S3 bucket that you set up earlier.
 * `CATSNAP_SECRET_KEY`: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters, and should be kept secret.
 * `CATSNAP_PASSWORD_HASH`: a bcrypt-hashed password you want to use to log in. You can generate a password hash by running `python -c 'import bcrypt, sys; print bcrypt.hashpw(sys.stdin.readline().strip(), bcrypt.gensalt())'` and typing the password you want to hash.
+* `CATSNAP_TWITTER_USERNAME` (optional): If present, tweets containing links to catsnap image pages will include an attribution to this username.
 * `CATSNAP_CLOUDFRONT_DISTRIBUTION_ID` (optional): the id of your cloudfront distribution, if you made one. Note this is different from the XXXX.cloudfront.net domain; you want to get it from your AWS console.
 * `EMAIL_HOST`, `ERROR_RECIPIENT`, `ERROR_SENDER` (optional, but include all or none): an SMTP host and email addresses to/from which to send error emails
 * `EMAIL_USERNAME` and `EMAIL_PASSWORD` (optional): if the SMTP server in `EMAIL_HOST` requires login credentials, these are those credentials.
