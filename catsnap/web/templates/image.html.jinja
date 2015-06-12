@@ -11,9 +11,7 @@
     <meta name="twitter:creator" content="@{{ g.twitter_username }}">
 {% endif %}
 <meta name="twitter:title" content="{{ image.caption() |e }}">
-{% if image.description %}
-    <meta name="twitter:description" content="{{ image.description }}">
-{% endif %}
+<meta name="twitter:description" content="{{ image.description }}">
 <meta name="twitter:image" content="{{ url }}">
 {% endblock head_extras %}
 
