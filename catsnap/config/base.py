@@ -5,6 +5,7 @@ class Config(object):
     ALL_SETTINGS = CREDENTIAL_SETTINGS + ('bucket',
                                           'extension',
                                           'password_hash',
+                                          'twitter_username',
                                           'celery_broker_url',
                                           'api_host',
                                           'cloudfront_distribution_id',

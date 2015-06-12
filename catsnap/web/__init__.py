@@ -68,6 +68,9 @@ def before_request():
                 and skew.seconds <= (5*60):
             g.user = 1
 
+    if 'twitter_username' in Client().config():
+        g.twitter_username = Client().config().twitter_username
+
 @app.after_request
 def after_request(response):
     session = Client().session()
