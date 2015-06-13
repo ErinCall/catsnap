@@ -6,7 +6,7 @@ class Config(object):
                                           'extension',
                                           'password_hash',
                                           'twitter_username',
-                                          'celery_broker_url',
+                                          'redis_url',
                                           'api_host',
                                           'cloudfront_distribution_id',
                                           'api_key')

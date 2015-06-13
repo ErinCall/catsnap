@@ -64,6 +64,9 @@ def become_logged_in():
     session['logged_in'] = True
     return redirect('/')
 
+@app.before_request
+def indicate_test_server():
+    g.test_server = True
 
 def logged_in(fn):
     @wraps(fn)

@@ -8,6 +8,7 @@ from tests.image_helper import SOME_PNG, EXIF_JPG
 from sqlalchemy.orm.exc import NoResultFound
 from catsnap import Client
 from catsnap.table.image import Image, ImageContents
+from catsnap.table.task_transaction import TaskTransaction
 from catsnap.worker.tasks import process_image
 
 
@@ -15,6 +16,7 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ImageTruck')
     @patch('catsnap.worker.tasks.ReorientImage')
     def test_reorients_images(self, ReorientImage, ImageTruck):
+        transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()
         (image, contents) = self.setup_contents(image_data)
         truck = Mock()
@@ -22,19 +24,20 @@ class TestProcessImage(TestCase):
         ImageTruck.return_value = truck
         ReorientImage.reorient_image.return_value = image_data
 
-        process_image(contents.image_contents_id)
+        process_image(transaction_id, contents.image_contents_id)
 
         ReorientImage.reorient_image.assert_called_with(image_data)
 
     @patch('catsnap.worker.tasks.ImageTruck')
     def test_uploads_to_s3(self, ImageTruck):
+        transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()
         (image, contents) = self.setup_contents(image_data)
         truck = Mock()
         truck.contents = image_data
         ImageTruck.return_value = truck
 
-        process_image(contents.image_contents_id)
+        process_image(transaction_id, contents.image_contents_id)
 
         ImageTruck.assert_called_with(image_data, 'image/png', None)
         truck.upload.assert_called_with()
@@ -42,50 +45,48 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ImageTruck')
     @patch('catsnap.worker.tasks.ResizeImage')
     def test_makes_resizes(self, ResizeImage, ImageTruck):
+        transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()
         (image, contents) = self.setup_contents(image_data)
         truck = Mock()
         truck.contents = image_data
         ImageTruck.return_value = truck
 
-        process_image(contents.image_contents_id)
+        process_image(transaction_id, contents.image_contents_id)
 
-        ResizeImage.make_resizes.assert_called_with(image, truck)
+        call_args = ResizeImage.make_resizes.call_args
+        eq_(call_args[0][0], image)
+        eq_(call_args[0][1], truck)
+        # the 3rd arg is the after_upload callback, which we can't assert well
+        eq_(len(call_args[0]), 3)
 
     @patch('catsnap.worker.tasks.ImageTruck')
     def test_deletes_processed_contents(self, ImageTruck):
+        session = Client().session()
+        transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()
         (image, contents) = self.setup_contents(image_data)
         truck = Mock()
         truck.contents = image_data
         ImageTruck.return_value = truck
 
-        process_image(contents.image_contents_id)
+        process_image(transaction_id, contents.image_contents_id)
 
         session = Client().session()
         contents = session.query(ImageContents).all()
 
         eq_(contents, [])
 
-    # After an async upload, the page JS starts checking for the worker's
-    # completion. Ideally, it wants the thumbnail image. For very small
-    # images, though, there won't even be a thumbnail, so the JS needs to be
-    # able to fall back to the original size. Doing that requires that
-    # "original exists and thumbnail does not" must mean "thumbnail won't
-    # exist."
-    # There's still a conceivable race condition: [check_thumbnail,
-    # upload_thumbnail, upload_original, check_original]. However, it should be
-    # sufficiently rare: There's no deliberate delay between check_thumbnail
-    # and check_original, while there is some resize-processing time between
-    # upload_thumbnail and upload_original, or if there's just thumbnail and
-    # original, original must be close enough to thumbnail size that it won't
-    # be a big deal if the race condition does hit.
+    # After an async upload, the page JS wants an image to display. It wants
+    # thumbnail, ideally, so this test should really show that thumbnail
+    # happens first.
     @patch('catsnap.worker.tasks.ImageTruck')
     @patch('catsnap.worker.tasks.ResizeImage')
     def test_resize_happens_before_main_upload(
             self, ResizeImage, ImageTruck):
         class StopDoingThingsNow(StandardError): pass
 
+        transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()
         (image, contents) = self.setup_contents(image_data)
         truck = Mock()
@@ -94,11 +95,15 @@ class TestProcessImage(TestCase):
         ImageTruck.return_value = truck
 
         try:
-            process_image(contents.image_contents_id)
+            process_image(transaction_id, contents.image_contents_id)
         except StopDoingThingsNow:
             pass
 
-        ResizeImage.make_resizes.assert_called_with(image, truck)
+        call_args = ResizeImage.make_resizes.call_args
+        eq_(call_args[0][0], image)
+        eq_(call_args[0][1], truck)
+        # the 3rd arg is the after_upload callback, which we can't assert well
+        eq_(len(call_args[0]), 3)
 
     # ResizeImage and ReorientImage are just stubbed for speed;
     # the test image with intact EXIF data is quite large
@@ -106,6 +111,7 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ReorientImage')
     @patch('catsnap.worker.tasks.ImageTruck')
     def test_calculates_metadata(self, ImageTruck, ReorientImage, ResizeImage):
+        session = Client().session()
         with open(EXIF_JPG, 'r') as fh:
             image_data = fh.read()
 
@@ -114,9 +120,10 @@ class TestProcessImage(TestCase):
         truck.contents = image_data
         ImageTruck.return_value = truck
 
-        process_image(contents.image_contents_id)
+        transaction_id = TaskTransaction.new_id()
+        session.flush()
+        process_image(transaction_id, contents.image_contents_id)
 
-        session = Client().session()
         image = session.query(Image).\
             filter(Image.image_id == image.image_id)\
             .one()
@@ -127,17 +134,6 @@ class TestProcessImage(TestCase):
         eq_(image.shutter_speed, '1/800')
         eq_(image.focal_length, 30.0)
         eq_(image.iso, 200)
-
-    @patch('catsnap.worker.tasks.logger')
-    def test_broken_image_content_ids_just_quit_quietly(self, logger):
-        try:
-            process_image(8675309)
-        except NoResultFound:
-            pass # after exceeding the max retry limit
-        else:
-            raise AssertionError("Expected a NoResultFound error!")
-        logger.error.assert_called_with('No result found for image_contents_id '
-                                        '8675309. Retrying.')
 
     @nottest
     def image_data(self):

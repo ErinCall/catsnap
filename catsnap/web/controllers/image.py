@@ -10,7 +10,7 @@ from catsnap.table.album import Album
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from catsnap.worker.tasks import process_image
-from catsnap.worker.web import delay
+from catsnap.db_redis_coordination import delay
 from catsnap import Client
 
 
@@ -72,14 +72,24 @@ def add(request_format):
         session.add(contents)
         contentses.append(contents)
     session.flush()
+
+    task_ids = []
+    # Hey, this is a loop around a round-trip to redis. Although the Python
+    # Redis library offers a way to send multiple requests in one thwack,
+    # Celery doesn't appear to offer a way to use it. Nothing to be done.
     for contents in contentses:
-        delay(process_image, contents.image_contents_id)
+        task_ids.append(delay(g.queued_tasks,
+                              process_image,
+                              contents.image_contents_id))
 
     if request_format == 'html':
         return redirect(url_for('show_image', image_id=image.image_id))
     elif request_format == 'json':
-        return [{'url': trucks[i].url(), 'image_id': images[i].image_id}
-                for i in xrange(0, len(trucks))]
+        return [{
+                'url': trucks[i].url(),
+                'image_id': images[i].image_id,
+                'task_id': task_ids[i],
+            } for i in xrange(0, len(trucks))]
 
 @formatted_route(
     '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})
@@ -202,7 +212,7 @@ def reprocess_image(request_format, image_id):
 
     session.add(contents)
     session.flush()
-    delay(process_image, contents.image_contents_id)
+    delay(g.queued_tasks, process_image, contents.image_contents_id)
 
     if request_format == 'json':
         return {'status': 'ok'}

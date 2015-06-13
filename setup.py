@@ -25,6 +25,8 @@ setup(name="catsnap",
           "wand==0.3.3",
           "celery==3.1.16",
           "redis==2.10.3",
+          "gevent==1.0.2",
+          "Flask-Sockets==0.1",
 
           "mock==1.0.1",
           "nose==1.1.2",

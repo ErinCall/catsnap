@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import json
+import uuid
 from StringIO import StringIO
 from mock import patch, Mock, call
 from tests import TestCase, logged_in
@@ -9,6 +10,7 @@ from catsnap import Client
 from catsnap.table.image import Image, ImageContents
 from catsnap.table.album import Album
 from catsnap.image_truck import TryHTTPError
+from catsnap.worker.tasks import process_image
 
 
 class TestAdd(TestCase):
@@ -23,9 +25,9 @@ class TestAdd(TestCase):
         eq_(response.status_code, 200)
 
     @logged_in
-    @patch('catsnap.web.controllers.image.process_image')
+    @patch('catsnap.web.controllers.image.delay')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image(self, ImageTruck, process_image):
+    def test_upload_an_image(self, ImageTruck, delay):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.filename = 'CA7'
@@ -56,12 +58,13 @@ class TestAdd(TestCase):
         contents = session.query(ImageContents).one()
         eq_(image.image_id, contents.image_id)
 
-        process_image.delay.assert_called_with(contents.image_contents_id)
+        delay.assert_called_with(
+                [], process_image, contents.image_contents_id)
 
     @logged_in
-    @patch('catsnap.web.controllers.image.process_image')
+    @patch('catsnap.web.controllers.image.delay')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image_twice(self, ImageTruck, process_image):
+    def test_upload_an_image_twice(self, ImageTruck, delay):
         truck = Mock()
         ImageTruck.new_from_stream.return_value = truck
         truck.filename = 'CA7'
@@ -83,8 +86,9 @@ class TestAdd(TestCase):
         contentses = session.query(ImageContents).all()
         for contents in contentses:
             eq_(contents.image_id, image.image_id)
-        contents_calls = map(lambda x: call(x.image_contents_id), contentses)
-        process_image.delay.assert_has_calls(contents_calls)
+        contents_calls = [call([], process_image, x.image_contents_id)
+                          for x in contentses]
+        delay.assert_has_calls(contents_calls)
 
     @logged_in
     @patch('catsnap.web.controllers.image.ImageTruck')
@@ -104,15 +108,18 @@ class TestAdd(TestCase):
                             "something you did wrong).")
 
     @logged_in
-    @patch('catsnap.web.controllers.image.process_image')
+    @patch('catsnap.web.controllers.image.delay')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_an_image_with_json_format(self, ImageTruck, process_image):
+    def test_upload_an_image_with_json_format(self, ImageTruck, delay):
         truck = Mock()
         ImageTruck.new_from_url.return_value = truck
         truck.filename = 'CA741C'
         truck.url.return_value = 'cloudfrunt.nut/CA741C'
         truck.contents = b''
         truck.content_type = "image/gif"
+
+        task_id = str(uuid.uuid4())
+        delay.return_value = task_id
 
         response = self.app.post('/add.json', data={
             'album': '',
@@ -124,15 +131,21 @@ class TestAdd(TestCase):
         body = json.loads(response.data)
 
         eq_(body,
-            [{'url': 'cloudfrunt.nut/CA741C', 'image_id': image.image_id}])
+            [{
+                'url': 'cloudfrunt.nut/CA741C',
+                'image_id': image.image_id,
+                'task_id': task_id,
+            }])
         contents = session.query(ImageContents).one()
         eq_(contents.image_id, image.image_id)
-        process_image.delay.assert_called_with(contents.image_contents_id)
+        delay.assert_called_with([],
+                                 process_image,
+                                 contents.image_contents_id)
 
     @logged_in
-    @patch('catsnap.web.controllers.image.process_image')
+    @patch('catsnap.web.controllers.image.delay')
     @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_upload_several_images_in_one_go(self, ImageTruck, process_image):
+    def test_upload_several_images_in_one_go(self, ImageTruck, delay):
         (truck1, truck2, truck3) = (Mock(), Mock(), Mock())
 
         truck1.filename = 'BAD1DEA'
@@ -152,6 +165,11 @@ class TestAdd(TestCase):
 
         ImageTruck.new_from_stream.side_effect = [truck1, truck2, truck3]
 
+        id1 = str(uuid.uuid4())
+        id2 = str(uuid.uuid4())
+        id3 = str(uuid.uuid4())
+        delay.side_effect = [id1, id2, id3]
+
         response = self.app.post('/add.json', data={
             'album': '',
             'url': '',
@@ -167,9 +185,21 @@ class TestAdd(TestCase):
         body = json.loads(response.data)
 
         eq_(body, [
-            {'url': 'cloudfrunt.nut/BAD1DEA', 'image_id': images[0].image_id},
-            {'url': 'cloudfrunt.nut/CAFEBABE', 'image_id': images[1].image_id},
-            {'url': 'cloudfrunt.nut/DADD1E', 'image_id': images[2].image_id},
+            {
+                'url': 'cloudfrunt.nut/BAD1DEA',
+                'image_id': images[0].image_id,
+                'task_id': id1,
+            },
+            {
+                'url': 'cloudfrunt.nut/CAFEBABE',
+                'image_id': images[1].image_id,
+                'task_id': id2,
+            },
+            {
+                'url': 'cloudfrunt.nut/DADD1E',
+                'image_id': images[2].image_id,
+                'task_id': id3,
+            },
         ])
 
     @logged_in

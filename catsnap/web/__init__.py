@@ -2,12 +2,16 @@ from __future__ import unicode_literals
 
 import os
 import sha
+import sys
 import logging
 import datetime
 from logging.handlers import SMTPHandler
-import sqlalchemy.exc
 from flask import Flask, render_template, g, session, request
 from catsnap.table.album import Album
+from catsnap.db_redis_coordination import (
+    coordinated_rollback,
+    coordinated_commit,
+)
 from catsnap import Client
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -50,7 +54,7 @@ app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
 
 @app.before_request
 def before_request():
-    g.delayed_tasks = []
+    g.queued_tasks = []
     g.user = None
     if 'logged_in' in session:
         g.user = 1
@@ -75,37 +79,18 @@ def before_request():
 def after_request(response):
     session = Client().session()
     if response.status_code not in xrange(200, 399):
-        session.rollback()
+        coordinated_rollback(g.queued_tasks)
         return response
 
-    try:
-        session.flush()
-    except (sqlalchemy.exc.DataError, sqlalchemy.exc.StatementError):
-        session.rollback()
-        raise
+    coordinated_commit(g.queued_tasks)
 
-    queued_tasks = []
-    try:
-        for (task, args, kwargs) in g.delayed_tasks:
-            queued_tasks.append(task.delay(*args, **kwargs))
-    except StandardError:
-        for task in queued_tasks:
-            task.revoke()
-        session.rollback()
-        raise
-
-    try:
-        Client().session().commit()
-    except StandardError:
-        for task in queued_tasks:
-            task.revoke()
-        raise
     return response
 
 import catsnap.web.controllers.login
 import catsnap.web.controllers.find
 import catsnap.web.controllers.image
 import catsnap.web.controllers.album
+import catsnap.web.controllers.websockets
 
 config = Client().config()
 if 'cloudfront_distribution_id' in config:

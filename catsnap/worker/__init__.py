@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from celery import Celery
 from celery.signals import task_success
+from catsnap.db_redis_coordination import coordinated_commit
 import os
 
 if os.environ.get('ENV') and os.path.exists(os.environ['ENV']):
@@ -12,7 +13,7 @@ if os.environ.get('ENV') and os.path.exists(os.environ['ENV']):
 
 from catsnap import Client
 
-broker_url = Client().config().celery_broker_url
+broker_url = Client().config().redis_url
 
 worker = Celery('catsnap.worker', broker=broker_url)
 worker.conf.CELERY_TASK_SERIALIZER = 'json'
@@ -29,8 +30,10 @@ if all(map(lambda x: x in os.environ,
         worker.conf.EMAIL_HOST_USER = os.environ['EMAIL_USERNAME']
         worker.conf.EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
 
+queued_tasks = []
+
 @task_success.connect
 def after_task(**kwargs):
-    Client().session().commit()
+    coordinated_commit(queued_tasks)
 
 import catsnap.worker.tasks
