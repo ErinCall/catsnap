@@ -24,10 +24,10 @@ def task_info(websocket):
             continue
 
         task_id = body['task_id']
-        socket_bridge.register((
+        socket_bridge.register(
             websocket,
             lambda message: message.get('task_id') == task_id,
             lambda message: '_' + message['suffix']
                     if message['suffix'] != ''
                     else message['suffix']
-        ))
+        )
