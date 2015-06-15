@@ -35,7 +35,6 @@ class Invalidate(worker.Task):
             return
 
         filename = image.filename
-        print repr(suffix)
         if suffix is not None:
             filename = '{0}_{1}'.format(filename, suffix)
 
@@ -55,6 +54,19 @@ class Invalidate(worker.Task):
 @worker.task(bind=True)
 @wait_for_transaction
 def process_image(self, image_contents_id):
+    _process_image(self, image_contents_id)
+
+@worker.task(bind=True)
+@wait_for_transaction
+def reprocess_image(self, image_contents_id):
+    def after_upload(image_id, size):
+        delay(queued_tasks, Invalidate(), image_id, suffix=size)
+
+    _process_image(self, image_contents_id, after_upload=after_upload)
+
+def _process_image(self,
+                   image_contents_id,
+                   after_upload=lambda *_, **__: None):
     session = Client().session()
     contents = session.query(ImageContents).\
         filter(ImageContents.image_contents_id == image_contents_id).\
@@ -69,11 +81,12 @@ def process_image(self, image_contents_id):
     truck.filename = image.filename
     metadata = ImageMetadata.image_metadata(truck.contents)
     truck.contents = ReorientImage.reorient_image(truck.contents)
-    def after_upload(size):
+    def after_resize(size):
         redis.publish(REDIS_CHANNEL, json.dumps({
             'task_id': self.request.id,
             'suffix': size,
         }))
+        after_upload(image.image_id, suffix=size)
     ResizeImage.make_resizes(image, truck, after_upload)
 
     print "uploading original image"
@@ -83,7 +96,7 @@ def process_image(self, image_contents_id):
         'suffix': '',
     }))
 
-    delay(queued_tasks, Invalidate(), image.image_id)
+    after_upload(image.image_id)
 
     for attr, value in metadata.iteritems():
         setattr(image, attr, value)
