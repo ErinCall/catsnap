@@ -80,18 +80,18 @@ def coordinated_commit(queued_tasks):
         raise sqlError, None, exc_info[2]
     except (sqlalchemy.exc.DatabaseError,
             sqlalchemy.exc.StatementError) as sqlError:
-        session.rollback()
         exc_info = sys.exc_info()
-        # If we've sent tasks to redis, they probably point to invalid data.
-        # Even if they don't, whatever operation they relate to was invalid in
-        # some way or another.
         try:
-            for task in queued_tasks:
-                task.revoke()
+            # If we've sent tasks to redis, they probably point to invalid
+            # data. Even if they don't, whatever operation they relate to was
+            # invalid in some way or another, so this needs to be a
+            # coordinated rollback.
+            coordinated_rollback(queued_tasks)
+            raise sqlError, None, exc_info[2]
         except (redis.exceptions.ConnectionError,
                 redis.exceptions.TimeoutError) as redisError:
-            raise SkyIsFallingError(sqlError, redisError), None, exc_info
-        raise sqlError, None, exc_info[2]
+            raise SkyIsFallingError(sqlError, redisError), None, exc_info[2]
+
 
 # Roll back the database and revoke all queued tasks. In the event of errors,
 # try to get things in a coherent state, but still let the errors out.
