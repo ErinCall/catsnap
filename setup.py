@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="5.2.3",
+      version="5.3.0",
       description="catalog and store images",
       author="Erin Call",
       author_email="hello@erincall.com",
@@ -25,6 +25,8 @@ setup(name="catsnap",
           "wand==0.3.3",
           "celery==3.1.16",
           "redis==2.10.3",
+          "gevent==1.0.2",
+          "Flask-Sockets==0.1",
 
           "mock==1.0.1",
           "nose==1.1.2",

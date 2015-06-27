@@ -5,7 +5,12 @@ from wand.image import Image as ImageHandler
 
 from catsnap import Client
 from catsnap.table.image import ImageResize
+from catsnap.worker import queued_tasks
+from catsnap.db_redis_coordination import delay
 
+# Using an OrderedDict here instead of a regular dict to ensure the thumbnail
+# is the first resize that gets uploaded. When adding images a user is waiting
+# to see the thumbnail, so it's preferable to get it uploaded first.
 RESIZES = OrderedDict([
         ('thumbnail', 100),
         ('small', 320),
@@ -15,7 +20,7 @@ RESIZES = OrderedDict([
 
 class ResizeImage(object):
     @classmethod
-    def make_resizes(cls, image, truck):
+    def make_resizes(cls, image, truck, after_upload):
         contents = truck.contents
 
         for size, new_long_side in RESIZES.iteritems():
@@ -23,10 +28,14 @@ class ResizeImage(object):
             long_side = max(image_handler.size)
 
             if new_long_side < long_side:
-                cls._resize_image(image, image_handler, truck, size)
+                cls._resize_image(image,
+                                  image_handler,
+                                  truck,
+                                  size,
+                                  after_upload)
 
     @classmethod
-    def _resize_image(cls, image, image_handler, truck, size):
+    def _resize_image(cls, image, image_handler, truck, size, after_upload):
         from catsnap.worker.tasks import Invalidate
         session = Client().session()
 
@@ -39,12 +48,13 @@ class ResizeImage(object):
         image_handler.resize(new_width, new_height)
         print 'uploading resized image'
         truck.upload_resize(image_handler.make_blob(), size)
+        after_upload(size)
 
         resize = ImageResize(image_id=image.image_id,
                              width=new_width,
                              height=new_height,
                              suffix=size)
-        Invalidate().delay(image.image_id, suffix=size)
+        delay(queued_tasks, Invalidate(), image.image_id, suffix=size)
         session.add(resize)
         session.flush()
 

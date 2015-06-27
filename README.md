@@ -33,13 +33,13 @@ Whatever deploy system you choose, it'll need to perform at least these tasks:
 * Get the latest code onto the server.
 * Install dependencies, with `python setup.py develop`.
 * Run any needed migrations, with `yoyo-migrate -b apply migrations $DATABASE_URL`.
-* Re/start the web process, with `gunicorn catsnap.app:app -b 0.0.0.0:$PORT`.
+* Re/start the web process, with `gunicorn -k flask_sockets.worker catsnap.app:app -b 0.0.0.0:$PORT`.
 * Re/start the worker process, with `celery -A catsnap.worker worker`.
 
 Outside your deploy process, you'll need to add some Catsnap configuration. In keeping with the [12-factor app](http://12factor.net/) philosophy, Catsnap will tend to look for environment variables. You can have your deploy system set them up in the web user's environment, or just point a variable called ENV at a file containing environment variables and they'll be merged into Catsnap's environment. Catsnap uses the following environment variables:
 
 * `DATABASE_URL` is the [Postgresql database connection URI](http://www.postgresql.org/docs/9.2/static/libpq-connect.html#AEN38208) for your Catsnap database.
-* `CATSNAP_CELERY_BROKER_URL` is the [URI for a Redis instance](http://celery.readthedocs.org/en/latest/getting-started/brokers/redis.html) that Catsnap can use.
+* `CATSNAP_REDIS_URL` is the [URI for a Redis instance](http://celery.readthedocs.org/en/latest/getting-started/brokers/redis.html) that Catsnap can use.
 * `CATSNAP_API_KEY` is a secret key the client and server share for authentication. It can be any string of characters. You should keep it secret!
 * `CATSNAP_AWS_ACCESS_KEY_ID` and `CATSNAP_AWS_SECRET_ACCESS_KEY`: find the values for these two variables [on your AWS account page](https://portal.aws.amazon.com/gp/aws/securityCredentials#access_credentials).
 * `CATSNAP_BUCKET`: the S3 bucket that you set up earlier.

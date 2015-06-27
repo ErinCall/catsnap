@@ -1,5 +1,4 @@
 /* jshint jquery:true, browser:true */
-/* global KeyCodes */
 
 $(document).ready(function () {
   'use strict';
@@ -13,7 +12,14 @@ $(document).ready(function () {
       saveAttributes,
       saveAlbum,
       availableRow,
-      checkForImage;
+      waitForImage,
+      suffixOrder = {
+        _thumbnail: 0,
+        _small: 1,
+        _medium: 2,
+        _large: 3,
+        '': 4
+      };
 
   sendImage = function(event) {
     var $this = $(this),
@@ -55,8 +61,7 @@ $(document).ready(function () {
   };
 
   receiveImageData = function(data) {
-    var delay = 2000, //milliseconds
-        $titleInput,
+    var $titleInput,
         $titleForm,
         $descriptionArea,
         $descriptionForm,
@@ -66,7 +71,7 @@ $(document).ready(function () {
     this.data('image-id', data.image_id);
     this.data('url', data.url);
 
-    window.setTimeout(checkForImage.bind(this, delay), delay);
+    waitForImage.call(this, data.task_id);
 
     $titleInput = $('<input type="text" placeholder="Title" ' +
                     'name="title" class="form-control">');
@@ -208,26 +213,76 @@ $(document).ready(function () {
     this.prepend($('<div class="alert alert-warning">' + message + '</div>'));
   };
 
-  checkForImage = function(previousTimeout) {
+  waitForImage = function(taskId) {
     var $container = this,
+        socketUrl,
+        socket,
         url = this.data('url'),
-        newTimeout = previousTimeout * 1.4,
         $a = $('<a href="/image/' + this.data('image-id') +'">'),
         $img = $('<img>');
 
+    /*
+    The server instance used for Selenium tests can't accept websocket
+    connections, and makes a bunch of noise if we try. It also doesn't upload
+    images anywhere, so there's no point hanging around.
+    */
+    if ($('body').data('test-server')) {
+      return;
+    }
+    /*
+    If we've failed to load image data even after receiving a websocket event
+    saying it's ready, the most likely problem is that the image just hasn't
+    propagated out to cloudfront yet, so check again once per second (If the
+    timeout function fires before the image is really ready, this error
+    handler will fire again).
+    */
     $img.error(function() {
-      $img.off('error');
-      $img.error(function() {
-        window.setTimeout(checkForImage.bind($container, newTimeout), newTimeout);
-      });
-      $img.attr('src', url);
+      $img.data('failed_src', $img.attr('src'));
+      $img.removeAttr('src');
+      window.setTimeout(function() {
+        /*
+        failed_src may have been cleared below, in the rare case where we
+        received suffixes out of order and got a better one after the error
+        handler already fired.
+        */
+        if ($img.data('failed_src' !== undefined)) {
+          $img.attr('src', $img.data('failed_src'));
+          $img.removeData('failed_src');
+        }
+      }, 1000);
     });
+
+    /*
+    We successfully loaded the image! Remove any other images in the edit pane
+    and append the new image element.
+    */
     $img.load(function() {
       $container.find('img').remove();
       $a.append($img);
       $container.prepend($a);
     });
-    $img.attr('src', url + '_thumbnail');
+
+    /*
+    Open a websocket and ask to be notified when the image has been uploaded.
+    */
+    socketUrl = document.location.origin.replace('http', 'ws') + '/task_info';
+    socket = new WebSocket(socketUrl);
+
+    socket.addEventListener('message', function(message) {
+      var suffix = message.data;
+      // if this is the first suffix we've heard about, or we're hearing about
+      // a better one...
+      if ($container.data('suffix') === undefined ||
+          suffixOrder[suffix] < suffixOrder[$container.data('suffix')]) {
+        $img.removeData('failed_src');
+        $container.data('suffix', suffix);
+        $img.attr('src', url + suffix);
+      }
+    });
+
+    socket.addEventListener('open', function() {
+      socket.send(JSON.stringify({task_id: taskId}));
+    });
   };
 
   saveAlbum = function(event) {

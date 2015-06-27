@@ -6,7 +6,7 @@
     <link href="/public/css/layout.css" rel="stylesheet" media="screen">
     {% block head_extras %}{% endblock head_extras %}
 </head>
-<body>
+<body {% if g.test_server %}data-test-server="true"{%endif%}>
     <header>
         <a href="/">
             <h1>Catsnap</h1>
