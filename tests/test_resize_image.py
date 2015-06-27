@@ -84,7 +84,7 @@ class TestResizeImage(TestCase):
             call(image, image_handler, truck, 'small', after_upload),
             call(image, image_handler, truck, 'medium', after_upload),
             call(image, image_handler, truck, 'large', after_upload),
-            ], any_order=True)
+        ])
 
     @patch('catsnap.resize_image.ImageHandler')
     @patch('catsnap.resize_image.ResizeImage._resize_image')

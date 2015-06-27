@@ -8,6 +8,9 @@ from catsnap.table.image import ImageResize
 from catsnap.worker import queued_tasks
 from catsnap.db_redis_coordination import delay
 
+# Using an OrderedDict here instead of a regular dict to ensure the thumbnail
+# is the first resize that gets uploaded. When adding images a user is waiting
+# to see the thumbnail, so it's preferable to get it uploaded first.
 RESIZES = OrderedDict([
         ('thumbnail', 100),
         ('small', 320),
