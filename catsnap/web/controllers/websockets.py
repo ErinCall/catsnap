@@ -14,7 +14,9 @@ socket_bridge = RedisWebsocketBridge()
 @sockets.route('/task_info')
 def task_info(websocket):
     while not websocket.closed:
-        # this sleep is recommended by Kenneth Reitz; he says:
+        # this sleep is recommended by Kenneth Reitz; I believe it prevents
+        # the thread from sucking down resources while waiting for a message.
+        # His original comment was:
         # Sleep to prevent *constant* context-switches.
         gevent.sleep(0.1)
         message = websocket.receive()
