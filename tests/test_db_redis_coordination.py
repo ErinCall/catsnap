@@ -86,7 +86,7 @@ class TestWaitForTransaction(TestCase):
     def mock_task(self):
         raw_task = Mock()
         # functools.wraps requires the wrapped thing to have a __name__ attr,
-        # which Mock()s don't usually have. However, Celery seems to be doing
+        # which Mock()s don't usually have. Furthermore, Celery seems to do
         # some fancy behind-the-scenes caching on tasks' __name__, such that
         # tests pollute each other if the names aren't unique.
         raw_task.__name__ = str(uuid.uuid4())
