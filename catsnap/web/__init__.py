@@ -7,14 +7,17 @@ import datetime
 import sqlalchemy.exc
 from flask import Flask, render_template, g, session, request
 from catsnap.web.error_email import ErrorEmail
+from catsnap.web.webpack import Webpack
 from catsnap.table.album import Album
 from catsnap import Client
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
+app.debug = os.environ.get('CATSNAP_DEBUG', False)
 
 ErrorEmail().init_app(app)
+Webpack().init_app(app)
 
 stderr_handler = logging.StreamHandler()
 stderr_handler.setLevel(logging.WARNING)
