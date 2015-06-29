@@ -17,7 +17,6 @@ class RedisWebsocketBridge(Singleton):
     def __init__(self):
         self.clients = []
         self.pubsub = redis.pubsub()
-        self.pubsub.subscribe(REDIS_CHANNEL)
         self.start()
 
     def __iter_data(self):
@@ -49,6 +48,7 @@ class RedisWebsocketBridge(Singleton):
             self.clients.remove(client)
 
     def run(self):
+        self.pubsub.subscribe(REDIS_CHANNEL)
         for data in self.__iter_data():
             for client, relevant, translate in self.clients:
                 if relevant(data):
