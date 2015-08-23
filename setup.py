@@ -12,7 +12,6 @@ setup(name="catsnap",
                 'catsnap.document',
                 'catsnap.config',
                 'catsnap.batch'],
-      scripts=['scripts/catsnap'],
       install_requires=[
           "Flask==0.9",
           "gunicorn==0.14.6",

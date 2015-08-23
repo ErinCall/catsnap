@@ -5,17 +5,14 @@ from nose.tools import eq_, assert_raises
 from tests import TestCase
 
 from catsnap.config import MetaConfig
-from catsnap.config.argument_config import ArgumentConfig
 from catsnap.config.env_config import EnvConfig
 from catsnap.config.file_config import FileConfig
 
 class TestMetaConfig(TestCase):
     def test_getitem_delegates_to_subconfigs(self):
-        arg_config = {'number 5': 'is alive'}
         env_config = {'number 5': 'is DEEEAAAADD'}
-        file_config = {'number 7': 'I am'}
+        file_config = {'number 7': 'I am', 'number 5': 'is alive'}
         config = MetaConfig(include_arg_config=True)
-        config._argument_config = arg_config
         config._env_config = env_config
         config._file_config = file_config
         eq_(config['number 5'], 'is alive')
@@ -23,22 +20,19 @@ class TestMetaConfig(TestCase):
 
     def test_nonexistent_items_cause_an_error(self):
         config = MetaConfig([])
-        config._argument_config = {}
         config._env_config = {}
         config._file_config = {}
         try:
             config['rausch']
         except KeyError as e:
             eq_(e.message, "Couldn't find any setting at all for 'rausch'. "
-                    "You'll need to supply it in some way--try `catsnap "
-                    "config`, or see the docs for other ways to supply "
-                    "a setting.")
+                    "You'll need to supply it in some way; see the docs.")
         else:
             raise AssertionError('this test shoulda thrown')
 
     def test_getattr_delegates_to_getitem(self):
         config = MetaConfig()
-        config._argument_config = {'aws_access_key_id': 'itsme'}
+        config._file_config = {'aws_access_key_id': 'itsme'}
 
         eq_(config.aws_access_key_id, 'itsme')
 
@@ -47,6 +41,6 @@ class TestMetaConfig(TestCase):
 
         assert_raises(AttributeError, lambda: config.number_5)
 
-    def test_noncompulsory_arguments_have_defaults(self):
+    def test_noncompulsory_options_have_defaults(self):
         config = MetaConfig()
         eq_(config['extension'], False)

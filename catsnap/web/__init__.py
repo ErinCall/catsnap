@@ -58,19 +58,6 @@ def before_request():
     g.user = None
     if 'logged_in' in session:
         g.user = 1
-    elif 'X-Catsnap-Signature' in request.headers:
-        passed_signature = request.headers['X-Catsnap-Signature']
-        date = request.headers['X-Catsnap-Signature-Date']
-        string_to_sign = "%s\n%s" % (date, Client().config().api_key)
-        generated_signature = sha.sha(string_to_sign).hexdigest()
-
-        date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
-        now = datetime.datetime.utcnow()
-        skew = abs(date - now)
-        if generated_signature == passed_signature \
-                and skew.days == 0 \
-                and skew.seconds <= (5*60):
-            g.user = 1
 
     if 'twitter_username' in Client().config():
         g.twitter_username = Client().config().twitter_username

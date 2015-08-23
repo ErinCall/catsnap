@@ -40,10 +40,9 @@ Outside your deploy process, you'll need to add some Catsnap configuration. In k
 
 * `DATABASE_URL` is the [Postgresql database connection URI](http://www.postgresql.org/docs/9.2/static/libpq-connect.html#AEN38208) for your Catsnap database.
 * `CATSNAP_REDIS_URL` is the [URI for a Redis instance](http://celery.readthedocs.org/en/latest/getting-started/brokers/redis.html) that Catsnap can use.
-* `CATSNAP_API_KEY` is a secret key the client and server share for authentication. It can be any string of characters. You should keep it secret!
 * `CATSNAP_AWS_ACCESS_KEY_ID` and `CATSNAP_AWS_SECRET_ACCESS_KEY`: find the values for these two variables [on your AWS account page](https://portal.aws.amazon.com/gp/aws/securityCredentials#access_credentials).
 * `CATSNAP_BUCKET`: the S3 bucket that you set up earlier.
-* `CATSNAP_SECRET_KEY`: a secret key to use when generating session identifiers. Like the API key, this can be any string of characters, and should be kept secret.
+* `CATSNAP_SECRET_KEY`: a secret key to use when generating session identifiers. It can be any string of characters. You should keep it secret!
 * `CATSNAP_PASSWORD_HASH`: a bcrypt-hashed password you want to use to log in. You can generate a password hash by running `python -c 'import bcrypt, sys; print bcrypt.hashpw(sys.stdin.readline().strip(), bcrypt.gensalt())'` and typing the password you want to hash.
 * `CATSNAP_TWITTER_USERNAME` (optional): If present, tweets containing links to catsnap image pages will include an attribution to this username.
 * `CATSNAP_CLOUDFRONT_DISTRIBUTION_ID` (optional): the id of your cloudfront distribution, if you made one. Note this is different from the XXXX.cloudfront.net domain; you want to get it from your AWS console.

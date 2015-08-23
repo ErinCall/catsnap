@@ -7,10 +7,7 @@ class Config(object):
                                           'password_hash',
                                           'twitter_username',
                                           'redis_url',
-                                          'api_host',
-                                          'cloudfront_distribution_id',
-                                          'api_key')
-    CLIENT_SETTINGS = ('extension', 'api_host', 'api_key')
+                                          'cloudfront_distribution_id')
 
     def __getitem__(self, item): raise NotImplementedError
     def __contains__(self, item): raise NotImplementedError

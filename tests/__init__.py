@@ -31,8 +31,6 @@ class TestCase(object):
         catsnap.config.file_config.CONFIG_FILE = config
         catsnap.config.file_config.LEGACY_CREDENTIALS_FILE = creds
 
-        catsnap.config.argument_config.sys = MagicMock()
-
         catsnap.config.file_config.getpass = MagicMock()
 
         catsnap.Client()._engine = db_info['engine']
@@ -100,7 +98,7 @@ def with_settings(**settings):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            catsnap.Client().config()._argument_config = settings
+            catsnap.Client().config()._file_config = settings
             try:
                 fn(*args, **kwargs)
             finally:
