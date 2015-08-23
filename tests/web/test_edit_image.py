@@ -14,7 +14,7 @@ from unittest.case import SkipTest
 class TestUpdateImage(TestCase):
     @logged_in
     @with_settings(bucket='snapcats')
-    def test_update_an_image(self):
+    def test_update_album_id(self):
         session = Client().session()
         album = Album(name='cow shots')
         session.add(album)
@@ -35,6 +35,7 @@ class TestUpdateImage(TestCase):
                 'title': 'dead beef',
                 'description': 'one time I saw a dead cow',
                 'album_id': str(album.album_id),
+                'album_name': 'cow shots',
                 'caption': 'dead beef',
                 'tags': [],
             }

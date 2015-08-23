@@ -315,3 +315,4 @@ class TestEditImage(TestCase):
 
         session.refresh(pic)
         eq_(int(pic.album_id), highlights.album_id)
+        assert self.browser.is_text_present('highlights')

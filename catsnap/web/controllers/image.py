@@ -187,11 +187,29 @@ def edit_image(request_format, image_id):
         session.flush()
     except IntegrityError:
         abort(request_format, 404, "No such album_id '{0}'".format(image.album_id))
+    if image.album_id is not None:
+        album_name = session.query(Album.name).\
+            filter(Album.album_id == image.album_id).\
+            one()[0]
+    else:
+        album_name = None
+    (prev, next) = image.neighbors()
 
     return {
         'status': 'ok',
         'image': {
             'album_id': image.album_id,
+            'album_name': album_name,
+            'neghbors': [
+                {
+                    'id': prev.image_id,
+                    'caption': prev.caption(),
+                },
+                {
+                    'id': next.image_id,
+                    'caption': nex.caption(),
+                }
+            ],
             'title': image.title,
             'caption': image.caption(),
             'description': image.description,
