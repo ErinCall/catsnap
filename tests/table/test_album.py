@@ -66,7 +66,7 @@ class TestAlbums(TestCase):
 
         # Sorting should be done by the date the image was shot, or the date
         # it was added if it has no photographed_at. Han shot first, so he
-        # should show up before greedo. Artoo never shot at all, so use his
+        # should show up before Greedo. Artoo never shot at all, so use his
         # created_at (which refers to the *record*, not the image) instead.
         images = Album.images_for_album_id(album.album_id)
         eq_(['R2D2', 'han', 'greedo'],
