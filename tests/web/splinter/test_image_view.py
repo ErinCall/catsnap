@@ -9,7 +9,7 @@ from catsnap.table.album import Album
 from nose.tools import eq_
 
 class TestImageView(TestCase):
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_view_an_image(self):
         session = Client().session()
 
@@ -38,7 +38,7 @@ class TestImageView(TestCase):
 
 class TestEditImage(TestCase):
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_edit_title(self):
         session = Client().session()
 
@@ -69,7 +69,7 @@ class TestEditImage(TestCase):
         eq_(silly.title, 'Goofy Picture')
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_stop_editing_submits(self):
         session = Client().session()
 
@@ -92,7 +92,7 @@ class TestEditImage(TestCase):
         eq_(silly.title, 'Goofy Picture')
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_edit_description(self):
         session = Client().session()
 
@@ -120,7 +120,7 @@ class TestEditImage(TestCase):
         ])
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_edit_tags(self):
         session = Client().session()
 
@@ -189,7 +189,7 @@ class TestEditImage(TestCase):
         eq_(list(pic.get_tags()), ['silly'])
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_add_tag_to_an_untagged_image(self):
         session = Client().session()
         pic = Image(filename="tagless", title="Untagged Picture")
@@ -219,7 +219,7 @@ class TestEditImage(TestCase):
 
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_remove_last_tag(self):
         session = Client().session()
         pic = Image(filename="tagged", title="Untagged Picture")
@@ -242,7 +242,7 @@ class TestEditImage(TestCase):
         assert not tag_list.visible, "Popped up an empty tag dropdown!"
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_tabbing_out_of_tab_input_opens_and_focuses_a_new_one(self):
         session = Client().session()
         pic = Image(filename="acebabe")
@@ -265,7 +265,7 @@ class TestEditImage(TestCase):
         eq_(list(pic.get_tags()), ['babe'])
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_hitting_escape_aborts_editing_without_saving(self):
         session = Client().session()
         pic = Image(filename="acebabe")
@@ -287,7 +287,7 @@ class TestEditImage(TestCase):
         eq_(list(pic.get_tags()), [])
 
     @logged_in
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_edit_album(self):
         session = Client().session()
         pix = Album(name="pix")

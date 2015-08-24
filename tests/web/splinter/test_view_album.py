@@ -8,7 +8,7 @@ from catsnap.table.album import Album
 from nose.tools import eq_
 
 class TestViewAlbum(TestCase):
-    @with_settings(bucket='humptydump')
+    @with_settings(aws={'bucket': 'humptydump'})
     def test_view_an_album(self):
         session = Client().session()
 

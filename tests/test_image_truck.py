@@ -193,7 +193,7 @@ class TestImageTruck(TestCase):
         ImageTruck.new_from_something('/Users/andrewlorente/.bashrc')
         new_from_file.assert_called_with('/Users/andrewlorente/.bashrc')
 
-    @with_settings(bucket='tune-carrier', extension=False)
+    @with_settings(aws={'bucket': 'tune-carrier'}, extension=False)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url(self, calculate_filename):
         calculate_filename.return_value = 'greensleeves'
@@ -203,7 +203,7 @@ class TestImageTruck(TestCase):
 
     @patch('catsnap.image_truck.Client')
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
-    @with_settings(cloudfront_distribution_id='JEEZAMANDA')
+    @with_settings(aws={'cloudfront_distribution_id': 'JEEZAMANDA'})
     def test_url__with_cloudfront_url(self, calculate_filename, MockClient):
         client = Mock()
         client.cloudfront_url.return_value = \
@@ -218,7 +218,7 @@ class TestImageTruck(TestCase):
         eq_(url, 'https://ggaaghlhaagl.cloudfront.net/chumbawamba')
         client.cloudfront_url.assert_called_with('JEEZAMANDA')
 
-    @with_settings(bucket='tune', extension=True)
+    @with_settings(aws={'bucket': 'tune'}, extension=True)
     @patch('catsnap.image_truck.ImageTruck.calculate_filename')
     def test_url__with_extension(self, calculate_filename):
         calculate_filename.return_value = 'greensleeves'
@@ -227,7 +227,7 @@ class TestImageTruck(TestCase):
         url = truck.url()
         eq_(url, 'https://s3.amazonaws.com/tune/greensleeves#.gif')
 
-    @with_settings(bucket='greeble', extension=False)
+    @with_settings(aws={'bucket': 'greeble'}, extension=False)
     def test_url_for_filename(self):
         eq_(ImageTruck.url_for_filename('CAFEBABE'),
                 'https://s3.amazonaws.com/greeble/CAFEBABE')
@@ -237,12 +237,12 @@ class TestImageTruck(TestCase):
         image_path = ImageTruck.extensioned('example.com/image')
         eq_(image_path, 'example.com/image#.gif')
 
-    @with_settings(bucket='tuneholder')
+    @with_settings(aws={'bucket': 'tuneholder'})
     def test_calculate_url(self):
         url = ImageTruck._url('deadbeef')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef')
 
-    @with_settings(extension=True, bucket='tuneholder')
+    @with_settings(extension=True, aws={'bucket': 'tuneholder'})
     def test_calculate_url__with_extension(self):
         url = ImageTruck._url('deadbeef')
         eq_(url, 'https://s3.amazonaws.com/tuneholder/deadbeef#.gif')

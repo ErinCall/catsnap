@@ -57,7 +57,7 @@ class TestAlbum(TestCase):
         body = json.loads(response.data)
         eq_(body['error'], "There is already an album with that name.")
 
-    @with_settings(bucket='cattysnap')
+    @with_settings(aws={'bucket': 'cattysnap'})
     def test_get_album_in_json_format(self):
         session = Client().session()
         album = Album(name='my pix')

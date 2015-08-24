@@ -7,7 +7,7 @@ from catsnap import Client
 from catsnap.singleton import Singleton
 from geventwebsocket.exceptions import WebSocketError
 
-redis = redislib.from_url(Client().config().redis_url)
+redis = redislib.from_url(Client().config()['redis_url'])
 REDIS_CHANNEL = 'catsnap:info'
 
 # This code listens for messages published to redis and sends them along

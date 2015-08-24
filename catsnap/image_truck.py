@@ -102,19 +102,20 @@ class ImageTruck():
     @classmethod
     def _url(cls, filename):
         config = Client().config()
-        if 'cloudfront_distribution_id' in config:
-            distro_id = config['cloudfront_distribution_id']
+        if 'aws.cloudfront_distribution_id' in config:
+            distro_id = config['aws.cloudfront_distribution_id']
             cloudfront_url = Client().cloudfront_url(distro_id)
             url = 'https://%(host)s/%(filename)s' % {
                     'host': cloudfront_url, 'filename': filename}
         else:
             url = 'https://s3.amazonaws.com/%(bucket)s/%(filename)s' % {
-                    'bucket': config.bucket, 'filename': filename}
+                    'bucket': config['aws.bucket'], 'filename': filename}
         return cls.extensioned(url)
 
     @classmethod
     def extensioned(cls, url):
-        if Client().config().extension:
+        config = Client().config()
+        if 'extension' in config and config['extension']:
             url += '#.gif'
         return url
 

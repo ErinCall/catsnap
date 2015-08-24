@@ -3,32 +3,28 @@ from __future__ import unicode_literals
 from celery import Celery
 from celery.signals import task_success
 from catsnap.db_redis_coordination import coordinated_commit
-import os
-
-if os.environ.get('ENV') and os.path.exists(os.environ['ENV']):
-    for line in open(os.environ['ENV']):
-        var = line.strip().split('=')
-        if len(var) == 2:
-            os.environ[var[0]] = var[1]
-
 from catsnap import Client
+config = Client().config()
 
-broker_url = Client().config().redis_url
+broker_url = config['redis_url']
 
 worker = Celery('catsnap.worker', broker=broker_url)
 worker.conf.CELERY_TASK_SERIALIZER = 'json'
 worker.conf.CELERY_ACCEPT_CONTENT = ['json']
 
-if all(map(lambda x: x in os.environ,
-           ['EMAIL_HOST', 'ERROR_RECIPIENT', 'ERROR_SENDER'])):
+if all(map(lambda x: x in config,
+           ['error_email.provider.hostname',
+           'error_email.recipient',
+           'error_email.sender'])):
     worker.conf.CELERY_SEND_TASK_ERROR_EMAILS = True
-    worker.conf.ADMINS = [(os.environ['ERROR_RECIPIENT'],
-                           os.environ['ERROR_RECIPIENT'])]
-    worker.conf.SERVER_EMAIL = os.environ['ERROR_SENDER']
-    worker.conf.EMAIL_HOST = os.environ['EMAIL_HOST']
-    if 'EMAIL_USERNAME' in os.environ and 'EMAIL_PASSWORD' in os.environ:
-        worker.conf.EMAIL_HOST_USER = os.environ['EMAIL_USERNAME']
-        worker.conf.EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
+    worker.conf.ADMINS = [(config['error_email.recipient'],
+                           config['error_email.recipient'])]
+    worker.conf.SERVER_EMAIL = config['error_email.sender']
+    worker.conf.EMAIL_HOST = config['error_email.provider.hostname']
+    if ('error_email.provider.username' in config
+            and 'error_email.provider.password' in config):
+        worker.conf.EMAIL_HOST_USER = config['error_email.provider.username']
+        worker.conf.EMAIL_HOST_PASSWORD = config['error_email.provider.password']
 
 queued_tasks = []
 

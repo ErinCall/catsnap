@@ -38,7 +38,7 @@ class UploadTestCase(TestCase):
 
 class TestUploadImage(UploadTestCase):
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_try_to_add_a_bad_url(self):
         self.visit_url('/add')
         self.browser.click_link_by_text('From Url')
@@ -51,7 +51,7 @@ class TestUploadImage(UploadTestCase):
             "Didn't see a user-facing error message!"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_errors_clear_previous_errors(self):
         self.visit_url('/add')
         self.browser.click_link_by_text('From Url')
@@ -73,7 +73,7 @@ class TestUploadImage(UploadTestCase):
             "The old error wasn't cleared!"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     @patch('catsnap.web.controllers.image.ImageTruck')
     def test_successes_clear_previous_errors(self, ImageTruck):
         ImageTruck.new_from_url.return_value = self.mock_truck()
@@ -95,7 +95,7 @@ class TestUploadImage(UploadTestCase):
             "The old error wasn't cleared!"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     @patch('catsnap.web.controllers.image.ImageTruck')
     def test_add_by_url(self, ImageTruck):
         ImageTruck.new_from_url.return_value = self.mock_truck()
@@ -117,7 +117,7 @@ class TestUploadImage(UploadTestCase):
         assert url_field.first.visible, "The new url input isn't visible"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_add_by_file(self):
         self.visit_url('/add')
 
@@ -143,7 +143,7 @@ class TestUploadImage(UploadTestCase):
         assert file_field, "The page didn't create a new upload form"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_file_labels_track_the_input_value(self):
         self.visit_url('/add')
 
@@ -162,7 +162,7 @@ class TestUploadImage(UploadTestCase):
 
 class TestAlbumFunctions(UploadTestCase):
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     @patch('catsnap.web.controllers.image.ImageTruck')
     def test_upload_to_an_album(self, ImageTruck):
         ImageTruck.new_from_url.return_value = self.mock_truck()
@@ -187,7 +187,7 @@ class TestAlbumFunctions(UploadTestCase):
         eq_(image.album_id, album.album_id)
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_create_new_album(self):
         self.visit_url('/add')
 
@@ -209,7 +209,7 @@ class TestAlbumFunctions(UploadTestCase):
             "The modal didn't hide correctly!"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_invalid_album_names_get_an_error_message(self):
         session = Client().session()
         session.add(Album(name="Begin To Hope"))
@@ -228,7 +228,7 @@ class TestAlbumFunctions(UploadTestCase):
             "The album-name error message wasn't displayed!"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_album_name_input_is_cleared_on_submit(self):
         self.visit_url('/add')
 
@@ -241,7 +241,7 @@ class TestAlbumFunctions(UploadTestCase):
         eq_(album_input.value, '')
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_previous_errors_are_cleared_on_success(self):
         session = Client().session()
         session.add(Album(name="Led Zeppelin"))
@@ -266,7 +266,7 @@ class TestAlbumFunctions(UploadTestCase):
 
 class TestAddTagsAfterUpload(UploadTestCase):
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_tab_from_tag_input_focuses_next_tag_input_and_saves(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
@@ -281,7 +281,7 @@ class TestAddTagsAfterUpload(UploadTestCase):
         eq_(list(image.get_tags()), ["chipmunk"])
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_escape_from_tag_input_cancels_tag_editing(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
@@ -298,7 +298,7 @@ class TestAddTagsAfterUpload(UploadTestCase):
         eq_(tags, [])
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_empty_tags_are_not_saved(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
@@ -314,7 +314,7 @@ class TestAddTagsAfterUpload(UploadTestCase):
         eq_(tags, [])
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_remove_tag(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
@@ -333,7 +333,7 @@ class TestAddTagsAfterUpload(UploadTestCase):
 
 class TestEditAttributes(UploadTestCase):
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_submit_title(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
@@ -346,7 +346,7 @@ class TestEditAttributes(UploadTestCase):
         eq_(list(image.get_tags()), ["chipmunk"])
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_submit_description(self):
         self.upload_one_image()
         description_input = self.browser.find_by_name('description').first
@@ -357,7 +357,7 @@ class TestEditAttributes(UploadTestCase):
         eq_(image.description, "A chipmunk dances.\nIt dances its heart out")
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_blurring_inputs_submits_changes(self):
         self.upload_one_image()
         description_input = self.browser.find_by_name('description').first

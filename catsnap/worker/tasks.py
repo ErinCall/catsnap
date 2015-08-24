@@ -41,7 +41,7 @@ class Invalidate(worker.Task):
 
         config = Client().config()
         try:
-            distro_id = config['cloudfront_distribution_id']
+            distro_id = config['aws.cloudfront_distribution_id']
             Client().get_cloudfront().create_invalidation_request(
                 distro_id, [filename])
         except KeyError:

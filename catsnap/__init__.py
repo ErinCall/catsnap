@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import boto
 import os
 
-from catsnap.config import MetaConfig
+from catsnap.config import Config
 from catsnap.singleton import Singleton
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -29,18 +29,18 @@ class Client(Singleton):
         if new_config is not None:
             self._config = new_config
         if self._config is None:
-            self._config = MetaConfig()
+            self._config = Config()
         return self._config
 
     def bucket(self):
         if not self._bucket:
             s3 = self.get_s3()
-            bucket_name = self.config().bucket
+            bucket_name = self.config()['aws.bucket']
             self._bucket = s3.get_bucket(bucket_name)
         return self._bucket
 
     def table(self, table_name):
-        table_prefix = self.config().bucket
+        table_prefix = self.config()['aws.bucket']
         table_name = '%s-%s' % (table_prefix, table_name)
 
         if table_name not in self._tables:
@@ -51,27 +51,27 @@ class Client(Singleton):
     def get_dynamodb(self):
         if not self._dynamo_connection:
             self._dynamo_connection = boto.connect_dynamodb(
-                    aws_access_key_id=self.config().aws_access_key_id,
-                    aws_secret_access_key=self.config().aws_secret_access_key)
+                    aws_access_key_id=self.config()['aws.access_key_id'],
+                    aws_secret_access_key=self.config()['aws.secret_access_key'])
         return self._dynamo_connection
 
     def get_s3(self):
         if not self._s3_connection:
             self._s3_connection = boto.connect_s3(
-                    aws_access_key_id=self.config().aws_access_key_id,
-                    aws_secret_access_key=self.config().aws_secret_access_key)
+                    aws_access_key_id=self.config()['aws.access_key_id'],
+                    aws_secret_access_key=self.config()['aws.secret_access_key'])
         return self._s3_connection
 
     def get_cloudfront(self):
         if not self._cloudfront_connection:
             self._cloudfront_connection = boto.connect_cloudfront(
-                    aws_access_key_id=self.config().aws_access_key_id,
-                    aws_secret_access_key=self.config().aws_secret_access_key)
+                    aws_access_key_id=self.config()['aws.access_key_id'],
+                    aws_secret_access_key=self.config()['aws.secret_access_key'])
         return self._cloudfront_connection
 
     def session(self):
         if not self._engine:
-            self._engine = create_engine(os.environ['DATABASE_URL'])
+            self._engine = create_engine(self.config()['postgres_url'])
         if not self._session:
             self._session = MutexSession(self._engine)
         return self._session

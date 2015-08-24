@@ -13,23 +13,25 @@ from catsnap.db_redis_coordination import (
     coordinated_commit,
 )
 from catsnap import Client
+config = Client().config()
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
-if not app.debug and all(map(lambda x: x in os.environ,
-                             ['EMAIL_HOST',
-                             'ERROR_RECIPIENT',
-                             'ERROR_SENDER'])):
-    if 'EMAIL_USERNAME' in os.environ and 'EMAIL_PASSWORD' in os.environ:
-        email_credentials = (os.environ['EMAIL_USERNAME'],
-                             os.environ['EMAIL_PASSWORD'])
+if not app.debug and all(map(lambda x: x in config,
+                             ['error_email.provider.hostname',
+                             'error_email.recipient',
+                             'error_email.sender'])):
+    if ('error_email.provider.username' in config
+            and 'error_email.provider.password' in config):
+        email_credentials = (config['error_email.provider.username'],
+                             config['error_email.provider.password'])
     else:
         email_credentials = None
-    mail_handler = SMTPHandler(os.environ['EMAIL_HOST'],
-                               os.environ['ERROR_SENDER'],
-                               [os.environ['ERROR_RECIPIENT']],
+    mail_handler = SMTPHandler(config['error_email.provider.hostname'],
+                               config['error_email.provider.sender'],
+                               [config['error_email.provider.recipient']],
                                'Catsnap error',
                                email_credentials)
     mail_handler.setLevel(logging.ERROR)
@@ -50,7 +52,7 @@ stderr_handler = logging.StreamHandler()
 stderr_handler.setLevel(logging.WARNING)
 app.logger.addHandler(stderr_handler)
 
-app.secret_key = os.environ.get('CATSNAP_SECRET_KEY')
+app.secret_key = config['secret_session_key']
 
 @app.before_request
 def before_request():
@@ -59,8 +61,8 @@ def before_request():
     if 'logged_in' in session:
         g.user = 1
 
-    if 'twitter_username' in Client().config():
-        g.twitter_username = Client().config().twitter_username
+    if 'twitter_username' in config:
+        g.twitter_username = config['twitter_username']
 
 @app.after_request
 def after_request(response):
@@ -79,9 +81,8 @@ import catsnap.web.controllers.image
 import catsnap.web.controllers.album
 import catsnap.web.controllers.websockets
 
-config = Client().config()
-if 'cloudfront_distribution_id' in config:
-    distro_id = config['cloudfront_distribution_id']
+if 'aws.cloudfront_distribution_id' in config:
+    distro_id = config['aws.cloudfront_distribution_id']
     Client().cloudfront_url(distro_id)
 
 @app.route('/')

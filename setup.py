@@ -26,6 +26,7 @@ setup(name="catsnap",
           "redis==2.10.3",
           "gevent==1.0.2",
           "Flask-Sockets==0.1",
+          "PyYAML==3.11",
 
           "mock==1.0.1",
           "nose==1.1.2",
