@@ -24,7 +24,7 @@ Optionally, you may wish to [create a cloudfront distribution](https://console.a
 
 You need python 2.7. Clone the repo and run `python setup.py develop` to fetch the requirements.
 
-Catsnap depends on [Postgresql](http://www.postgresql.org/) and [Redis](http://redis.io/), so make sure they're installed and running. Next you need to do some configuration. Copy [`catsnap/config/example.config.yml`](catsnap/config/example.config.yml) to `catsnap/config/config.yml` and read through it. Most of the example settings will be fine for development, but you'll need to make a couple of changes. There are instructions in the example config.
+Catsnap depends on [Postgresql](http://www.postgresql.org/) and [Redis](http://redis.io/), so make sure they're installed and running. Next you need to do some configuration. Copy [catsnap/config/example.config.yml](catsnap/config/example.config.yml) to `catsnap/config/config.yml` and read through it. Most of the example settings will be fine for development, but you'll need to make a couple of changes. There are instructions in the example config.
 
 You're nearly ready! Create a postgres database for catsnap to use, and set up its schema by running `yoyo-migrate -b apply migrations postgresql://localhost/catsnap` (you may need to edit that database url, depending on your postgres configuration).
 
