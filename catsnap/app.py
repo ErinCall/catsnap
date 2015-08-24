@@ -1,11 +1,4 @@
 import os
-if os.environ.get('ENV') and os.path.exists(os.environ['ENV']):
-    for line in open(os.environ['ENV']):
-        var = line.strip().split('=')
-        if len(var) == 2:
-            os.environ[var[0]] = var[1]
-
-
 from catsnap.web import app
 import sys
 

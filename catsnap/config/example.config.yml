@@ -1,0 +1,61 @@
+# This file provides a template for setting up your actual config.yml. Every
+# configuration option is present; the ones that are commented out are
+# noncompulsory.
+# If you're unable or unwilling to use a file for configuration, Catsnap also
+# supports configuration with environment variables. To translate an option's
+# name to an environment variable, prefix it with CATSNAP_ and use underscores
+# to join any section names to the option. For example, postgres_url becomes
+# CATSNAP_POSTGRES_URL, and error_email.provider.hostname becomes
+# CATSNAP_ERROR_EMAIL_PROVIDER_HOSTNAME.
+# Env vars, if present, will override settings in this file.
+
+
+# Catsnap requires access to a PostgreSQL database. If you're developing
+# against a local database, you can probably leave this line unchanged; in
+# production you may need to change the hostname away from localhost. If
+# you're using Heroku you'll want the DATABASE_URL config var they provide.
+postgres_url: postgresql://localhost:5432/catsnap
+
+# Catsnap also requires access to Redis for worker queue brokering. Like the
+# postgres_url, the provided value is probably adequate for development.
+redis_url: redis://localhost:6379
+
+# Catsnap needs an AWS access key/secret pair, with permissions on an S3
+# bucket. It will put images at the root of the bucket, so you probably want
+# Catsnap to be the only thing using that bucket.
+aws:
+  access_key_id: xxxxxxxxxxxxxxxxxxxx
+  secret_access_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  bucket:'my-catsnap'
+  # If you want to use Cloudfront, put your distribution id here. Note that
+  # this is _not_ the XXXXX.cloudfront.net domain; it's the internal ID. If
+  # you've configured an alternate domain name, Catsnap will use it
+  # automatically.
+  # cloudfront_distribution_id: xxxxxxxxxxxxxx
+
+# This key is used to sign session cookies. In production it should be a large
+# random string. Keep it secret, keep it safe.
+# In development you only need it to be present; these xs are adequate.
+secret_session_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# This is the bcrypted digest of the password you'll use to sign into Catsnap.
+# You can generate a bcrypted digest by running:
+# python -c 'import bcrypt, sys; print bcrypt.hashpw(sys.stdin.readline().strip(), bcrypt.gensalt())'
+password_hash: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# This entire section is optional. If you wish to have catsnap email you when
+# it encounters an unexpected error, you need to provide at least
+# recipient, sender, and provider.hostname. You'll also need provider.username
+# and provider.password unless you have an unauthenticated SMTP server.
+# error_email:
+#   provider:
+#     hostname: smtp.emailprovider.net
+#     username: myaccount
+#     password: letmein
+#   recipient: me@myemail.mine
+#   sender: me@myemail.mine
+
+# If you put your twitter username here, the display-image page will include
+# <meta> tags that show twitter how to display a preview when you link to the
+# image on twitter.
+# twitter_username: horse_ebooks

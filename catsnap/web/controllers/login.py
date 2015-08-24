@@ -15,7 +15,7 @@ def login():
 @app.route('/login', methods=['POST'])
 def do_login():
     try:
-        password_hash = Client().config().password_hash
+        password_hash = Client().config()['password_hash']
         if type(password_hash) == unicode:
             password_hash = password_hash.encode('utf-8')
 

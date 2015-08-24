@@ -6,7 +6,7 @@ from tests import TestCase, with_settings
 from nose.tools import eq_
 
 class TestIndex(TestCase):
-    @with_settings(bucket='cattysnap')
+    @with_settings(aws={'bucket': 'cattysnap'})
     @patch('catsnap.web.controllers.find.Tag')
     def test_find_a_tag(self, Tag):
         Tag.get_image_data.return_value = [ ('CA7', 1, 'pet cool'),
@@ -19,7 +19,7 @@ class TestIndex(TestCase):
         assert cat_link in response.data, response.data
         assert dog_link in response.data, response.data
 
-    @with_settings(bucket='cattysnap')
+    @with_settings(aws={'bucket': 'cattysnap'})
     @patch('catsnap.web.controllers.find.Tag')
     def test_search_strings_have_whitespace_trimmed(self, Tag):
         Tag.get_image_data.return_value = []
@@ -29,7 +29,7 @@ class TestIndex(TestCase):
 
         Tag.get_image_data.assert_called_with(['pet'])
 
-    @with_settings(bucket='cattysnap')
+    @with_settings(aws={'bucket': 'cattysnap'})
     @patch('catsnap.web.controllers.find.Tag')
     def test_find_a_tag__json_format(self, Tag):
         image_structs = [ ('CA7', 1, 'pet cool'),

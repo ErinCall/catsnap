@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="catsnap",
-      version="5.3.0",
+      version="6.0.0",
       description="catalog and store images",
       author="Erin Call",
       author_email="hello@erincall.com",
@@ -12,7 +12,6 @@ setup(name="catsnap",
                 'catsnap.document',
                 'catsnap.config',
                 'catsnap.batch'],
-      scripts=['scripts/catsnap'],
       install_requires=[
           "Flask==0.9",
           "gunicorn==0.14.6",
@@ -27,6 +26,7 @@ setup(name="catsnap",
           "redis==2.10.3",
           "gevent==1.0.2",
           "Flask-Sockets==0.1",
+          "PyYAML==3.11",
 
           "mock==1.0.1",
           "nose==1.1.2",

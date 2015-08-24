@@ -8,7 +8,7 @@ from catsnap.table.image import Image, ImageResize
 from catsnap.table.album import Album
 
 class TestShowImage(TestCase):
-    @with_settings(bucket='snapcats')
+    @with_settings(aws={'bucket': 'snapcats'})
     def test_view_an_image(self):
         session = Client().session()
         album = Album(name='cow shots')
@@ -36,7 +36,7 @@ class TestShowImage(TestCase):
         assert str(prev_image.image_id) in response.data, response.data
         assert str(next_image.image_id) in response.data, response.data
 
-    @with_settings(bucket='snapcats')
+    @with_settings(aws={'bucket': 'snapcats'})
     def test_view_an_image__defaults_to_medium(self):
         session = Client().session()
         image = Image(filename='deadbeef',
@@ -55,7 +55,7 @@ class TestShowImage(TestCase):
 
     # if no medium exists, assume it's because the original is smaller than a
     # "medium," and thus the original is an appropriate size.
-    @with_settings(bucket='snapcats')
+    @with_settings(aws={'bucket': 'snapcats'})
     def test_view_an_image__defaults_to_original_if_no_medium_exists(self):
         session = Client().session()
         image = Image(filename='deadbeef',
@@ -72,7 +72,7 @@ class TestShowImage(TestCase):
         assert 'src="https://s3.amazonaws.com/snapcats/deadbeef"' in response.data,\
                 response.data
 
-    @with_settings(bucket='snapcats')
+    @with_settings(aws={'bucket': 'snapcats'})
     def test_get_image_info_as_json(self):
         session = Client().session()
         album = Album(name='cow shots')

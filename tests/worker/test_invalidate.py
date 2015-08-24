@@ -12,7 +12,7 @@ from catsnap.table.task_transaction import TaskTransaction
 from catsnap.worker.tasks import Invalidate
 
 class TestInvalidate(TestCase):
-    @with_settings(cloudfront_distribution_id='CRIPESKAREN')
+    @with_settings(aws={'cloudfront_distribution_id': 'CRIPESKAREN'})
     @patch('catsnap.worker.tasks.Client')
     def test_toomanyinvalidation_errors_cause_retry(self, MockClient):
         error = CloudFrontServerError(400, 'Bad Request')
@@ -41,7 +41,7 @@ class TestInvalidate(TestCase):
         invalidate.retry.assert_called_with(exc=error)
 
     @raises(CloudFrontServerError)
-    @with_settings(cloudfront_distribution_id='SHEESHJESSICA')
+    @with_settings(aws={'cloudfront_distribution_id': 'SHEESHJESSICA'})
     @patch('catsnap.worker.tasks.Client')
     def test_unknown_cloudfront_errors_reraise(self, MockClient):
         error = CloudFrontServerError(400, 'Bad Request')
@@ -65,7 +65,7 @@ class TestInvalidate(TestCase):
 
         Invalidate()(transaction_id, image.image_id)
 
-    @with_settings(cloudfront_distribution_id='JEEZAMANDA')
+    @with_settings(aws={'cloudfront_distribution_id': 'JEEZAMANDA'})
     def test_invalidate_an_image(self):
         cloudfront = Mock()
         Client().get_cloudfront = Mock()
@@ -83,7 +83,8 @@ class TestInvalidate(TestCase):
         cloudfront.create_invalidation_request.assert_called_with(
             'JEEZAMANDA', ['c1a115'])
 
-    @with_settings(cloudfront_distribution_id='FETCHISNTGOINGTOHAPPEN')
+    @with_settings(
+        aws={'cloudfront_distribution_id': 'FETCHISNTGOINGTOHAPPEN'})
     def test_invalidate_an_image__with_a_resize_suffix(self):
         cloudfront = Mock()
         Client().get_cloudfront = Mock()

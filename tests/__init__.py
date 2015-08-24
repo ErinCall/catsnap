@@ -21,20 +21,6 @@ from catsnap.web import app
 
 class TestCase(object):
     def setUp(self):
-        (creds_fd, creds) = tempfile.mkstemp()
-        self.creds_tempfile = creds
-        self.creds_temp_fd = creds_fd
-        (config_fd, config) = tempfile.mkstemp()
-        self.config_tempfile = config
-        self.config_temp_fd = config_fd
-        catsnap.config.file_config._input = MagicMock()
-        catsnap.config.file_config.CONFIG_FILE = config
-        catsnap.config.file_config.LEGACY_CREDENTIALS_FILE = creds
-
-        catsnap.config.argument_config.sys = MagicMock()
-
-        catsnap.config.file_config.getpass = MagicMock()
-
         catsnap.Client()._engine = db_info['engine']
         catsnap.Client().session().commit = catsnap.Client().session().flush
 
@@ -43,9 +29,7 @@ class TestCase(object):
         self.app = app.test_client()
 
     def tearDown(self):
-        os.close(self.creds_temp_fd)
-        os.close(self.config_temp_fd)
-        catsnap.config.MetaConfig._instance = None
+        catsnap.config.Config._instance = None
         catsnap.Client().session().rollback()
         catsnap.Client._instance = None
 
@@ -100,7 +84,7 @@ def with_settings(**settings):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            catsnap.Client().config()._argument_config = settings
+            catsnap.Client().config()._contents = settings
             try:
                 fn(*args, **kwargs)
             finally:

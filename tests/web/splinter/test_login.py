@@ -9,7 +9,7 @@ from catsnap.table.album import Album
 
 class TestLoggedInDisplay(TestCase):
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_on_view_image(self):
         session = Client().session()
         image = Image(filename='bab1eface', title='face of a baby')
@@ -20,7 +20,7 @@ class TestLoggedInDisplay(TestCase):
             "Page didn't act like logged in"
 
     @logged_in
-    @with_settings(bucket='frootypoo')
+    @with_settings(aws={'bucket': 'frootypoo'})
     def test_on_view_album(self):
         session = Client().session()
         album = Album(name="fotozzzz")
