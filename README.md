@@ -36,4 +36,4 @@ Production use is pretty similar to dev. There are a couple of caveats:
 
 If you'll be putting Catsnap behind a reverse proxy like [Nginx](http://nginx.org), be sure to tell it to [forward HTTP Upgrade headers](http://nginx.org/en/docs/http/websocket.html) to catsnap's `/task_info` route.
 
-If you're using Heroku, you won't be able to deploy a `config.yml`. You can configure catsnap with environment variables (`heroku config`); see `example.config.yml` for instructions on translating setting names to env vars.
+If you're using Heroku, you won't be able to deploy a `config.yml`. You can configure catsnap with environment variables (`heroku config`); see `example.config.yml` for instructions on translating option names to env vars.
