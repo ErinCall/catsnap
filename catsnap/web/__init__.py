@@ -30,8 +30,8 @@ if not app.debug and all(map(lambda x: x in config,
     else:
         email_credentials = None
     mail_handler = SMTPHandler(config['error_email.provider.hostname'],
-                               config['error_email.provider.sender'],
-                               [config['error_email.provider.recipient']],
+                               config['error_email.sender'],
+                               [config['error_email.recipient']],
                                'Catsnap error',
                                email_credentials)
     mail_handler.setLevel(logging.ERROR)
