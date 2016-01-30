@@ -30,6 +30,7 @@ setup(name="catsnap",
 
           "mock==1.0.1",
           "nose==1.1.2",
+          "selenium==2.48",
           "splinter==0.5.3",
           "bcrypt==1.1.1",
       ],
