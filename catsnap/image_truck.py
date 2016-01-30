@@ -59,7 +59,7 @@ class ImageTruck():
         (_, image_file) = tempfile.mkstemp()
         key = Client().bucket().get_key(image.filename)
         if key is None:
-            raise KeyError(filename)
+            raise KeyError(image.filename)
 
         key.get_contents_to_filename(image_file)
 
