@@ -63,11 +63,16 @@ $(document).ready(function () {
   receiveImageData = function(data) {
     var $titleInput,
         $titleForm,
+        $throbberLink,
+        $throbberImage,
         $descriptionArea,
         $descriptionForm,
         $ul;
 
-    this.append($('<img src="/public/img/large-throbber.gif" class="throbber">'));
+    $throbberImage = $('<img src="/public/img/large-throbber.gif" class="throbber">');
+    $throbberLink = $('<a href="/image/' + data.image_id + '">');
+    $throbberLink.append($throbberImage);
+    this.append($throbberLink);
     this.data('image-id', data.image_id);
     this.data('url', data.url);
 
