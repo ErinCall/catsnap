@@ -24,7 +24,7 @@ setup(name="catsnap",
           "wand==0.3.3",
           "celery==3.1.16",
           "redis==2.10.3",
-          "gevent==1.0.2",
+          "gevent==1.1b5",
           "Flask-Sockets==0.1",
           "PyYAML==3.11",
 
