@@ -30,6 +30,14 @@ You're nearly ready! Create a postgres database for catsnap to use, and set up i
 
 You're good to go! Start the web service with `gunicorn -k flask_sockets.worker catsnap.app:app -b 0.0.0.0:5000` and the background worker with `celery -A catsnap.worker worker` and visit [localhost:5000](http://localhost:5000) to get snapping!
 
+### Running the tests
+
+Once you've installed the dependencies as described in Running Locally, you can launch the test suite with `nosetests`.
+
+There are a number of tests that launch a browser, and they're somewhat finicky to get working. [INSERT DEBUGGING ADVICE HERE].
+
+If you want to skip the browser tests entirely, run `nosetests --exclude splinter`. You'll lose JavaScript coverage, but the Python code will still get tested.
+
 ### Running in production
 
 Production use is pretty similar to dev. There are a couple of caveats:
