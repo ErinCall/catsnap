@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import tests.env
 from functools import wraps
 from mock import Mock, MagicMock, patch
 import tempfile
@@ -10,12 +11,6 @@ import subprocess
 import os
 import os.path
 import catsnap
-
-# obviously this is not a redis url. Celery will take it to mean "put all
-# tasks in memory." The direct redis pub/sub attachments seem to take it to
-# mean "connect to the default redis config," which seems ok.
-if 'CATSNAP_REDIS_URL' not in os.environ:
-    os.environ['CATSNAP_REDIS_URL'] = 'memory://'
 
 from catsnap.web import app
 

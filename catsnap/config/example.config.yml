@@ -41,6 +41,7 @@ secret_session_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # This is the bcrypted digest of the password you'll use to sign into Catsnap.
 # You can generate a bcrypted digest by running:
 # python -c 'import bcrypt, sys; print bcrypt.hashpw(sys.stdin.readline().strip(), bcrypt.gensalt())'
+# and then typing your password.
 password_hash: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # This entire section is optional. If you wish to have catsnap email you when
