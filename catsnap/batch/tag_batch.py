@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchWriteList, BatchList
@@ -34,6 +34,5 @@ def _submit_items(table, items):
             and table.name in response['UnprocessedItems']:
         unprocessed_keys = set(x['PutRequest']['Item'][HASH_KEY]
                 for x in response['UnprocessedItems'][table.name])
-        unprocessed_items = filter(
-                lambda x: x[HASH_KEY] in unprocessed_keys, items)
+        unprocessed_items = [x for x in items if x[HASH_KEY] in unprocessed_keys]
         _submit_items(table, unprocessed_items)

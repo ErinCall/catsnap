@@ -1,8 +1,9 @@
-from __future__ import unicode_literals
+
 
 import os
 import yaml
 from catsnap.singleton import Singleton
+from functools import reduce
 
 # main configuration for catsnap. Looks for settings in os.environ or
 # config.yml (env vars first). Acts like a read-only dict; use [] to look up

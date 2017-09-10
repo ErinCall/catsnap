@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import json
 from flask import request, render_template, redirect, g, url_for
@@ -64,7 +64,7 @@ def add(request_format):
 
     session.flush()
     contentses = []
-    for i in xrange(0, len(images)):
+    for i in range(0, len(images)):
         (truck, image) = trucks[i], images[i]
         contents = ImageContents(image_id=image.image_id,
                                  contents=truck.contents,
@@ -89,7 +89,7 @@ def add(request_format):
                 'url': trucks[i].url(),
                 'image_id': images[i].image_id,
                 'task_id': task_ids[i],
-            } for i in xrange(0, len(trucks))]
+            } for i in range(0, len(trucks))]
 
 @formatted_route(
     '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})
@@ -129,7 +129,7 @@ def show_image(request_format, image_id, size):
                                albums=albums,
                                url=url,
                                tags=list(tags),
-                               metadata_fields=filter(lambda (x,_): getattr(image, x), Image.metadata_fields),
+                               metadata_fields=[x__ for x__ in Image.metadata_fields if getattr(image, x__[0])],
                                getattr=getattr,
                                resizes=resizes,
                                size=size)
@@ -160,7 +160,7 @@ def edit_image(request_format, image_id):
         filter(Image.image_id == image_id).\
         one()
 
-    for attribute, value in request.form.iteritems():
+    for attribute, value in request.form.items():
         if attribute in ['add_tag', 'remove_tag']:
             continue
 

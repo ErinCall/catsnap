@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 #It's a big truck. You can just dump stuff on it.
 
@@ -24,7 +24,7 @@ class ImageTruck():
         try:
             response = requests.get(url)
         except SSLError as e:
-            if 'sslv3 alert handshake failure' in unicode(e):
+            if 'sslv3 alert handshake failure' in str(e):
                 raise TryHTTPError(url)
             else:
                 raise
@@ -126,5 +126,5 @@ class ImageTruck():
             raise KeyError(filename)
         return key.get_contents_as_string()
 
-class TryHTTPError(StandardError):
+class TryHTTPError(Exception):
     pass

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from flask import request, render_template, url_for
 from catsnap.image_truck import ImageTruck

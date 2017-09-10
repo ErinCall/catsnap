@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import bcrypt
 from flask import session, redirect, render_template, request
@@ -16,11 +16,11 @@ def login():
 def do_login():
     try:
         password_hash = Client().config()['password_hash']
-        if type(password_hash) == unicode:
+        if type(password_hash) == str:
             password_hash = password_hash.encode('utf-8')
 
         given_password = request.form['password'].strip()
-        if type(given_password) == unicode:
+        if type(given_password) == str:
             given_password = given_password.encode('utf-8')
 
         if bcrypt.hashpw(given_password, password_hash) == password_hash:

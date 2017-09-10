@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchList
 

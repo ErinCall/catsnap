@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import json
 from functools import wraps
@@ -30,7 +30,7 @@ def formatted_route(route, defaults={}, **kwargs):
                 if type(response) in [list, dict]:
                     response = json.dumps(response)
 
-                if type(response) in [unicode, str]:
+                if type(response) in [str, str]:
                     response = make_response(response)
 
                 response.headers['Content-Type'] = 'application/json'

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from celery import Celery
 from celery.signals import task_success
@@ -12,10 +12,9 @@ worker = Celery('catsnap.worker', broker=broker_url)
 worker.conf.CELERY_TASK_SERIALIZER = 'json'
 worker.conf.CELERY_ACCEPT_CONTENT = ['json']
 
-if all(map(lambda x: x in config,
-           ['error_email.provider.hostname',
+if all([x in config for x in ['error_email.provider.hostname',
            'error_email.recipient',
-           'error_email.sender'])):
+           'error_email.sender']]):
     worker.conf.CELERY_SEND_TASK_ERROR_EMAILS = True
     worker.conf.ADMINS = [(config['error_email.recipient'],
                            config['error_email.recipient'])]

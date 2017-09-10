@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from collections import OrderedDict
 from wand.image import Image as ImageHandler
@@ -23,7 +23,7 @@ class ResizeImage(object):
     def make_resizes(cls, image, truck, after_upload):
         contents = truck.contents
 
-        for size, new_long_side in RESIZES.iteritems():
+        for size, new_long_side in RESIZES.items():
             image_handler = ImageHandler(blob=contents)
             long_side = max(image_handler.size)
 
@@ -44,9 +44,9 @@ class ResizeImage(object):
                                                       height,
                                                       RESIZES[size])
 
-        print 'resizing to %s' % size
+        print('resizing to %s' % size)
         image_handler.resize(new_width, new_height)
-        print 'uploading resized image'
+        print('uploading resized image')
         truck.upload_resize(image_handler.make_blob(), size)
         after_upload(size)
 

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.functions import coalesce

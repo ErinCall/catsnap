@@ -1,4 +1,4 @@
-from __future__ import unicode_literals, absolute_import
+
 
 import gevent
 import json
@@ -25,7 +25,7 @@ class RedisWebsocketBridge(Singleton):
             if message['type'] == 'message':
                 try:
                     data = json.loads(data)
-                except TypeError, ValueError:
+                except TypeError as ValueError:
                     pass
                 yield data
 
@@ -40,7 +40,7 @@ class RedisWebsocketBridge(Singleton):
         self.clients.append((client, relevant, translate))
 
     def send(self, client, data):
-        if type(data) not in [str, unicode]:
+        if type(data) not in [str, str]:
             data = json.dumps(data)
         try:
             client.send(data)

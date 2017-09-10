@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import sys
 from functools import wraps
@@ -75,9 +75,9 @@ def coordinated_commit(queued_tasks):
                 redis.exceptions.TimeoutError) as redisError:
             # If we've lost the database, redis connection errors seem likely.
             # Try to report the whole failure.
-            raise SkyIsFallingError(sqlError, redisError), None, exc_info[2]
+            raise SkyIsFallingError(sqlError, redisError).with_traceback(exc_info[2])
 
-        raise sqlError, None, exc_info[2]
+        raise sqlError.with_traceback(exc_info[2])
     except (sqlalchemy.exc.DatabaseError,
             sqlalchemy.exc.StatementError) as sqlError:
         exc_info = sys.exc_info()
@@ -87,10 +87,10 @@ def coordinated_commit(queued_tasks):
             # invalid in some way or another, so this needs to be a
             # coordinated rollback.
             coordinated_rollback(queued_tasks)
-            raise sqlError, None, exc_info[2]
+            raise sqlError.with_traceback(exc_info[2])
         except (redis.exceptions.ConnectionError,
                 redis.exceptions.TimeoutError) as redisError:
-            raise SkyIsFallingError(sqlError, redisError), None, exc_info[2]
+            raise SkyIsFallingError(sqlError, redisError).with_traceback(exc_info[2])
 
 
 # Roll back the database and revoke all queued tasks. In the event of errors,
@@ -111,9 +111,9 @@ def coordinated_rollback(queued_tasks):
                 task.revoke()
         except (redis.exceptions.ConnectionError,
                 redis.exceptions.TimeoutError) as redisError:
-            raise SkyIsFallingError(sqlError, redisError), None, exc_info[2]
+            raise SkyIsFallingError(sqlError, redisError).with_traceback(exc_info[2])
 
-        raise sqlError, None, exc_info[2]
+        raise sqlError.with_traceback(exc_info[2])
 
 
 # "Y'all know it's all fucked up now, right? What the fuck I'mma do now? What

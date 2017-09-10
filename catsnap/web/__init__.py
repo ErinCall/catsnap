@@ -1,7 +1,6 @@
-from __future__ import unicode_literals
+
 
 import os
-import sha
 import sys
 import logging
 import datetime
@@ -19,10 +18,9 @@ PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=os.path.join(PROJECT_ROOT, 'public'),
             static_url_path='/public')
 
-if not app.debug and all(map(lambda x: x in config,
-                             ['error_email.provider.hostname',
+if not app.debug and all([x in config for x in ['error_email.provider.hostname',
                              'error_email.recipient',
-                             'error_email.sender'])):
+                             'error_email.sender']]):
     if ('error_email.provider.username' in config
             and 'error_email.provider.password' in config):
         email_credentials = (config['error_email.provider.username'],
@@ -67,7 +65,7 @@ def before_request():
 @app.after_request
 def after_request(response):
     session = Client().session()
-    if response.status_code not in xrange(200, 399):
+    if response.status_code not in range(200, 399):
         coordinated_rollback(g.queued_tasks)
         return response
 

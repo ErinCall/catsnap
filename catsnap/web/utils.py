@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from functools import wraps
 from catsnap.web.formatted_routes import abort

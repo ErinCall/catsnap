@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import time
 from wand.image import Image as ImageHandler
@@ -9,7 +9,7 @@ class ImageMetadata(object):
     def image_metadata(cls, contents):
         handler = ImageHandler(blob=contents)
         metadata = handler.metadata
-        any_exif = filter(lambda x: x.startswith('exif:'), metadata.keys())
+        any_exif = [x for x in list(metadata.keys()) if x.startswith('exif:')]
         if not any_exif:
             return {}
 

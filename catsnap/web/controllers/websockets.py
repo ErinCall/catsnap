@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import json
 import gevent
@@ -22,7 +22,7 @@ def task_info(websocket):
         message = websocket.receive()
         try:
             body = json.loads(message)
-        except TypeError, ValueError:
+        except TypeError as ValueError:
             continue
 
         task_id = body['task_id']

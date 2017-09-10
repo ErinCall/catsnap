@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from sqlalchemy import Column, Integer, ForeignKey
 from catsnap.table.tag import Tag

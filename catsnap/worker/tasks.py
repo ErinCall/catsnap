@@ -1,4 +1,4 @@
-from __future__ import unicode_literals, absolute_import
+
 
 import json
 import time
@@ -35,7 +35,7 @@ class Invalidate(worker.Task):
             return
 
         filename = image.filename
-        print repr(suffix)
+        print(repr(suffix))
         if suffix is not None:
             filename = '{0}_{1}'.format(filename, suffix)
 
@@ -76,7 +76,7 @@ def process_image(self, image_contents_id):
         }))
     ResizeImage.make_resizes(image, truck, after_upload)
 
-    print "uploading original image"
+    print("uploading original image")
     truck.upload()
     redis.publish(REDIS_CHANNEL, json.dumps({
         'task_id': self.request.id,
@@ -85,7 +85,7 @@ def process_image(self, image_contents_id):
 
     delay(queued_tasks, Invalidate(), image.image_id)
 
-    for attr, value in metadata.iteritems():
+    for attr, value in metadata.items():
         setattr(image, attr, value)
     session.add(image)
     session.delete(contents)

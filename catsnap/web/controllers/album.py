@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
@@ -44,7 +44,7 @@ def view_album(request_format, album_id):
             'source_url': ImageTruck.url_for_filename(image.filename),
             'caption': image.caption(),
         }
-    image_structs = map(struct_from_image, images)
+    image_structs = list(map(struct_from_image, images))
 
     if request_format == 'html':
         return render_template('view_album.html.jinja',
