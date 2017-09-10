@@ -16,7 +16,7 @@ class TestIndex(TestCase):
         response = self.app.get('/')
         eq_(response.status_code, 200)
 
-        body = response.data
+        body = response.data.decode('utf-8')
         body = re.sub(r'hurdygurdy.*', '', body, flags=re.DOTALL)
 
         assert re.search(r'dordybordy', body) is not None, \

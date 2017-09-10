@@ -14,8 +14,8 @@ class TestIndex(TestCase):
         link = '<a href="/image/%s">%s</a>'
         cat_link = link % (1, 'pet cool')
         dog_link = link % (2, 'pet')
-        assert cat_link in response.data, response.data
-        assert dog_link in response.data, response.data
+        assert cat_link in response.data.decode('utf-8'), response.data
+        assert dog_link in response.data.decode('utf-8'), response.data
 
     @with_settings(aws={'bucket': 'cattysnap'})
     @patch('catsnap.web.controllers.find.Tag')
@@ -35,7 +35,7 @@ class TestIndex(TestCase):
         Tag.get_image_data.return_value = image_structs
         response = self.app.get('/find.json?tags=pet')
         eq_(response.status_code, 200, response.data)
-        eq_(json.loads(response.data), [
+        eq_(json.loads(response.data.decode('utf-8')), [
             {'source_url': 'https://s3.amazonaws.com/cattysnap/CA7',
              'url': '/image/1',
              'caption': 'pet cool',},

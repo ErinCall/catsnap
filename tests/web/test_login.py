@@ -1,5 +1,4 @@
 import datetime
-import sha
 from tests import TestCase, with_settings
 from nose.tools import eq_
 from catsnap import Client

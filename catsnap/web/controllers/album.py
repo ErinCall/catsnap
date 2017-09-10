@@ -38,7 +38,7 @@ def view_album(request_format, album_id):
     images = Album.images_for_album_id(album_id)
     def struct_from_image(image):
         return {
-            'page_url': url_for('show_image', image_id=image.image_id),
+            'page_url': url_for('show_image_html', image_id=image.image_id),
             'source_url': ImageTruck.url_for_filename(image.filename),
             'caption': image.caption(),
         }

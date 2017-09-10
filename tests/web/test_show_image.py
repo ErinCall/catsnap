@@ -26,13 +26,13 @@ class TestShowImage(TestCase):
         session.flush()
 
         response = self.app.get('/image/%d' % image.image_id)
-        assert 'https://s3.amazonaws.com/snapcats/deadbeef' in response.data,\
+        assert b'https://s3.amazonaws.com/snapcats/deadbeef' in response.data,\
                 response.data
 
-        assert 'one time I saw a dead cow' in response.data, response.data
-        assert 'cow shots' in response.data, response.data
-        assert str(prev_image.image_id) in response.data, response.data
-        assert str(next_image.image_id) in response.data, response.data
+        assert b'one time I saw a dead cow' in response.data, response.data
+        assert b'cow shots' in response.data, response.data
+        assert str(prev_image.image_id).encode() in response.data, response.data
+        assert str(next_image.image_id).encode() in response.data, response.data
 
     @with_settings(aws={'bucket': 'snapcats'})
     def test_view_an_image__defaults_to_medium(self):
@@ -48,7 +48,7 @@ class TestShowImage(TestCase):
         session.flush()
 
         response = self.app.get('/image/%d' % image.image_id)
-        assert 'https://s3.amazonaws.com/snapcats/deadbeef_medium' in response.data,\
+        assert b'https://s3.amazonaws.com/snapcats/deadbeef_medium' in response.data,\
                 response.data
 
     # if no medium exists, assume it's because the original is smaller than a
@@ -67,7 +67,7 @@ class TestShowImage(TestCase):
         session.flush()
 
         response = self.app.get('/image/%d' % image.image_id)
-        assert 'src="https://s3.amazonaws.com/snapcats/deadbeef"' in response.data,\
+        assert b'src="https://s3.amazonaws.com/snapcats/deadbeef"' in response.data,\
                 response.data
 
     @with_settings(aws={'bucket': 'snapcats'})
@@ -86,7 +86,7 @@ class TestShowImage(TestCase):
         session.flush()
 
         response = self.app.get('/image/%d.json' % image.image_id)
-        eq_(json.loads(response.data), {
+        eq_(json.loads(response.data.decode('utf-8')), {
             'description': 'one time I saw a dead cow',
             'title': 'dead beef',
             'album_id': album.album_id,

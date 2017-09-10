@@ -110,7 +110,7 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ImageTruck')
     def test_calculates_metadata(self, ImageTruck, ReorientImage, ResizeImage):
         session = Client().session()
-        with open(EXIF_JPG, 'r') as fh:
+        with open(EXIF_JPG, 'br') as fh:
             image_data = fh.read()
 
         (image, contents) = self.setup_contents(image_data)
@@ -135,7 +135,7 @@ class TestProcessImage(TestCase):
 
     @nottest
     def image_data(self):
-        with open(SOME_PNG, 'r') as fh:
+        with open(SOME_PNG, 'br') as fh:
             return fh.read()
 
     @nottest

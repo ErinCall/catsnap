@@ -75,12 +75,12 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.requests')
     def test_new_from_url(self, requests):
         response = Mock()
-        response.content = "Ain't no party like a Liz Lemon party"
+        response.content = b"Ain't no party like a Liz Lemon party"
         response.headers = {'content-type': 'party'}
         requests.get.return_value = response
 
         truck = ImageTruck.new_from_url('http://some.url')
-        eq_(truck.contents, "Ain't no party like a Liz Lemon party")
+        eq_(truck.contents, b"Ain't no party like a Liz Lemon party")
         eq_(truck.content_type, "party")
         eq_(truck.source_url, "http://some.url")
 
@@ -121,15 +121,15 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.subprocess')
     def test_new_from_file(self, subprocess):
         subprocess.check_output.return_value = \
-                'space-centurion.png: PNG image data, 1280 x 800, ' \
-                '8-bit/color RGB, non-interlaced'
+                b'space-centurion.png: PNG image data, 1280 x 800, ' \
+                b'8-bit/color RGB, non-interlaced'
         (_, image) = tempfile.mkstemp()
         with open(image, 'w') as image_file:
             image_file.write('here are some contents')
 
         truck = ImageTruck.new_from_file(image)
         eq_(truck.content_type, "image/png")
-        eq_(truck.contents, 'here are some contents')
+        eq_(truck.contents, b'here are some contents')
         eq_(truck.source_url, None)
         subprocess.check_output.assert_called_with(['file', image])
 
@@ -137,13 +137,13 @@ class TestImageTruck(TestCase):
         try:
             ImageTruck.new_from_file(__file__)
         except Exception as e:
-            eq_(e.message, "'%s' doesn't seem to be an image file" % __file__)
+            eq_(e.args[0], "'%s' doesn't seem to be an image file" % __file__)
             eq_(type(e), TypeError)
         else:
             raise AssertionError('expected an error')
 
     def test_new_from_stream(self):
-        with open(SMALL_JPG, 'r') as stream:
+        with open(SMALL_JPG, 'br') as stream:
             truck = ImageTruck.new_from_stream(stream)
             eq_(truck.content_type, 'image/jpeg')
             stream.seek(0)
@@ -153,8 +153,8 @@ class TestImageTruck(TestCase):
     @patch('catsnap.image_truck.subprocess')
     def test_new_from_image(self, subprocess, MockClient):
         subprocess.check_output.return_value = \
-                'space-centurion.png: PNG image data, 1280 x 800, ' \
-                '8-bit/color RGB, non-interlaced'
+                b'space-centurion.png: PNG image data, 1280 x 800, ' \
+                b'8-bit/color RGB, non-interlaced'
 
         def get_contents_to_filename(filename):
             with open(filename, 'w') as fh:
@@ -169,7 +169,7 @@ class TestImageTruck(TestCase):
 
         image = Image(filename='faceface')
         truck = ImageTruck.new_from_image(image)
-        eq_(truck.contents, 'brain, skull, etc')
+        eq_(truck.contents, b'brain, skull, etc')
 
         bucket.get_key.assert_called_with('faceface')
 

@@ -82,7 +82,7 @@ def add(request_format):
                               contents.image_contents_id))
 
     if request_format == 'html':
-        return redirect(url_for('show_image', image_id=image.image_id))
+        return redirect(url_for('show_image_html', image_id=image.image_id))
     elif request_format == 'json':
         return [{
                 'url': trucks[i].url(),

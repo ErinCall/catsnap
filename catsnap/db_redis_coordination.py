@@ -121,6 +121,6 @@ def coordinated_rollback(queued_tasks):
 class SkyIsFallingError(sqlalchemy.exc.OperationalError,
                         redis.exceptions.ConnectionError):
     def __init__(self, sqlError, redisError):
-        self.message = (sqlError.message +
+        self.message = (sqlError.args[0] +
         "\n\n###### BUT WAIT, THERE'S MORE: ######\n\n" +
-        redisError.message)
+        redisError.args[0])

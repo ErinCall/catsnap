@@ -1,6 +1,6 @@
 import json
 import uuid
-from io import StringIO
+from io import BytesIO
 from mock import patch, Mock, call
 from tests import TestCase, logged_in
 from nose.tools import eq_
@@ -41,7 +41,7 @@ class TestAdd(TestCase):
         response = self.app.post('/add', data={
             'url': '',
             'album_id': album.album_id,
-            'file': (StringIO(str('booya')), 'img.jpg')})
+            'file': (BytesIO(b'booya'), 'img.jpg')})
 
         image = session.query(Image).one()
 
@@ -72,11 +72,11 @@ class TestAdd(TestCase):
 
         response = self.app.post('/add', data={
             'url': '',
-            'file': (StringIO(str('booya')), 'img.jpg')})
+            'file': (BytesIO(b'booya'), 'img.jpg')})
         eq_(response.status_code, 302)
         response = self.app.post('/add', data={
             'url': '',
-            'file': (StringIO(str('booya')), 'img.jpg')})
+            'file': (BytesIO(b'booya'), 'img.jpg')})
         eq_(response.status_code, 302)
 
         session = Client().session()
@@ -99,7 +99,7 @@ class TestAdd(TestCase):
         })
         eq_(response.status_code, 400, response.data)
         print(response.data)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['error'],  "Catsnap couldn't establish an HTTPS connection "
                             "to that image. An HTTP connection may succeed "
                             "(this is a problem on Catsnap's end, not "
@@ -126,7 +126,7 @@ class TestAdd(TestCase):
 
         session = Client().session()
         image = session.query(Image).one()
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
 
         eq_(body,
             [{
@@ -168,19 +168,19 @@ class TestAdd(TestCase):
         id3 = str(uuid.uuid4())
         delay.side_effect = [id1, id2, id3]
 
-        response = self.app.post('/add.json', data={
+        response = self.app.post(b'/add.json', data={
             'album': '',
             'url': '',
             'file[]': [
-                (StringIO(str('boom')), 'image_1.jpg'),
-                (StringIO(str('shaka')), 'image_2.jpg'),
-                (StringIO(str('laka')), 'image_3.jpg'),
+                (BytesIO(b'boom'), 'image_1.jpg'),
+                (BytesIO(b'shaka'), 'image_2.jpg'),
+                (BytesIO(b'laka'), 'image_3.jpg'),
             ]})
         eq_(response.status_code, 200, response.data)
 
         session = Client().session()
         images = session.query(Image).all()
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
 
         eq_(body, [
             {
@@ -204,5 +204,5 @@ class TestAdd(TestCase):
     def test_returns_bad_request_if_no_image_provided(self):
         response = self.app.post('/add', data={
             'url': '',
-            'image_file': (StringIO(), '')})
+            'image_file': (BytesIO(), '')})
         eq_(response.status_code, 400)

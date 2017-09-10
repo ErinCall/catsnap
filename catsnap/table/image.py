@@ -57,7 +57,7 @@ class Image(CreatedAtBookkeeper):
             if existing_image:
                 return existing_image
 
-        return super(Image, cls).__new__(cls, *args, **kwargs)
+        return super(Image, cls).__new__(cls)
 
     @classmethod
     def find_by_filename(cls, filename):
@@ -189,7 +189,7 @@ class ImageResize(Base):
         if existing_resize:
             return existing_resize
 
-        return super(ImageResize, cls).__new__(cls, *args, **kwargs)
+        return super(ImageResize, cls).__new__(cls)
 
 class ImageContents(CreatedAtBookkeeper):
     __tablename__ = 'image_contents'

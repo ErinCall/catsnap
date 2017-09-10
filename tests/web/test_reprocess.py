@@ -24,12 +24,12 @@ class TestReprocess(TestCase):
 
         response = self.app.post('/image/reprocess/{0}.json'.format(image.image_id))
         eq_(response.status_code, 200)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body, {'status': 'ok'})
 
         contents = session.query(ImageContents).one()
         eq_(image.image_id, contents.image_id)
-        eq_(contents.contents, 'a party in my mouth and everyone is invited')
+        eq_(contents.contents.tobytes(), b'a party in my mouth and everyone is invited')
         eq_(contents.content_type, 'image/jpeg')
 
         delay.assert_called_with([], process_image, contents.image_contents_id)

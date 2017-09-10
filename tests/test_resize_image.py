@@ -68,7 +68,7 @@ class TestResizeImage(TestCase):
         session.add(image)
         session.flush()
 
-        truck = ImageTruck('contents', None, None)
+        truck = ImageTruck(b'contents', None, None)
 
         image_handler = Mock()
         image_handler.size = (3648, 2736)

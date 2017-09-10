@@ -26,7 +26,7 @@ class TestUpdateImage(TestCase):
         response = self.app.patch('/image/%d.json' % image.image_id, data={
             'album_id': album.album_id,
         })
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body, {
             'status': 'ok',
             'image': {
@@ -52,7 +52,7 @@ class TestUpdateImage(TestCase):
         response = self.app.patch('/image/%d.json' % image.image_id, data={
             'rochambeau': 'fleur de lis',
         })
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'error')
         eq_(body['error'], "No such attribute 'rochambeau'")
         eq_(response.status_code, 400)
@@ -67,7 +67,7 @@ class TestUpdateImage(TestCase):
         response = self.app.patch('/image/%d.json' % image.image_id, data={
             'filename': 'something evil',
         })
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'error')
         eq_(body['error'], "'filename' is read-only")
 
@@ -82,7 +82,7 @@ class TestUpdateImage(TestCase):
             'album_id': 5,
         })
 
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'error')
         eq_(body['error'], "No such album_id '5'")
 
@@ -100,7 +100,7 @@ class TestUpdateImage(TestCase):
             'album_id': '',
         })
 
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'ok')
 
         image = session.query(Image).one()
@@ -124,7 +124,7 @@ class TestUpdateImage(TestCase):
         })
         eq_(response.status_code, 200)
 
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'ok')
 
         tag = session.query(Tag).filter(Tag.name == 'cow').one()
@@ -149,7 +149,7 @@ class TestUpdateImage(TestCase):
             'remove_tag': 'cow',
         })
         eq_(response.status_code, 200)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['status'], 'ok')
 
         image_tags = session.query(ImageTag).all()

@@ -11,7 +11,7 @@ def find(request_format):
     for filename, image_id, caption in image_data:
         image_structs.append({
             'source_url': ImageTruck.url_for_filename(filename),
-            'url': url_for('show_image', image_id=image_id),
+            'url': url_for('show_image_html', image_id=image_id),
             'caption': caption,
         })
     if request_format == 'html':

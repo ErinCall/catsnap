@@ -31,7 +31,7 @@ class TestAlbum(TestCase):
     def test_add_an_album__with_json_format(self):
         response = self.app.post('/new_album.json', data={'name': 'my pics'})
         eq_(response.status_code, 200, response.data)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         assert 'album_id' in body, body
 
     @logged_in
@@ -52,7 +52,7 @@ class TestAlbum(TestCase):
         response = self.app.post('/new_album.json',
                                  data={'name': 'portrait sesh'})
         eq_(response.status_code, 409, response.data)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body['error'], "There is already an album with that name.")
 
     @with_settings(aws={'bucket': 'cattysnap'})
@@ -70,7 +70,7 @@ class TestAlbum(TestCase):
 
         response = self.app.get('/album/{0}.json'.format(album.album_id))
         eq_(response.status_code, 200, response.data)
-        body = json.loads(response.data)
+        body = json.loads(response.data.decode('utf-8'))
         eq_(body, [
             {
                 'page_url': '/image/{0}'.format(cat.image_id),

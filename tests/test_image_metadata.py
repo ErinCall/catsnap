@@ -7,7 +7,7 @@ from catsnap.image_metadata import ImageMetadata
 
 class TestImageMetadata(TestCase):
     def test_get_image_metadata(self):
-        with open(EXIF_JPG, 'r') as fh:
+        with open(EXIF_JPG, 'br') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)
@@ -22,7 +22,7 @@ class TestImageMetadata(TestCase):
             })
 
     def test_get_image_metadata_when_there_is_none(self):
-        with open(SOME_GIF, 'r') as fh:
+        with open(SOME_GIF, 'br') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)
@@ -30,7 +30,7 @@ class TestImageMetadata(TestCase):
         eq_(metadata, {})
 
     def test_handles_oddly_malformed_metadata(self):
-        with open(MALFORMED_JPG, 'r') as fh:
+        with open(MALFORMED_JPG, 'br') as fh:
             contents = fh.read()
 
         metadata = ImageMetadata.image_metadata(contents)

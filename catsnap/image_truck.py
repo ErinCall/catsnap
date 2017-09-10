@@ -32,10 +32,10 @@ class ImageTruck():
 
     @classmethod
     def new_from_file(cls, filename):
-        with open(filename, 'r') as image_file:
+        with open(filename, 'br') as image_file:
             contents = image_file.read()
         file_info = subprocess.check_output(['file', filename])
-        match = re.search(r'(\w+) image data', file_info)
+        match = re.search(r'(\w+) image data', file_info.decode('utf-8'))
         if not match:
             raise TypeError("'%s' doesn't seem to be an image file" % filename)
         filetype = match.groups()[0].lower()
@@ -45,7 +45,7 @@ class ImageTruck():
     @classmethod
     def new_from_stream(cls, stream):
         (_, image_file) = tempfile.mkstemp()
-        with open(image_file, 'w') as fh:
+        with open(image_file, 'bw') as fh:
             fh.write(stream.read())
         try:
             return cls.new_from_file(image_file)

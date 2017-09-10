@@ -33,7 +33,7 @@
                 <div class="album-nav col-xs-10 col-xs-offset-1">
                     <div class="col-xs-2 prev-container">
                         {% if prev %}
-                            <a class="prev" href="{{ url_for('show_image', image_id=prev.image_id) }}">
+                            <a class="prev" href="{{ url_for('show_image_html', image_id=prev.image_id) }}">
                                 <span aria-hidden="true">&larr;</span> {{ prev.caption() }}
                             </a>
                         {% endif %}
@@ -45,7 +45,7 @@
                     </div>
                     <div class="col-xs-2 next-container">
                         {% if next %}
-                            <a class="next" href="{{ url_for('show_image', image_id=next.image_id) }}">
+                            <a class="next" href="{{ url_for('show_image_html', image_id=next.image_id) }}">
                                 {{ next.caption() }} <span aria-hidden="true">&rarr;</span>
                             </a>
                         {% endif %}
@@ -86,9 +86,9 @@
                             </button>
                             <ul class="dropdown-menu">
                                 {% for resize in resizes %}
-                                    <li role="presentation"><a role="menuitem" href="{{ url_for('show_image', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
+                                    <li role="presentation"><a role="menuitem" href="{{ url_for('show_image_html', image_id=image.image_id, size=resize.suffix) }}">{{resize.suffix}} {{resize.width}}x{{resize.height}}</a></li>
                                 {% endfor %}
-                                <li role="presentation" class="resize"><a role="menuitem" href="{{ url_for('show_image', image_id=image.image_id, size='original') }}">original</a></li>
+                                <li role="presentation" class="resize"><a role="menuitem" href="{{ url_for('show_image_html', image_id=image.image_id, size='original') }}">original</a></li>
                             </ul>
                         </div>
                     {% endif %}
