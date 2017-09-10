@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from catsnap.image_truck import ImageTruck, TryHTTPError
 from catsnap.table.image import Image, ImageResize, ImageContents
 from catsnap.table.album import Album
+from catsnap.web import app
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from catsnap.worker.tasks import process_image
@@ -89,10 +90,50 @@ def add(request_format):
                 'task_id': task_ids[i],
             } for i in range(0, len(trucks))]
 
-@formatted_route(
-    '/image/<int:image_id>', methods=['GET'], defaults={'size': 'medium'})
-@formatted_route('/image/<int:image_id>/<size>', methods=['GET'])
-def show_image(request_format, image_id, size):
+
+# So....this is a bummer.
+# Since upgrading Flask from 0.9 to 0.12, actions can no longer have multiple
+# @formatted_route decorators. show_image can be accessed as either /image
+# or /image/size, so the response-format difference has to be managed
+# manually, by using separate functions per response-type.
+# BEGIN bummer
+
+@app.route('/image/<int:image_id>.json', defaults={'size': 'medium'})
+@app.route('/image/<int:image_id>/<size>.json')
+def show_image_json(image_id, size):
+    try:
+        response_data = show_image(image_id, size)
+    except NoResultFound:
+        flask_abort(make_response(
+            json.dumps({error: 'Not Found', 'status': 'error'}),
+            404,
+            {'Content-Type': 'application/json'}))
+
+    image = response_data['image']
+    return json.dumps({
+        'description': image.description,
+        'title': image.title,
+        'camera': image.camera,
+        'photographed_at': image.photographed_at,
+        'focal_length': image.focal_length,
+        'aperture': image.aperture,
+        'shutter_speed': image.shutter_speed,
+        'iso': image.iso,
+        'album_id': image.album_id,
+        'tags': response_data['tags'],
+        'source_url': response_data['url'],
+    })
+
+@app.route('/image/<int:image_id>.html', defaults={'size': 'medium'})
+@app.route('/image/<int:image_id>/<size>.html')
+@app.route('/image/<int:image_id>', defaults={'size': 'medium'})
+@app.route('/image/<int:image_id>/<size>')
+def show_image_html(image_id, size):
+    response_data = show_image(image_id, size)
+    return render_template('image.html.jinja', **response_data)
+
+
+def show_image(image_id, size):
     session = Client().session()
     image = session.query(Image).\
         filter(Image.image_id == image_id).\
@@ -118,34 +159,21 @@ def show_image(request_format, image_id, size):
         url = '{0}_{1}'.format(url, size)
 
     tags = image.get_tags()
-    if request_format == 'html':
-        return render_template('image.html.jinja',
-                               image=image,
-                               prev=prev,
-                               next=next,
-                               album=album,
-                               albums=albums,
-                               url=url,
-                               tags=list(tags),
-                               metadata_fields=[x__ for x__ in Image.metadata_fields if getattr(image, x__[0])],
-                               getattr=getattr,
-                               resizes=resizes,
-                               size=size)
-    elif request_format == 'json':
-        return {
-            'description': image.description,
-            'title': image.title,
-            'camera': image.camera,
-            'photographed_at': image.photographed_at,
-            'focal_length': image.focal_length,
-            'aperture': image.aperture,
-            'shutter_speed': image.shutter_speed,
-            'iso': image.iso,
-            'album_id': image.album_id,
-            'tags': list(tags),
-            'source_url': url,
-        }
 
+    return dict(
+        image=image,
+        prev=prev,
+        next=next,
+        album=album,
+        albums=albums,
+        url=url,
+        tags=list(tags),
+        metadata_fields=[x__ for x__ in Image.metadata_fields if getattr(image, x__[0])],
+        getattr=getattr,
+        resizes=resizes,
+        size=size)
+
+# END bummer
 
 @formatted_route('/image/<int:image_id>', methods=['PATCH'])
 @login_required
