@@ -1,5 +1,3 @@
-
-
 import time
 from sqlalchemy import Column, DateTime
 from sqlalchemy.ext.declarative import declarative_base

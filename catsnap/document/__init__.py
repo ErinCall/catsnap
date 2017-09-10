@@ -1,5 +1,3 @@
-
-
 from catsnap import Client
 
 class Document():

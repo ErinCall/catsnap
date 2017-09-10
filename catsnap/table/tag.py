@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import Column, Integer, String, func
 from catsnap import Client
 from sqlalchemy.ext.declarative import declarative_base

@@ -1,5 +1,3 @@
-
-
 from catsnap import Client, HASH_KEY
 from boto.dynamodb.batch import BatchWriteList, BatchList
 from boto.dynamodb.item import Item

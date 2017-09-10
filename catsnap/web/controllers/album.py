@@ -1,5 +1,3 @@
-
-
 from catsnap.web.formatted_routes import formatted_route, abort
 from catsnap.web.utils import login_required
 from flask import request, render_template, redirect, url_for

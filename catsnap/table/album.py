@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.functions import coalesce
 from catsnap import Client

@@ -1,5 +1,3 @@
-
-
 from functools import wraps
 from catsnap.web.formatted_routes import abort
 from flask import g, redirect

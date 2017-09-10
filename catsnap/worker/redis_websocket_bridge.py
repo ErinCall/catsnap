@@ -1,5 +1,3 @@
-
-
 import gevent
 import json
 import redis as redislib

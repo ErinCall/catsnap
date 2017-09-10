@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import Column, Integer, ForeignKey
 from catsnap.table.tag import Tag
 from catsnap.table.image import Image

@@ -1,5 +1,3 @@
-
-
 import json
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 

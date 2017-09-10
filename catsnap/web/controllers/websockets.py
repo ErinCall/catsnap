@@ -1,5 +1,3 @@
-
-
 import json
 import gevent
 from flask_sockets import Sockets

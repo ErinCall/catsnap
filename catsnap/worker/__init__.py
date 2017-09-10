@@ -1,5 +1,3 @@
-
-
 from celery import Celery
 from celery.signals import task_success
 from catsnap.db_redis_coordination import coordinated_commit

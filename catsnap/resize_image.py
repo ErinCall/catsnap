@@ -1,5 +1,3 @@
-
-
 from collections import OrderedDict
 from wand.image import Image as ImageHandler
 

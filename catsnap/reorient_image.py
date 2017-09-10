@@ -1,5 +1,3 @@
-
-
 from wand.image import Image as ImageHandler
 
 

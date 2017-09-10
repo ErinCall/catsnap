@@ -1,5 +1,3 @@
-
-
 from catsnap import HASH_KEY
 from catsnap.batch import get_item_batch
 import json

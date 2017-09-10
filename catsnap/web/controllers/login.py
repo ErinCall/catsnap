@@ -1,5 +1,3 @@
-
-
 import bcrypt
 from flask import session, redirect, render_template, request
 from werkzeug.exceptions import BadRequest

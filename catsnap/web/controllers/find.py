@@ -1,5 +1,3 @@
-
-
 from flask import request, render_template, url_for
 from catsnap.image_truck import ImageTruck
 from catsnap.table.tag import Tag

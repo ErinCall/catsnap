@@ -1,5 +1,3 @@
-
-
 #It's a big truck. You can just dump stuff on it.
 
 import requests

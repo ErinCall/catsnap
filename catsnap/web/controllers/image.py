@@ -1,5 +1,3 @@
-
-
 import json
 from flask import request, render_template, redirect, g, url_for
 from requests.exceptions import RequestException
