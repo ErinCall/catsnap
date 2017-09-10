@@ -157,7 +157,7 @@ class Image(CreatedAtBookkeeper):
     def make_caption(cls, filename, title, get_tags):
         if title:
             return title
-        tags = get_tags()
+        tags = sorted(get_tags())
         if tags:
             return ' '.join(tags)
         return filename

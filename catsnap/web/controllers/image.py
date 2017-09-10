@@ -120,7 +120,7 @@ def show_image_json(image_id, size):
         'shutter_speed': image.shutter_speed,
         'iso': image.iso,
         'album_id': image.album_id,
-        'tags': response_data['tags'],
+        'tags': sorted(response_data['tags']),
         'source_url': response_data['url'],
     })
 

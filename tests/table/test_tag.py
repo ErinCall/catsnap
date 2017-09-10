@@ -50,7 +50,7 @@ class TestGetImageData(TestCase):
         (dog, cat, stegosaurus) = self.setup_test_data()
         image_data = Tag.get_image_data(['pet'])
         eq_(list(image_data), [
-                ('CA7', cat.image_id, 'pet cool'),
+                ('CA7', cat.image_id, 'cool pet'),
                 ('D06', dog.image_id, 'my dog')])
 
     def test_multiple_tags(self):
@@ -58,5 +58,5 @@ class TestGetImageData(TestCase):
         image_data = Tag.get_image_data(['pet','cool'])
         eq_(list(image_data), [
                 ('57E60', stegosaurus.image_id, 'cool'),
-                ('CA7',   cat.image_id,         'pet cool'),
+                ('CA7',   cat.image_id,         'cool pet'),
                 ('D06',   dog.image_id,         'my dog')])
