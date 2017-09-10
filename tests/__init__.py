@@ -71,7 +71,7 @@ def drop_temp_database():
 
 def apply_migrations(temp_db_url):
     migrations_dir = os.path.join(os.path.dirname(__file__), '..', 'migrations')
-    subprocess.check_output(['yoyo-migrate', '-b', 'apply', migrations_dir, temp_db_url])
+    subprocess.check_output(['yoyo-migrate', '-b', 'apply', migrations_dir, '-d', temp_db_url])
 
 def with_settings(**settings):
     def decorator(fn):
