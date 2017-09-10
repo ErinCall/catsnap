@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import time
 from tests import TestCase
 from catsnap import Client
@@ -33,7 +31,7 @@ class TestAlbums(TestCase):
 
         images = Album.images_for_album_id(album.album_id)
         eq_(['deadbeef', 'badcafe'],
-                map(lambda x: x.filename, images))
+                [x.filename for x in images])
 
     def test_images_for_album_id_sorts_by_photographed_then_added_date(self):
         session = Client().session()
@@ -70,4 +68,4 @@ class TestAlbums(TestCase):
         # created_at (which refers to the *record*, not the image) instead.
         images = Album.images_for_album_id(album.album_id)
         eq_(['R2D2', 'han', 'greedo'],
-                map(lambda x: x.filename, images))
+                [x.filename for x in images])

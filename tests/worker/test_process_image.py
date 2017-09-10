@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from mock import patch, Mock
 from nose.tools import eq_, nottest, raises
 from tests import TestCase
@@ -84,7 +82,7 @@ class TestProcessImage(TestCase):
     @patch('catsnap.worker.tasks.ResizeImage')
     def test_resize_happens_before_main_upload(
             self, ResizeImage, ImageTruck):
-        class StopDoingThingsNow(StandardError): pass
+        class StopDoingThingsNow(Exception): pass
 
         transaction_id = TaskTransaction.new_id()
         image_data = self.image_data()

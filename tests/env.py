@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 # This file's here to set up some env vars for the tests to enjoy accessing.
 
 import os

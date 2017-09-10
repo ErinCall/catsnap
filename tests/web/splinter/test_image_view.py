@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from tests import with_settings
 from tests.web.splinter import TestCase, logged_in
 from selenium.webdriver.common.keys import Keys
@@ -24,10 +22,10 @@ class TestImageView(TestCase):
         self.visit_url('/image/{0}'.format(silly.image_id))
 
         images = self.browser.find_by_tag('img')
-        eq_(map(lambda i: i['src'], images), [
+        eq_([i['src'] for i in images], [
             'https://s3.amazonaws.com/humptydump/silly',
         ])
-        eq_(map(lambda i: i['alt'], images), ['silly'])
+        eq_([i['alt'] for i in images], ['silly'])
 
         assert self.browser.is_text_present('silly')
 

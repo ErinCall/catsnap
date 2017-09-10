@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os.path
 
 SOME_GIF = os.path.join(os.path.dirname(__file__), 'test_image_500x319.gif')

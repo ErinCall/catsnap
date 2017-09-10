@@ -1,6 +1,4 @@
-from __future__ import unicode_literals
-
-import StringIO
+import io
 import tempfile
 import ssl
 import urllib3.exceptions
@@ -138,7 +136,7 @@ class TestImageTruck(TestCase):
     def test_new_from_file__raises_well_for_non_image_files(self):
         try:
             ImageTruck.new_from_file(__file__)
-        except Exception, e:
+        except Exception as e:
             eq_(e.message, "'%s' doesn't seem to be an image file" % __file__)
             eq_(type(e), TypeError)
         else:

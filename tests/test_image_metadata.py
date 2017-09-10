@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from nose.tools import eq_
 from tests import TestCase
 from tests.image_helper import EXIF_JPG, MALFORMED_JPG, SOME_GIF

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from tests import with_settings
 from tests.web.splinter import TestCase
 from catsnap import Client
@@ -25,11 +23,11 @@ class TestViewAlbum(TestCase):
         self.visit_url('/album/{0}'.format(album.album_id))
 
         images = self.browser.find_by_tag('img')
-        eq_(map(lambda i: i['src'], images), [
+        eq_([i['src'] for i in images], [
             'https://s3.amazonaws.com/humptydump/silly',
             'https://s3.amazonaws.com/humptydump/serious',
         ])
-        eq_(map(lambda i: i['alt'], images), ['silly', 'serious'])
+        eq_([i['alt'] for i in images], ['silly', 'serious'])
 
         assert self.browser.is_text_present('silly')
         assert self.browser.is_text_present('serious')

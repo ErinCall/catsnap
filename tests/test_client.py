@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from tests import TestCase, with_settings
 import boto
 from mock import patch, call, Mock, MagicMock

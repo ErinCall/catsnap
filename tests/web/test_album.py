@@ -1,7 +1,5 @@
-from __future__ import unicode_literals
-
 import json
-from StringIO import StringIO
+from io import StringIO
 from mock import patch, Mock
 from tests import TestCase, with_settings, logged_in
 from nose.tools import eq_

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from selenium.webdriver.common.keys import Keys
 from tests import with_settings
 from tests.image_helper import SOME_GIF
@@ -201,7 +199,7 @@ class TestAlbumFunctions(UploadTestCase):
         eq_(album.name, "Soviet Kitsch")
 
         options = album_select.find_by_tag('option')
-        soviet_kitsch = filter(lambda o: o.value == unicode(album.album_id),
+        soviet_kitsch = filter(lambda o: o.value == str(album.album_id),
                                options)[0]
         assert soviet_kitsch, "The new album wasn't added to the dropdown!"
         assert soviet_kitsch.selected, "The new album wasn't selected!"

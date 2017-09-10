@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import json
 from mock import patch, Mock
 from tests import TestCase, logged_in

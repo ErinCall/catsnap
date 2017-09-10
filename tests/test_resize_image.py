@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os.path
 from wand.image import Image as ImageHandler
 from mock import patch, Mock, call

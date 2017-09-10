@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import time
 from mock import patch, Mock
 from nose.tools import raises

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from mock import patch, Mock, MagicMock, call
 from nose.tools import eq_
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError

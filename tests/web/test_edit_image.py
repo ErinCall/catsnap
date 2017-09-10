@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import json
 from tests import TestCase, with_settings, logged_in
 from nose.tools import eq_

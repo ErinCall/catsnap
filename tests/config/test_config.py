@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from mock import patch, call, Mock
 from nose.tools import eq_, assert_raises
 from tests import TestCase

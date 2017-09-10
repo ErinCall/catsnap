@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from tests import with_settings
 from tests.web.splinter import TestCase, logged_in
 from catsnap import Client

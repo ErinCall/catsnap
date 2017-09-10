@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import threading
 import logging
 from functools import wraps

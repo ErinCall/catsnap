@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from tests import TestCase
 from nose.tools import eq_
 from catsnap.table.tag import Tag

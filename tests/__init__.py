@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import tests.env
 from functools import wraps
 from mock import Mock, MagicMock, patch

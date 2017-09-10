@@ -1,8 +1,6 @@
-from __future__ import unicode_literals
-
 import json
 import uuid
-from StringIO import StringIO
+from io import StringIO
 from mock import patch, Mock, call
 from tests import TestCase, logged_in
 from nose.tools import eq_
@@ -100,7 +98,7 @@ class TestAdd(TestCase):
             'album': '',
         })
         eq_(response.status_code, 400, response.data)
-        print response.data
+        print(response.data)
         body = json.loads(response.data)
         eq_(body['error'],  "Catsnap couldn't establish an HTTPS connection "
                             "to that image. An HTTP connection may succeed "
