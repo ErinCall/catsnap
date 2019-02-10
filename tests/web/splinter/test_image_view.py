@@ -8,6 +8,8 @@ from catsnap.table.image import Image
 from catsnap.table.album import Album
 from nose.tools import eq_
 
+import time
+
 class TestImageView(TestCase):
     @with_settings(aws={'bucket': 'humptydump'})
     def test_view_an_image(self):
@@ -56,7 +58,9 @@ class TestEditImage(TestCase):
         assert title_field.visible, "No title-edit field!"
         eq_(title_field.value, 'Silly Picture')
 
-        title_field.fill('Goofy Picture\n')
+        title_field.clear()
+        title_field.type('Goofy Picture')
+        title_field.type(Keys.ENTER)
 
         self.browser.click_link_by_text('Stop Editing')
         assert not title_field.visible, "Title field didn't go away!"
@@ -170,8 +174,10 @@ class TestEditImage(TestCase):
         focused_input = self.browser.find_by_css('input:focus').first
         tag_input = self.browser.find_by_id('tag').first
         eq_(focused_input['id'], 'tag', "Add-tag input wasn't automatically focused!")
-        tag_input.fill('funny\n')
+        tag_input.type('funny')
+        tag_input.type(Keys.ENTER)
 
+        time.sleep(0.01)
         tag_removes = self.browser.find_by_css('a.remove-tag')
         eq_([t.text for t in tag_removes], ['silly', 'funny'])
 
@@ -200,16 +206,15 @@ class TestEditImage(TestCase):
 
         tag_button = self.browser.find_by_id('tag-button')
         assert tag_button, "Couldn't find a button for listing tags!"
-        tag_button.click()
-
-        tag_list = self.browser.find_by_css('ul.view-tags')
-        assert not tag_list.visible, "Popped up an empty tag dropdown!"
+        assert tag_button.has_class("disabled"), \
+            "Tag button enabled without tags!"
 
         self.browser.click_link_by_text('Edit')
         add_tag = self.browser.find_by_css('a.add-tag')
         add_tag.click()
         tag_input = self.browser.find_by_id('tag')[0]
-        tag_input.fill('untagged\n')
+        tag_input.type('untagged')
+        tag_input.type(Keys.ENTER)
 
         self.browser.click_link_by_text('Stop Editing')
         tag_button.click()
@@ -237,9 +242,8 @@ class TestEditImage(TestCase):
 
         self.browser.click_link_by_text('Stop Editing')
         tag_button = self.browser.find_by_id('tag-button')
-        tag_button.click()
-        tag_list = self.browser.find_by_css('ul.view-tags')
-        assert not tag_list.visible, "Popped up an empty tag dropdown!"
+        assert tag_button.has_class("disabled"), \
+            "Tag button enabled without tags!"
 
     @logged_in
     @with_settings(aws={'bucket': 'humptydump'})
@@ -255,7 +259,8 @@ class TestEditImage(TestCase):
         add_tag = self.browser.find_by_css('a.add-tag')
         add_tag.click()
         tag_input = self.browser.find_by_id('tag')[0]
-        tag_input.fill('babe\t')
+        tag_input.type('babe')
+        tag_input.type(Keys.TAB)
         tag_removes = self.browser.find_by_css('a.remove-tag')
         eq_([t.text for t in tag_removes], ['babe'])
 
@@ -278,8 +283,8 @@ class TestEditImage(TestCase):
         add_tag = self.browser.find_by_css('a.add-tag')
         add_tag.click()
         tag_input = self.browser.find_by_id('tag')[0]
-        tag_input.fill('babe')
-        tag_input.fill(Keys.ESCAPE)
+        tag_input.type('babe')
+        tag_input.type(Keys.ESCAPE)
 
         add_tag = self.browser.find_by_css('a.add-tag')
         assert add_tag.visible, "Editing didn't abort!"
