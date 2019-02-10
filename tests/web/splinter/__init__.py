@@ -7,7 +7,7 @@ from tests import TestCase as BaseTestCase
 from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
-from splinter.driver.webdriver.firefox import WebDriver
+from splinter import Browser
 from splinter.exceptions import ElementDoesNotExist
 from selenium.webdriver.remote.remote_connection import LOGGER
 
@@ -49,7 +49,7 @@ def setUpPackage():
     thread.start()
     web_actors['server'] = test_app
 
-    web_actors['browser'] = SingleVisitFirefoxDriver()
+    web_actors['browser'] = Browser()
     LOGGER.setLevel(logging.WARNING)
 
 
@@ -74,8 +74,3 @@ def logged_in(fn):
         web_actors['browser'].visit('http://localhost:65432/become_logged_in')
         fn(*args, **kwargs)
     return wrapper
-
-
-class SingleVisitFirefoxDriver(WebDriver):
-    def visit(self, url):
-        self.driver.get(url)

@@ -127,10 +127,6 @@ class TestUploadImage(UploadTestCase):
         assert not file_field.visible, "The file input is visible"
         assert file_label, "Didn't find a label for the file input"
         assert file_label.visible, "The file label isn't visible"
-        self.browser.execute_script('''
-            $('input[type="file"]').css({'opacity': 100});
-        ''') # selenium won't interact with invisible objects. Ridiculous!
-        assert file_field.visible, "The file input didn't become visible!"
 
         self.browser.attach_file('file[]', SOME_GIF)
         self.browser.find_by_css('input[name="file-submit"]').click()
@@ -151,10 +147,6 @@ class TestUploadImage(UploadTestCase):
         file_label = self.browser.find_by_css('label[for="file"]').first
         assert file_field, "Didn't find the file input"
         assert file_label, "Didn't find a label for the file input"
-        self.browser.execute_script('''
-            $('input[type="file"]').css({'opacity': 100});
-        ''') # selenium won't interact with invisible objects. Ridiculous!
-        assert file_field.visible, "The file input didn't become visible!"
 
         self.browser.attach_file('file[]', SOME_PNG)
 
