@@ -18,13 +18,11 @@ class UploadTestCase(TestCase):
     @nottest
     @patch('catsnap.web.controllers.image.ImageTruck')
     def upload_one_image(self, ImageTruck):
-        ImageTruck.new_from_url.return_value = self.mock_truck()
+        ImageTruck.new_from_stream.return_value = self.mock_truck()
 
         self.visit_url('/add')
-        self.browser.click_link_by_text('From Url')
-        url_field = self.browser.find_by_id('url')
-        url_field.fill('http://cdn.mlkshk.com/r/118S7')
-        self.browser.find_by_name('url-submit').click()
+        self.browser.attach_file('file[]', SOME_GIF)
+        self.browser.find_by_css('input[name="file-submit"]').click()
 
     @nottest
     def mock_truck(self):
