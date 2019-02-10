@@ -7,6 +7,7 @@ from tests import TestCase as BaseTestCase
 from werkzeug.serving import make_server
 from flask import g, session, redirect
 from catsnap.web import app
+from nose.tools import nottest
 from splinter import Browser
 from splinter.exceptions import ElementDoesNotExist
 from selenium.webdriver.remote.remote_connection import LOGGER
@@ -58,16 +59,19 @@ def tearDownPackage():
     web_actors['server'].stop()
 
 
+@nottest
 @app.route('/become_logged_in')
 def become_logged_in():
     g.user = 1
     session['logged_in'] = True
     return redirect('/')
 
+@nottest
 @app.before_request
 def indicate_test_server():
     g.test_server = True
 
+@nottest
 def logged_in(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
