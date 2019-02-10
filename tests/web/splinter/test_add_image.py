@@ -12,6 +12,7 @@ from catsnap.table.tag import Tag
 from mock import patch, Mock
 from nose.tools import eq_, nottest
 
+import time
 
 class UploadTestCase(TestCase):
     @nottest
@@ -185,7 +186,8 @@ class TestAlbumFunctions(UploadTestCase):
 
         self.browser.click_link_by_partial_text('create new album')
         album_input = self.browser.find_by_name('album-name').first
-        album_input.fill('Soviet Kitsch\n')
+        album_input.type('Soviet Kitsch')
+        album_input.type(Keys.ENTER)
 
         album_select = self.browser.find_by_name('album').first
 
@@ -211,7 +213,8 @@ class TestAlbumFunctions(UploadTestCase):
 
         self.browser.click_link_by_partial_text('create new album')
         album_input = self.browser.find_by_name('album-name').first
-        album_input.fill('Begin To Hope\n')
+        album_input.type('Begin To Hope')
+        album_input.type(Keys.ENTER)
 
         assert self.browser.find_by_css('#new-album').first.visible, \
             "The modal was hidden when there was an error!"
@@ -226,7 +229,8 @@ class TestAlbumFunctions(UploadTestCase):
 
         self.browser.click_link_by_partial_text('create new album')
         album_input = self.browser.find_by_name('album-name').first
-        album_input.fill('Soviet Kitsch\n')
+        album_input.type('Soviet Kitsch')
+        album_input.type(Keys.ENTER)
 
         self.browser.click_link_by_partial_text('create new album')
         album_input = self.browser.find_by_name('album-name').first
@@ -243,12 +247,14 @@ class TestAlbumFunctions(UploadTestCase):
 
         self.browser.click_link_by_partial_text('create new album')
         album_input = self.browser.find_by_name('album-name').first
-        album_input.fill('Led Zeppelin\n')
+        album_input.type('Led Zeppelin')
+        album_input.type(Keys.ENTER)
 
         assert self.browser.is_text_present(
             'There is already an album with that name.'), \
             "The album-name error message wasn't displayed!"
-        album_input.fill('Led Zeppelin II\n')
+        album_input.type('Led Zeppelin II')
+        album_input.type(Keys.ENTER)
 
         self.browser.click_link_by_partial_text('create new album')
         assert not self.browser.is_text_present(
@@ -262,7 +268,10 @@ class TestAddTagsAfterUpload(UploadTestCase):
     def test_tab_from_tag_input_focuses_next_tag_input_and_saves(self):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
-        self.browser.find_by_name('tag').first.fill('chipmunk\t')
+        tag_input = self.browser.find_by_name('tag').first
+        tag_input.type('chipmunk')
+        tag_input.type(Keys.TAB)
+        time.sleep(0.01)
         # there is no .is_focused or anything, so we'll do it inside-out:
         # look for a focused input and assert that it's the right one.
         next_tag = self.browser.find_by_css('input:focus').first
@@ -278,8 +287,8 @@ class TestAddTagsAfterUpload(UploadTestCase):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
         tag_input = self.browser.find_by_name('tag').first
-        tag_input.fill('flerp')
-        tag_input.fill(Keys.ESCAPE)
+        tag_input.type('flerp')
+        tag_input.type(Keys.ESCAPE)
 
         assert self.browser.is_element_not_present_by_name('tag'), \
             "the tag-name input wasn't cleared!"
@@ -295,7 +304,8 @@ class TestAddTagsAfterUpload(UploadTestCase):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
         tag_input = self.browser.find_by_name('tag').first
-        tag_input.fill(' \n')
+        tag_input.type(' ')
+        tag_input.type(Keys.ENTER)
 
         assert self.browser.is_element_not_present_by_name('tag'), \
             "the tag-name input wasn't cleared!"
@@ -311,7 +321,9 @@ class TestAddTagsAfterUpload(UploadTestCase):
         self.upload_one_image()
         self.browser.click_link_by_text('Add tag')
         tag_input = self.browser.find_by_name('tag').first
-        tag_input.fill('intens\n')
+        tag_input.type('intens')
+        tag_input.type(Keys.ENTER)
+        time.sleep(0.01)
 
         tags = Client().session().query(Tag.name).all()
         eq_(tags, [('intens',)])
@@ -328,14 +340,13 @@ class TestEditAttributes(UploadTestCase):
     @with_settings(aws={'bucket': 'frootypoo'})
     def test_submit_title(self):
         self.upload_one_image()
-        self.browser.click_link_by_text('Add tag')
-        self.browser.find_by_name('tag').first.fill('chipmunk\n')
         title_input = self.browser.find_by_name('title').first
-        title_input.fill('Tiny chipmunk dancing\n')
+        title_input.type('Tiny chipmunk dancing')
+        title_input.type(Keys.ENTER)
+        time.sleep(0.01)
 
         image = Client().session().query(Image).one()
         eq_(image.title, "Tiny chipmunk dancing")
-        eq_(list(image.get_tags()), ["chipmunk"])
 
     @logged_in
     @with_settings(aws={'bucket': 'frootypoo'})
