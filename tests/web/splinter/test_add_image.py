@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from selenium.webdriver.common.keys import Keys
 from tests import with_settings
-from tests.image_helper import SOME_GIF
+from tests.image_helper import SOME_GIF, SOME_PNG
 from tests.web.splinter import TestCase, logged_in
 from catsnap import Client
 from catsnap.table.image import Image
@@ -156,9 +156,9 @@ class TestUploadImage(UploadTestCase):
         ''') # selenium won't interact with invisible objects. Ridiculous!
         assert file_field.visible, "The file input didn't become visible!"
 
-        self.browser.attach_file('file[]', '/path/to/image.jpg')
+        self.browser.attach_file('file[]', SOME_PNG)
 
-        eq_(file_label.text, 'image.jpg')
+        eq_(file_label.text, 'C:\\fakepath\\test_image_592x821.png')
 
 class TestAlbumFunctions(UploadTestCase):
     @logged_in
