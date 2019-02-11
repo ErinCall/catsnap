@@ -14,7 +14,7 @@ setup(name="catsnap",
                 'catsnap.batch'],
       install_requires=[
           "Flask==0.9",
-          "gunicorn==0.14.6",
+          "gunicorn==19.9.0",
           "boto==2.40.0",
           "requests==2.21.0",
           "psycopg2-binary==2.7.7",
