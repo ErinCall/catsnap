@@ -26,7 +26,7 @@ You need python 2.7. Clone the repo and run `python setup.py develop` to fetch t
 
 Catsnap depends on [Postgresql](http://www.postgresql.org/) and [Redis](http://redis.io/), so make sure they're installed and running. Next you need to do some configuration. Copy [catsnap/config/example.config.yml](catsnap/config/example.config.yml) to `catsnap/config/config.yml` and read through it. Most of the example settings will be fine for development, but you'll need to make a couple of changes. There are instructions in the example config.
 
-You're nearly ready! Create a postgres database for catsnap to use, and set up its schema by running `yoyo-migrate -b apply migrations postgresql://localhost/catsnap` (you may need to edit that database url, depending on your postgres configuration).
+You're nearly ready! Create a postgres database for catsnap to use, and set up its schema by running `yoyo -b apply -d postgresql://localhost/catsnap migrations` (you may need to edit that database url, depending on your postgres configuration).
 
 You're good to go! Start the web service with `gunicorn -k flask_sockets.worker catsnap.app:app -b 0.0.0.0:5000` and the background worker with `celery -A catsnap.worker worker` and visit [localhost:5000](http://localhost:5000) to get snapping!
 
@@ -34,7 +34,7 @@ You're good to go! Start the web service with `gunicorn -k flask_sockets.worker 
 
 Once you've installed the dependencies as described in Running Locally, you can launch the test suite with `nosetests`.
 
-There are a number of tests that launch a browser, and they're somewhat finicky to get working. [INSERT DEBUGGING ADVICE HERE].
+There are a number of tests that launch a browser, and they're somewhat finicky to get working. They require [`geckodriver`](https://firefox-source-docs.mozilla.org/testing/geckodriver/geckodriver/), at minimum. [INSERT DEBUGGING ADVICE HERE].
 
 If you want to skip the browser tests entirely, run `nosetests --exclude splinter`. You'll lose JavaScript coverage, but the Python code will still get tested.
 

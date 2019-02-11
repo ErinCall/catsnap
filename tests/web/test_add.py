@@ -91,23 +91,6 @@ class TestAdd(TestCase):
         delay.assert_has_calls(contents_calls)
 
     @logged_in
-    @patch('catsnap.web.controllers.image.ImageTruck')
-    def test_handle_certain_ssl_errors_usefully(self, ImageTruck):
-        ImageTruck.new_from_url.side_effect = TryHTTPError
-        response = self.app.post('/add.json', data={
-            'url': 'https://cloudfront.net/cool_cat.gif',
-            'tags': '',
-            'album': '',
-        })
-        eq_(response.status_code, 400, response.data)
-        print response.data
-        body = json.loads(response.data)
-        eq_(body['error'],  "Catsnap couldn't establish an HTTPS connection "
-                            "to that image. An HTTP connection may succeed "
-                            "(this is a problem on Catsnap's end, not "
-                            "something you did wrong).")
-
-    @logged_in
     @patch('catsnap.web.controllers.image.delay')
     @patch('catsnap.web.controllers.image.ImageTruck')
     def test_upload_an_image_with_json_format(self, ImageTruck, delay):

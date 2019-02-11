@@ -35,12 +35,6 @@ def add(request_format):
             trucks = [ImageTruck.new_from_url(url)]
         except RequestException:
             abort(request_format, 400, "That url is no good.")
-        except TryHTTPError:
-            abort(request_format,
-                  400,
-                  "Catsnap couldn't establish an HTTPS connection to that "
-                  "image. An HTTP connection may succeed (this is a problem "
-                  "on Catsnap's end, not something you did wrong).")
     elif request.files.get('file[]'):
         trucks = [ImageTruck.new_from_stream(data.stream)
                   for data in request.files.getlist('file[]')]
